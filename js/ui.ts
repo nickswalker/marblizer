@@ -7,6 +7,7 @@ enum Tool {
 interface MarblingUIDelegate {
     toolDidChange(tool: Tool)
     colorDidChange(color: Color)
+    didRequestReset()
 }
 
 class MarblingUI {
@@ -14,6 +15,7 @@ class MarblingUI {
     tineButton: HTMLElement;
     dropButton: HTMLElement;
     swirlButton: HTMLElement;
+    resetButton: HTMLElement;
     colorPicker: HTMLInputElement;
     currentTool: Tool;
     delegate?: MarblingUIDelegate;
@@ -25,13 +27,22 @@ class MarblingUI {
         this.dropButton = <HTMLElement>container.querySelector(".drop-tool");
         this.colorPicker = <HTMLInputElement>container.querySelector("input.color-picker");
         this.swirlButton = <HTMLElement>container.querySelector(".swirl-tool");
+        this.resetButton = <HTMLElement>container.querySelector(".reset");
         this.tineButton.onclick = this.toolClicked.bind(this);
         this.dropButton.onclick = this.toolClicked.bind(this);
         this.swirlButton.onclick = this.toolClicked.bind(this);
         this.colorPicker.onchange = this.colorChanged.bind(this);
+
+        this.resetButton.onclick = this.clickedReset.bind(this);
         this.toolToButtonMapping = {1: this.tineButton,
    2: this.dropButton,
     3: this.swirlButton};
+    }
+
+    private clickedReset(event: MouseEvent) {
+        if (confirm("Are you sure you want to reset?")) {
+            this.delegate.didRequestReset();
+        }
     }
 
     private toolClicked(event: MouseEvent) {
