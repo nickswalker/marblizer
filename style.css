@@ -1,0 +1,29 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+canvas { width: 100%; height: 100% }
+
+#marbling-tools {
+    position: absolute;
+    background-color: rgba(255,255,255,0.8);
+    right: 0;
+    bottom: 0;
+
+}
+
+#marbling-tools ul {
+    margin: 0;
+    padding: 10px;
+}
+
+#marbling-tools li {
+    list-style: none;
+    display: inline-block;
+    margin: 0 5px;
+}
+
+#marbling-tools .active {
+    font-weight: bold;
+}
+

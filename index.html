@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>Ink Marbling</title>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="js/marbling.js"></script>
+    <script src="js/ui.js"></script>
+</head>
+<body>
+<div id="marbling-tools">
+    <ul>
+        <input type="color" class="color-picker" value="#FFFFFF">
+        <li class="drop-tool">Drop</li>
+        <li class="tine-tool">Tine</li>
+        <li class="swirl-tool">Swirl</li>
+    </ul>
+</div>
+
+<script>
+    let ui = new MarblingUI(document.getElementById("marbling-tools"));
+    let scene = new MarblingRenderer();
+    ui.delegate = scene;
+    scene.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(scene.domElement);
+</script>
+</body>
+</html>
