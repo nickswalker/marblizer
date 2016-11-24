@@ -4,26 +4,58 @@ body {
 }
 canvas { width: 100%; height: 100% }
 
+.marbling-pane {
+    background-color: rgba(255,255,255,0.8);
+}
+.marbling-pane ul {
+    height: 25px;
+}
+.marbling-pane li {
+    vertical-align: middle;
+}
+
 #marbling-tools {
     position: absolute;
-    background-color: rgba(255,255,255,0.8);
     right: 0;
     bottom: 0;
 
 }
+#marbling-colors {
+    position: absolute;;
+    left: 0;
+    bottom: 0;
+}
 
-#marbling-tools ul {
+.marbling-pane ul {
     margin: 0;
     padding: 10px;
 }
 
-#marbling-tools li {
+.marbling-pane li {
     list-style: none;
     display: inline-block;
     margin: 0 5px;
 }
 
-#marbling-tools .active {
-    font-weight: bold;
+#marbling-tools li {
+    border: 2px solid transparent;
+    padding: 3px;
+}
+#marbling-tools li:hover {
+    border: 2px solid gray;
+    background-color: rgba(0,0,0, 0.1);
 }
 
+#marbling-tools .active {
+    border: 2px solid rgb(72, 151, 170);
+    background-color: rgba(72, 151, 170, 0.6);
+}
+
+li[class^="swatch"] {
+    width: 50px;
+    height: 100%;
+}
+
+input {
+    vertical-align: top;
+}

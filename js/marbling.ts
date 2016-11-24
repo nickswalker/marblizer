@@ -1,23 +1,7 @@
 /// <reference path=".d.ts"/>
 /// <reference path="ui.ts"/>
 /// <reference path="vector.ts"/>
-class Color {
-    readonly r: number;
-    readonly g: number;
-    readonly b: number;
-    readonly a: number;
-    constructor(r: number, g: number, b: number, a:number=1.0) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
-    }
-    toFillStyle() {
-        return "rgb(" + this.r + ", " + this.g + ", " + this.b + ")";
-    }
-}
-
-
+/// <reference path="color.ts"/>
 
 class Drop {
     points: Array<Vec2>;
@@ -80,11 +64,11 @@ class MarblingRenderer {
     }
 
     draw() {
-        this.context.fillStyle = this.baseColor.toFillStyle();
+        this.context.fillStyle = this.baseColor.toRGBString();
         this.context.fillRect(0,0,this.domElement.width, this.domElement.height);
         for (let i = 0; i < this.drops.length; i ++) {
             const drop = this.drops[i];
-            this.context.fillStyle = drop.color.toFillStyle();
+            this.context.fillStyle = drop.color.toRGBString();
             this.context.fill(drop.getPath());
         }
         window.requestAnimationFrame(this.draw.bind(this));

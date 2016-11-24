@@ -7,11 +7,23 @@
     <script src="js/marbling.js"></script>
     <script src="js/vector.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/color.js"></script>
 </head>
 <body>
-<div id="marbling-tools">
+
+<div id="marbling-colors" class="marbling-pane">
     <ul>
         <input type="color" class="color-picker" value="#FFFFFF">
+        <li class="swatch-0"></li>
+        <li class="swatch-1"></li>
+        <li class="swatch-2"></li>
+        <li class="swatch-3"></li>
+        <li class="swatch-4"></li>
+        <li class="next-color-set">-></li>
+    </ul>
+</div>
+<div id="marbling-tools" class="marbling-pane">
+    <ul>
         <li class="drop-tool">Drop</li>
         <li class="tine-tool">Tine</li>
         <li class="swirl-tool">Swirl</li>
@@ -20,7 +32,7 @@
 </div>
 
 <script>
-    let ui = new MarblingUI(document.getElementById("marbling-tools"));
+    let ui = new MarblingUI(document.getElementById("marbling-tools"), document.getElementById("marbling-colors"));
     let scene = new MarblingRenderer();
     ui.delegate = scene;
     scene.setSize(window.innerWidth, window.innerHeight);
