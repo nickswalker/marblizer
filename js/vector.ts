@@ -7,12 +7,6 @@ class Vec2 {
         this.y = y;
     }
 
-    scale(factor: number) {
-        this.x *= factor;
-        this.y *= factor;
-        // For chainability
-        return this;
-    }
 
     sub(other: Vec2) {
         return new Vec2(this.x - other.x, this.y - other.y);
@@ -21,10 +15,36 @@ class Vec2 {
     add(other: Vec2) {
         return new Vec2(this.x + other.x, this.y + other.y);
     }
+
+    dot(other: Vec2) {
+        return new Vec2(this.x * other.x, this.y * other.y);
+    }
+
+    copy() {
+        return new Vec2(this.x, this.y);
+    }
+
     // Accumulate
     acc(other: Vec2) {
         this.x += other.x;
         this.y += other.y;
+    }
+
+    scale(factor: number) {
+        this.x *= factor;
+        this.y *= factor;
+        // For chainability
+        return this;
+    }
+
+    norm() {
+        const l = this.length();
+        return new Vec2(this.x / l, this.y / l);
+    }
+
+
+    perp() {
+        return new Vec2(this.y, -1 * this.x);
     }
 
     length() {

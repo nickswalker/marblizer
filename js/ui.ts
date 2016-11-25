@@ -76,6 +76,10 @@ class ToolsPane {
         
         this.resetButton = <HTMLElement>container.querySelector(".reset");
         this.resetButton.onclick = this.clickedReset.bind(this);
+
+        // Set default tool
+        this.currentTool = Tool.Drop;
+        this.toolToButtonMapping[this.currentTool.valueOf()].className += " active";
     }
 
 

@@ -48,9 +48,11 @@ class MarblingRenderer {
     domElement: HTMLCanvasElement;
     drops: Drop[] = [];
     context: CanvasRenderingContext2D;
-    baseColor: Color = new Color(199,49,5);
-    currentTool: Tool = Tool.Tine;
+    baseColor: Color = new Color(220,210,210);
+    currentTool: Tool = Tool.Drop;
     currentColor: Color = new Color(255,255,255);
+
+    lastMouseCoord: Vec2 = new Vec2(-1,-1);
     constructor() {
         this.domElement = document.createElement("canvas");
         this.domElement.onmousedown = this.mouseDown.bind(this);
@@ -83,7 +85,9 @@ class MarblingRenderer {
         const y = e.offsetY;
         switch (this.currentTool) {
             case Tool.Drop:
-                break
+                break;
+            case Tool.Tine:
+                this.lastMouseCoord = new Vec2(x,y);
         }
     }
     private mouseUp(e: MouseEvent) {
@@ -91,9 +95,11 @@ class MarblingRenderer {
         const y = e.offsetY;
         switch (this.currentTool) {
             case Tool.Drop:
-
-                this.applyDrop(this.currentColor, 10,x, y);
+                this.applyDrop(this.currentColor, 50,x, y);
                 break;
+            case Tool.Tine:
+                const currentCoord = new Vec2(x,y);
+                this.applyTine(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord));
         }
     }
 
@@ -104,7 +110,6 @@ class MarblingRenderer {
         for (let d = 0; d < this.drops.length; d++) {
             let drop = this.drops[d];
             for (let p = 0; p < drop.points.length; p++) {
-
                 const oldPoint = drop.points[p];
                 const pointDir = oldPoint.sub(center);
                 const factor = Math.sqrt(1 + (radius2 /Math.pow(pointDir.length(),2)));
@@ -116,6 +121,27 @@ class MarblingRenderer {
         }
 
         this.drops.push(newDrop);
+    }
+
+    private applyTine(origin: Vec2, line: Vec2) {
+        if (line.length() < 0.001) {
+            return;
+        }
+        const unitLine = line.norm();
+        const u = Math.pow(0.5, 1.0/8.0);
+        const z = 20.0;
+        // Unit normal to the tine line
+        const norm = line.perp().norm();
+        for (let d = 0; d < this.drops.length; d++) {
+            let drop = this.drops[d];
+            for (let p = 0; p < drop.points.length; p++) {
+                const oldPoint = drop.points[p];
+                const d = oldPoint.sub(origin).dot(norm).length();
+                const offset = unitLine.copy().scale(z * Math.pow(u,d));
+                drop.points[p] = oldPoint.add(offset);
+            }
+            drop.makeDirty();
+        }
     }
 
     toolDidChange(tool: Tool) {

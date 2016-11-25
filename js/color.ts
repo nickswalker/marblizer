@@ -20,15 +20,15 @@ class Color {
             return hex.length == 1 ? "0" + hex : hex;
         }
 
-        return "#" + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b);;
+        return "#" + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b);
     }
 
     static withRGB(hex: string) {
         const result = /^rgb?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.exec(hex);
         if (result) {
-            const r = parseInt(result[1], 16);
-            const g = parseInt(result[2], 16);
-            const b = parseInt(result[3], 16);
+            const r = parseInt(result[1]);
+            const g = parseInt(result[2]);
+            const b = parseInt(result[3]);
 
             return new Color(r,g,b);
         }
@@ -50,4 +50,5 @@ class Color {
     }
 }
 
-const colorSets = [[Color.withHex("27372d"), Color.withHex("a98918"), Color.withHex("891920"), Color.withHex("d0b9a0"), Color.withHex("2b231b")]]
+const colorSets = [[Color.withHex("27372d"), Color.withHex("a98918"), Color.withHex("891920"), Color.withHex("d0b9a0"), Color.withHex("2b231b")],
+                    [Color.withHex("FFFFFF"),Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]]
