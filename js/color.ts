@@ -1,4 +1,3 @@
-
 class Color {
     readonly r: number;
     readonly g: number;
@@ -51,4 +50,4 @@ class Color {
 }
 
 const colorSets = [[Color.withHex("27372d"), Color.withHex("a98918"), Color.withHex("891920"), Color.withHex("d0b9a0"), Color.withHex("2b231b")],
-                    [Color.withHex("FFFFFF"),Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]]
+    [Color.withHex("FFFFFF"), Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]];;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,7 +1,7 @@
-/// <reference path=".d.ts"/>
-/// <reference path="ui.ts"/>
-/// <reference path="vector.ts"/>
-/// <reference path="color.ts"/>
+///<reference path="vector.ts"/>
+///<reference path="color.ts"/>
+///<reference path=".d.ts"/>
+///<reference path="ui/panes.ts"/>
 
 class Drop {
     points: Array<Vec2>;
@@ -86,7 +86,7 @@ class MarblingRenderer {
         switch (this.currentTool) {
             case Tool.Drop:
                 break;
-            case Tool.Tine:
+            case Tool.TineLine:
                 this.lastMouseCoord = new Vec2(x,y);
         }
     }
@@ -97,7 +97,7 @@ class MarblingRenderer {
             case Tool.Drop:
                 this.applyDrop(this.currentColor, 50,x, y);
                 break;
-            case Tool.Tine:
+            case Tool.TineLine:
                 const currentCoord = new Vec2(x,y);
                 this.applyTine(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord));
         }

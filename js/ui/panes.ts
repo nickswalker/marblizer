@@ -1,4 +1,3 @@
-
 class ColorPane {
     container: HTMLElement;
     colorPicker: HTMLInputElement;
@@ -11,7 +10,7 @@ class ColorPane {
         this.container = container;
         this.colorPicker = <HTMLInputElement>container.querySelector("input.color-picker");
         this.nextColorSetButton = <HTMLElement>container.querySelector(".next-color-set");
-        for(let i = 0; i < 5; i++) {
+        for (let i = 0; i < 5; i++) {
             const selector = ".swatch-" + i;
             const element = <HTMLElement>container.querySelector(selector);
             element.onclick = this.swatchClicked.bind(this);
@@ -41,7 +40,7 @@ class ColorPane {
         this.colorSetIndex += 1;
         this.colorSetIndex %= colorSets.length;
         const currentSet = colorSets[this.colorSetIndex];
-        for(let i = 0; i < 5; i++) {
+        for (let i = 0; i < 5; i++) {
             this.swatches[i].style.backgroundColor = currentSet[i].toRGBString();
         }
 
@@ -49,9 +48,11 @@ class ColorPane {
 }
 
 enum Tool {
-    Tine = 1,
-    Drop = 2,
-    Swirl = 3
+    Drop = 0,
+    TineLine = 1,
+    WavyLine = 2,
+    CircularTine = 3,
+    Vortex = 4
 }
 
 class ToolsPane {
@@ -67,13 +68,11 @@ class ToolsPane {
         const dropButton = <HTMLElement>container.querySelector(".drop-tool");
         const swirlButton = <HTMLElement>container.querySelector(".swirl-tool");
 
-        this.toolToButtonMapping = {1: tineButton,
-            2: dropButton,
-            3: swirlButton};
-        for (let key in this.toolToButtonMapping) {
-            this.toolToButtonMapping[key].onclick = this.toolClicked.bind(this);
-        }
-        
+        this.toolToButtonMapping = {};
+        this.toolToButtonMapping[Tool.Drop] = dropButton;
+        this.toolToButtonMapping[Tool.TineLine] = tineButton;
+        this.toolToButtonMapping[Tool.Vortex] = swirlButton;
+
         this.resetButton = <HTMLElement>container.querySelector(".reset");
         this.resetButton.onclick = this.clickedReset.bind(this);
 
@@ -107,26 +106,46 @@ class ToolsPane {
 
 }
 
-interface MarblingUIDelegate {
-    toolDidChange(tool: Tool)
-    colorDidChange(color: Color)
-    didRequestReset()
-}
+class TextInputPane {
+    element: HTMLElement;
+    callback: Function;
+    active: boolean;
+    private textArea: HTMLTextAreaElement;
+    private confirmButton: HTMLElement;
+    private dismissButton: HTMLElement;
 
-class MarblingUI {
-    toolsPane: ToolsPane;
-    colorPane: ColorPane;
-    _delegate: MarblingUIDelegate;
+    constructor(element: HTMLElement) {
+        this.element = element;
+        this.textArea = <HTMLTextAreaElement>element.querySelector("textarea");
+        this.dismissButton = <HTMLElement>element.querySelector(".cancel");
+        this.confirmButton = <HTMLElement>element.querySelector(".confirm");
 
-    constructor(toolsContainer: HTMLElement, colorContainer: HTMLElement) {
-        this.toolsPane = new ToolsPane(toolsContainer);
-        this.colorPane = new ColorPane(colorContainer);
+        this.confirmButton.onclick = this.didClickConfirm.bind(this);
+        this.dismissButton.onclick = this.didClickDismiss.bind(this);
     }
 
-    set delegate(delegate: MarblingUIDelegate) {
-        this._delegate = delegate;
-        this.toolsPane.delegate = delegate;
-        this.colorPane.delegate = delegate;
+    getInput(callback: Function) {
+        this.callback = callback;
+        this.show();
     }
 
+    private didClickConfirm(event: MouseEvent) {
+        this.hide();
+        this.callback(this.textArea.value);
+    }
+
+    private didClickDismiss(event: MouseEvent) {
+        this.hide();
+        this.callback("");
+    }
+
+    hide() {
+        this.active = false;
+        this.element.style.visibility = "hidden";
+    }
+
+    show() {
+        this.active = true;
+        this.element.style.visibility = "initial";
+    }
 }

@@ -60,3 +60,20 @@ li[class^="swatch"] {
 input {
     vertical-align: top;
 }
+
+/* Operations input*/
+
+#operations-input {
+    position: absolute;
+    top: 20px;
+    background-color: white;
+    visibility: hidden;
+}
+
+#operations-input textarea {
+    font-family: monospace;
+}
+
+#operations-input .cancel {
+
+}
