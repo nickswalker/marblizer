@@ -1,8 +1,20 @@
 ///<reference path="ui.ts"/>
 ///<reference path="panes.ts"/>
 ///<reference path="../operation.ts"/>
+
+enum KeyboardShortcut {
+    Plus = 0,
+    Minus = 1,
+    S = 2,
+    R = 3
+}
+
+interface MarblingKeyboardUIDelegate {
+    didPressShortcut(shortcut: KeyboardShortcut)
+}
+
 class MarblingKeyboardUI {
-    delegate: MarblingUIDelegate;
+    keyboardDelegate: MarblingKeyboardUIDelegate;
     operationsInput: TextInputPane;
 
     constructor() {
@@ -16,17 +28,22 @@ class MarblingKeyboardUI {
         }
         switch (event.key) {
             case "s":
-                this.operationsInput.getInput(this.didEnterInput.bind(this));
-                return
+                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
+                return;
+            case "+":
+                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.Plus);
+                return;
+            case "-":
+                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.Minus);
+                return;
+            case "r":
+                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.R);
+                return;
+
+
         }
     }
 
-    private didEnterInput(input: string) {
-        const parsed = <[Operation]>OperationsParser.parse(input);
-        if (parsed != null && parsed.length > 0) {
-            this.delegate.applyOperations(parsed);
-        }
 
-    }
 
 }

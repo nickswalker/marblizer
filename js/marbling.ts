@@ -49,14 +49,10 @@ class MarblingRenderer {
     drops: Drop[] = [];
     context: CanvasRenderingContext2D;
     baseColor: Color = new Color(220,210,210);
-    currentTool: Tool = Tool.Drop;
-    currentColor: Color = new Color(255,255,255);
 
-    lastMouseCoord: Vec2 = new Vec2(-1,-1);
-    constructor() {
+    constructor(container: HTMLElement) {
         this.domElement = document.createElement("canvas");
-        this.domElement.onmousedown = this.mouseDown.bind(this);
-        this.domElement.onmouseup = this.mouseUp.bind(this);
+        container.appendChild(this.domElement);
         this.context = this.domElement.getContext("2d");
         window.requestAnimationFrame(this.draw.bind(this));
     }
@@ -80,28 +76,6 @@ class MarblingRenderer {
         this.drops = []
     }
 
-    private mouseDown(e: MouseEvent) {
-        const x = e.offsetX;
-        const y = e.offsetY;
-        switch (this.currentTool) {
-            case Tool.Drop:
-                break;
-            case Tool.TineLine:
-                this.lastMouseCoord = new Vec2(x,y);
-        }
-    }
-    private mouseUp(e: MouseEvent) {
-        const x = e.offsetX;
-        const y = e.offsetY;
-        switch (this.currentTool) {
-            case Tool.Drop:
-                this.applyDrop(this.currentColor, 50,x, y);
-                break;
-            case Tool.TineLine:
-                const currentCoord = new Vec2(x,y);
-                this.applyTine(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord));
-        }
-    }
 
     private applyDrop(color: Color, radius: number, centerX: number, centerY: number) {
         let newDrop = new Drop(color,radius,centerX,centerY);
@@ -144,14 +118,5 @@ class MarblingRenderer {
         }
     }
 
-    toolDidChange(tool: Tool) {
-        this.currentTool = tool;
-    }
-    colorDidChange(color: Color) {
-        this.currentColor = color;
-    }
-    didRequestReset() {
-        this.reset();
-    }
 }
 

@@ -45,6 +45,10 @@ class ColorPane {
         }
 
     }
+
+    get currentColor() {
+        return Color.withHex(this.colorPicker.value);
+    }
 }
 
 enum Tool {
@@ -61,6 +65,7 @@ class ToolsPane {
     toolToButtonMapping: {[key: number]: HTMLElement};
     delegate: MarblingUIDelegate;
     currentTool: Tool;
+    toolParameters: {[key: number]: number};
 
     constructor(container: HTMLElement) {
         this.container = container;
@@ -72,6 +77,8 @@ class ToolsPane {
         this.toolToButtonMapping[Tool.Drop] = dropButton;
         this.toolToButtonMapping[Tool.TineLine] = tineButton;
         this.toolToButtonMapping[Tool.Vortex] = swirlButton;
+        this.toolParameters = {};
+        this.toolParameters[Tool.Drop] = 50;
 
         this.resetButton = <HTMLElement>container.querySelector(".reset");
         this.resetButton.onclick = this.clickedReset.bind(this);
@@ -95,13 +102,20 @@ class ToolsPane {
         }
 
         this.toolToButtonMapping[this.currentTool.valueOf()].className += " active";
-        this.delegate.toolDidChange(this.currentTool);
     }
 
     private clickedReset(event: MouseEvent) {
         if (confirm("Are you sure you want to reset?")) {
             this.delegate.didRequestReset();
         }
+    }
+
+    increaseToolParameter(tool: Tool) {
+        this.toolParameters[tool] += 5;
+    }
+
+    decreaseToolParameter(tool: Tool) {
+        this.toolParameters[tool] -= 5;
     }
 
 }

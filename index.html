@@ -13,6 +13,9 @@
     <script src="js/color.js"></script>
 </head>
 <body>
+<div id="workspace">
+
+</div>
 
 <div id="operations-input">
     <textarea title="operations-input"></textarea>
@@ -41,11 +44,11 @@
 </div>
 
 <script>
-    let ui = new MarblingUI(document.getElementById("marbling-tools"), document.getElementById("marbling-colors"), document.getElementById("operations-input"));
-    let scene = new MarblingRenderer();
+    let workspace = document.getElementById("workspace");
+    let ui = new MarblingUI(workspace, document.getElementById("marbling-tools"), document.getElementById("marbling-colors"), document.getElementById("operations-input"));
+    let scene = new MarblingRenderer(workspace);
     ui.delegate = scene;
     scene.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(scene.domElement);
 </script>
 </body>
 </html>
