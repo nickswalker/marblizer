@@ -1,6 +1,6 @@
 ///<reference path="ui.ts"/>
 ///<reference path="panes.ts"/>
-///<reference path="../operation.ts"/>
+///<reference path="../operations/parsing.ts"/>
 
 enum KeyboardShortcut {
     Plus = 0,

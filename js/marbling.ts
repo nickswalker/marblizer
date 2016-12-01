@@ -1,5 +1,5 @@
-///<reference path="vector.ts"/>
-///<reference path="color.ts"/>
+///<reference path="models/vector.ts"/>
+///<reference path="models/color.ts"/>
 ///<reference path=".d.ts"/>
 ///<reference path="ui/panes.ts"/>
 
