@@ -26,14 +26,12 @@ class ColorPane {
 
     private colorChanged(event: Event) {
         const newColor = Color.withHex(this.colorPicker.value);
-        this.delegate.colorDidChange(newColor);
     }
 
     private swatchClicked(event: MouseEvent) {
         const target = <HTMLElement>event.target;
         const newColor = Color.withRGB(target.style.backgroundColor);
         this.colorPicker.value = newColor.toHexString();
-        this.delegate.colorDidChange(newColor);
     }
 
     private cycleColorSet() {
@@ -69,13 +67,17 @@ class ToolsPane {
 
     constructor(container: HTMLElement) {
         this.container = container;
-        const tineButton = <HTMLElement>container.querySelector(".tine-tool");
         const dropButton = <HTMLElement>container.querySelector(".drop-tool");
-        const swirlButton = <HTMLElement>container.querySelector(".swirl-tool");
+        const tineButton = <HTMLElement>container.querySelector(".tine-tool");
+        const wavyButton = <HTMLElement>container.querySelector(".wavy-tine-tool");
+        const circularButton = <HTMLElement>container.querySelector(".circular-tine-tool");
+        const swirlButton = <HTMLElement>container.querySelector(".vortex-tool");
 
         this.toolToButtonMapping = {};
         this.toolToButtonMapping[Tool.Drop] = dropButton;
         this.toolToButtonMapping[Tool.TineLine] = tineButton;
+        this.toolToButtonMapping[Tool.WavyLine] = wavyButton;
+        this.toolToButtonMapping[Tool.CircularTine] = circularButton;
         this.toolToButtonMapping[Tool.Vortex] = swirlButton;
         this.toolParameters = {};
         this.toolParameters[Tool.Drop] = 50;
@@ -86,6 +88,9 @@ class ToolsPane {
         // Set default tool
         this.currentTool = Tool.Drop;
         this.toolToButtonMapping[this.currentTool.valueOf()].className += " active";
+        for (const key in this.toolToButtonMapping) {
+            this.toolToButtonMapping[key].onclick = this.toolClicked.bind(this);
+        }
     }
 
 
@@ -106,7 +111,7 @@ class ToolsPane {
 
     private clickedReset(event: MouseEvent) {
         if (confirm("Are you sure you want to reset?")) {
-            this.delegate.didRequestReset();
+            this.delegate.reset();
         }
     }
 

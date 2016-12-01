@@ -22,6 +22,19 @@ class Color {
         return "#" + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b);
     }
 
+    withAlpha(alpha: number) {
+        return new Color(this.r, this.g, this.b, alpha);
+    }
+
+    toHexStringWithAlpha() {
+        function componentToHex(c) {
+            let hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        return "#" + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b) + componentToHex(this.a);
+    }
+
     static withRGB(hex: string) {
         const result = /^rgb?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.exec(hex);
         if (result) {
@@ -50,4 +63,5 @@ class Color {
 }
 
 const colorSets = [[Color.withHex("27372d"), Color.withHex("a98918"), Color.withHex("891920"), Color.withHex("d0b9a0"), Color.withHex("2b231b")],
-    [Color.withHex("FFFFFF"), Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]];;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    [Color.withHex("FFFFFF"), Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]];
+

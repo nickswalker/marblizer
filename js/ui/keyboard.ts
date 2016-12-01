@@ -15,7 +15,7 @@ interface MarblingKeyboardUIDelegate {
 
 class MarblingKeyboardUI {
     keyboardDelegate: MarblingKeyboardUIDelegate;
-    operationsInput: TextInputPane;
+    acceptingNewKeys: boolean = true;
 
     constructor() {
         window.onkeypress = this.keyWasPressed.bind(this);
@@ -23,7 +23,7 @@ class MarblingKeyboardUI {
     }
 
     keyWasPressed(event: KeyboardEvent) {
-        if (this.operationsInput.active) {
+        if (this.acceptingNewKeys) {
             return;
         }
         switch (event.key) {

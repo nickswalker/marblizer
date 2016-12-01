@@ -1,4 +1,5 @@
 ///<reference path="../marbling.ts"/>
+///<reference path="cursor_overlay.ts"/>
 interface MarblingUIDelegate {
     reset();
     applyOperations(operations: [Operation]);
@@ -6,12 +7,15 @@ interface MarblingUIDelegate {
 }
 
 class MarblingUI {
+
+    private vectorFieldBuffer: HTMLCanvasElement;
     toolsPane: ToolsPane;
     colorPane: ColorPane;
     _delegate: MarblingUIDelegate;
     private lastMouseCoord: Vec2;
     private textPane: TextInputPane;
     private keyboardManager: MarblingKeyboardUI;
+    private cursorOverlay: CursorOverlay;
 
     constructor(container: HTMLElement, toolsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
@@ -21,14 +25,14 @@ class MarblingUI {
         this.keyboardManager.keyboardDelegate = this.didPressShortcut.bind(this);
         container.onmousedown = this.mouseDown.bind(this);
         container.onmouseup = this.mouseUp.bind(this);
-        container.onmousemove = this.mouseMove.bind(this);
-
+        this.cursorOverlay = new CursorOverlay(container);
     }
 
     private didEnterInput(input: string) {
+        this.keyboardManager.acceptingNewKeys = true;
         const parsed = <[Operation]>OperationsParser.parse(input);
         if (parsed != null && parsed.length > 0) {
-            this.delegate.applyOperations(parsed);
+            this._delegate.applyOperations(parsed);
         }
 
     }
@@ -39,9 +43,14 @@ class MarblingUI {
         this.colorPane.delegate = delegate;
     }
 
+    setSize(width: number, height: number) {
+        this.cursorOverlay.setSize(width, height);
+    }
+
     private didPressShortcut(shortcut: KeyboardShortcut) {
         switch (shortcut) {
             case KeyboardShortcut.S:
+                this.keyboardManager.acceptingNewKeys = false;
                 this.textPane.getInput(this.didEnterInput.bind(this));
                 return;
             case KeyboardShortcut.Plus:
@@ -52,14 +61,9 @@ class MarblingUI {
                 return;
             case KeyboardShortcut.R:
                 if (confirm("Clear the composition?")) {
-                    this.delegate.reset();
+                    this._delegate.reset();
                 }
         }
-    }
-
-    private mouseMove(e: MouseEvent) {
-        const x = e.offsetX;
-        const y = e.offsetY;
     }
 
     private mouseDown(e: MouseEvent) {
@@ -79,7 +83,7 @@ class MarblingUI {
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
                 const operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop], this.colorPane.currentColor);
-                this.delegate.applyOperations([operation]);
+                this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine:
                 const currentCoord = new Vec2(x, y);

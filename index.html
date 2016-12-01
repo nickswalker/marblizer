@@ -10,6 +10,7 @@
     <script src="js/ui/ui.js"></script>
     <script src="js/ui/panes.js"></script>
     <script src="js/ui/keyboard.js"></script>
+    <script src="js/ui/cursor_overlay.js"></script>
     <script src="js/color.js"></script>
 </head>
 <body>
@@ -36,9 +37,11 @@
 </div>
 <div id="marbling-tools" class="marbling-pane">
     <ul>
-        <li class="drop-tool">Drop</li>
-        <li class="tine-tool">Tine</li>
-        <li class="swirl-tool">Swirl</li>
+        <li class="drop-tool tool">Drop</li>
+        <li class="tine-tool tool">Line</li>
+        <li class="wavy-tine-tool tool">Wavy</li>
+        <li class="circular-tine-tool tool">Circular</li>
+        <li class="vortex-tool tool">Vortex</li>
         <li class="reset">Reset</li>
     </ul>
 </div>
@@ -49,6 +52,13 @@
     let scene = new MarblingRenderer(workspace);
     ui.delegate = scene;
     scene.setSize(window.innerWidth, window.innerHeight);
+    ui.setSize(window.innerWidth, window.innerHeight);
+
+    window.onresize = function (event) {
+        console.log(window.innerWidth);
+        scene.setSize(window.innerWidth, window.innerHeight);
+        ui.setSize(window.innerWidth, window.innerHeight);
+    }
 </script>
 </body>
 </html>

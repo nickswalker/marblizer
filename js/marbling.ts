@@ -52,10 +52,11 @@ class MarblingRenderer {
 
     constructor(container: HTMLElement) {
         this.domElement = document.createElement("canvas");
-        container.appendChild(this.domElement);
+        container.insertBefore(this.domElement, container.firstChild);
         this.context = this.domElement.getContext("2d");
         window.requestAnimationFrame(this.draw.bind(this));
     }
+
     setSize(width: number, height: number) {
         this.domElement.height = height;
         this.domElement.width = width;
@@ -69,6 +70,7 @@ class MarblingRenderer {
             this.context.fillStyle = drop.color.toRGBString();
             this.context.fill(drop.getPath());
         }
+
         window.requestAnimationFrame(this.draw.bind(this));
     }
 
@@ -115,6 +117,15 @@ class MarblingRenderer {
                 drop.points[p] = oldPoint.add(offset);
             }
             drop.makeDirty();
+        }
+    }
+
+    applyOperations(operations: [Operation]) {
+        for (let i = 0; i < operations.length; i++) {
+            const operation = operations[i];
+            if (operation instanceof InkDropOperation) {
+                this.applyDrop(operation.color, operation.radius, operation.position.x, operation.position.y)
+            }
         }
     }
 

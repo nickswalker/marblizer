@@ -18,9 +18,9 @@ class ChangeBaseColorOperation {
 }
 
 class InkDropOperation extends Operation {
-    private position;
-    private radius;
-    private color;
+    position: Vec2;
+    radius: number;
+    color: Color;
     private static regex = RegExp("//^d(?:rop)? " + vec2Regex + positiveFloatRegex + colorRegex + "$/i");
 
     constructor(position: Vec2, radius: number, color: Color) {
