@@ -19,6 +19,8 @@ class MarblingUI {
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
 
+    private previewOperation: Operation = null;
+
     constructor(container: HTMLElement, toolsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
@@ -27,6 +29,7 @@ class MarblingUI {
         this.keyboardManager.keyboardDelegate = this;
         container.onmousedown = this.mouseDown.bind(this);
         container.onmouseup = this.mouseUp.bind(this);
+        container.addEventListener("mousemove", this.mouseMove.bind(this));
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
@@ -97,8 +100,26 @@ class MarblingUI {
                 const currentCoord = new Vec2(x, y);
                 operation = new LineTineOperation(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord), 1, 0);
                 this._delegate.applyOperations([operation]);
+                this.lastMouseCoord = null;
                 break;
 
+        }
+    }
+
+    private mouseMove(e: MouseEvent) {
+        const x = e.offsetX;
+        const y = e.offsetY;
+        const mouseCoords = new Vec2(x, y);
+        switch (this.toolsPane.currentTool) {
+            case Tool.Drop:
+                this.previewOperation = new InkDropOperation(mouseCoords, 10, null);
+                this.vectorFieldOverlay.vectorField = this.previewOperation;
+                break;
+            case Tool.TineLine:
+                if (this.lastMouseCoord != null) {
+                    this.previewOperation = new LineTineOperation(mouseCoords, mouseCoords.sub(this.lastMouseCoord), 1, 1);;;;;
+                    this.vectorFieldOverlay.vectorField = this.previewOperation;
+                }
         }
     }
 

@@ -48,7 +48,7 @@ class ChangeBaseColorOperation {
     }
 }
 
-class InkDropOperation extends Operation {
+class InkDropOperation extends Operation implements VectorField {
     readonly position: Vec2;
     readonly radius: number;
     readonly color: Color;
@@ -73,16 +73,13 @@ class InkDropOperation extends Operation {
 
     apply(renderer: MarblingRenderer) {
         let newDrop = new Drop(this.color, this.radius, this.position.x, this.position.y);
-        const radius2 = Math.pow(this.radius, 2);
+
         for (let d = 0; d < renderer.drops.length; d++) {
             let drop = renderer.drops[d];
             for (let p = 0; p < drop.points.length; p++) {
                 const oldPoint = drop.points[p];
-                const pointDir = oldPoint.sub(this.position);
-                const factor = Math.sqrt(1 + (radius2 / Math.pow(pointDir.length(), 2)));
-
-                const newPoint = this.position.add(pointDir.scale(factor));
-                drop.points[p] = newPoint;
+                const offset = this.atPoint(oldPoint);
+                drop.points[p] = oldPoint.add(offset);
             }
             drop.makeDirty();
         }
@@ -90,9 +87,20 @@ class InkDropOperation extends Operation {
         renderer.drops.push(newDrop);
     }
 
+
+    atPoint(point: Vec2): Vec2 {
+        const radius2 = Math.pow(this.radius, 2);
+        const pointDir = point.sub(this.position);
+        const factor = Math.sqrt(1 + (radius2 / Math.pow(pointDir.length(), 2)));
+
+        const newPoint = this.position.add(pointDir.scale(factor));
+        return newPoint.sub(point);
+
+    }
+
 }
 
-class LineTineOperation extends Operation {
+class LineTineOperation extends Operation implements VectorField {
     readonly direction: Vec2;
     readonly origin: Vec2;
     readonly numTines: number;
@@ -122,21 +130,26 @@ class LineTineOperation extends Operation {
         if (this.direction.length() < 0.001) {
             return;
         }
+
+        for (let d = 0; d < renderer.drops.length; d++) {
+            let drop = renderer.drops[d];
+            for (let p = 0; p < drop.points.length; p++) {
+                const oldPoint = drop.points[p];
+                const offset = this.atPoint(oldPoint);
+                drop.points[p] = oldPoint.add(offset);
+            }
+            drop.makeDirty();
+        }
+    }
+
+    atPoint(point: Vec2): Vec2 {
         const unitLine = this.direction.norm();
         const u = Math.pow(0.5, 1.0 / 8.0);
         const z = 20.0;
         // Unit normal to the tine line
         const norm = this.direction.perp().norm();
-        for (let d = 0; d < renderer.drops.length; d++) {
-            let drop = renderer.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const d = oldPoint.sub(this.origin).dot(norm).length();
-                const offset = unitLine.copy().scale(z * Math.pow(u, d));
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
+        const d = point.sub(this.origin).dot(norm).length();
+        return unitLine.copy().scale(z * Math.pow(u, d));
     }
 
 }
