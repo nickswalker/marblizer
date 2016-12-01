@@ -1,5 +1,7 @@
 ///<reference path="../marbling.ts"/>
 ///<reference path="cursor_overlay.ts"/>
+///<reference path="keyboard.ts"/>
+///<reference path="vector_field_overlay.ts"/>
 interface MarblingUIDelegate {
     reset();
     applyOperations(operations: [Operation]);
@@ -8,7 +10,6 @@ interface MarblingUIDelegate {
 
 class MarblingUI {
 
-    private vectorFieldBuffer: HTMLCanvasElement;
     toolsPane: ToolsPane;
     colorPane: ColorPane;
     _delegate: MarblingUIDelegate;
@@ -16,6 +17,7 @@ class MarblingUI {
     private textPane: TextInputPane;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
+    private vectorFieldOverlay: VectorFieldOverlay;
 
     constructor(container: HTMLElement, toolsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
@@ -26,6 +28,7 @@ class MarblingUI {
         container.onmousedown = this.mouseDown.bind(this);
         container.onmouseup = this.mouseUp.bind(this);
         this.cursorOverlay = new CursorOverlay(container);
+        this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
 
     private didEnterInput(input: string) {
@@ -45,6 +48,7 @@ class MarblingUI {
 
     setSize(width: number, height: number) {
         this.cursorOverlay.setSize(width, height);
+        this.vectorFieldOverlay.setSize(width, height);
     }
 
     private didPressShortcut(shortcut: KeyboardShortcut) {
@@ -80,14 +84,18 @@ class MarblingUI {
     private mouseUp(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
+        let operation: Operation;;;;;;;;;;;;;;;;;;
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
-                const operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop], this.colorPane.currentColor);
+                operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop], this.colorPane.currentColor);
                 this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine:
                 const currentCoord = new Vec2(x, y);
-                this.applyTine(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord));
+                operation = new LineTineOperation(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord), 1, 0);
+                this._delegate.applyOperations([operation]);
+                break;
+
         }
     }
 

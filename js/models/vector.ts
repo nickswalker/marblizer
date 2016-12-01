@@ -7,7 +7,6 @@ class Vec2 {
         this.y = y;
     }
 
-
     sub(other: Vec2) {
         return new Vec2(this.x - other.x, this.y - other.y);
     }
@@ -49,5 +48,9 @@ class Vec2 {
 
     length() {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    }
+
+    angle() {
+        return Math.atan2(this.y, this.x);
     }
 }

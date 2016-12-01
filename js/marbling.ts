@@ -2,6 +2,7 @@
 ///<reference path="models/color.ts"/>
 ///<reference path=".d.ts"/>
 ///<reference path="ui/panes.ts"/>
+///<reference path="operations/operations.ts"/>
 
 class Drop {
     points: Array<Vec2>;
@@ -125,6 +126,8 @@ class MarblingRenderer {
             const operation = operations[i];
             if (operation instanceof InkDropOperation) {
                 this.applyDrop(operation.color, operation.radius, operation.position.x, operation.position.y)
+            } else if (operation instanceof LineTineOperation) {
+                this.applyTine(operation.origin, operation.direction)
             }
         }
     }
