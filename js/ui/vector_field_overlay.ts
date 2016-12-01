@@ -21,6 +21,7 @@ class VectorFieldOverlay {
     private overlayContext: CanvasRenderingContext2D;
     private spacing: number = 20;
     private arrowCanvas: HTMLCanvasElement;
+    private visible: boolean = false;
     vectorField: VectorField = new SinVectorField();
 
     constructor(container: HTMLElement) {
@@ -58,7 +59,9 @@ class VectorFieldOverlay {
             }
         }
         this.overlayContext.drawImage(this.arrowCanvas, 0, 0);
-        requestAnimationFrame(this.drawOverlay.bind(this));
+        if (this.visible) {
+            requestAnimationFrame(this.drawOverlay.bind(this));
+        }
     }
 
     private drawArrow() {
@@ -81,5 +84,16 @@ class VectorFieldOverlay {
     setSize(width: number, height: number) {
         this.overlayCanvas.width = width;
         this.overlayCanvas.height = height;
+    }
+
+    toggleVisibility() {
+        if (this.visible) {
+            this.visible = false;
+            this.overlayCanvas.style.visibility = "hidden";
+        } else {
+            this.visible = true;
+            this.overlayCanvas.style.visibility = "visible";
+            this.drawOverlay();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ///<reference path="../models/color.ts"/>
 ///<reference path="../models/vector.ts"/>
 abstract class Operation {
+    abstract apply(renderer: MarblingRenderer);
 }
 
 const positiveFloatRegex = "(\\d*(?:\\.\\d+)?)";
@@ -23,6 +24,10 @@ class ChangeInkColorOperation {
             const color = Color.withRGB(match[0]);
             return new ChangeBaseColorOperation(color);
         }
+    }
+
+    apply(renderer: MarblingRenderer) {
+
     }
 }
 
@@ -65,6 +70,26 @@ class InkDropOperation extends Operation {
             return new InkDropOperation(position, radius, color);
         }
     }
+
+    apply(renderer: MarblingRenderer) {
+        let newDrop = new Drop(this.color, this.radius, this.position.x, this.position.y);
+        const radius2 = Math.pow(this.radius, 2);
+        for (let d = 0; d < renderer.drops.length; d++) {
+            let drop = renderer.drops[d];
+            for (let p = 0; p < drop.points.length; p++) {
+                const oldPoint = drop.points[p];
+                const pointDir = oldPoint.sub(this.position);
+                const factor = Math.sqrt(1 + (radius2 / Math.pow(pointDir.length(), 2)));
+
+                const newPoint = this.position.add(pointDir.scale(factor));
+                drop.points[p] = newPoint;
+            }
+            drop.makeDirty();
+        }
+
+        renderer.drops.push(newDrop);
+    }
+
 }
 
 class LineTineOperation extends Operation {
@@ -92,4 +117,26 @@ class LineTineOperation extends Operation {
             return new LineTineOperation(origin, direction, numTines, interval);
         }
     }
+
+    apply(renderer: MarblingRenderer) {
+        if (this.direction.length() < 0.001) {
+            return;
+        }
+        const unitLine = this.direction.norm();
+        const u = Math.pow(0.5, 1.0 / 8.0);
+        const z = 20.0;
+        // Unit normal to the tine line
+        const norm = this.direction.perp().norm();
+        for (let d = 0; d < renderer.drops.length; d++) {
+            let drop = renderer.drops[d];
+            for (let p = 0; p < drop.points.length; p++) {
+                const oldPoint = drop.points[p];
+                const d = oldPoint.sub(this.origin).dot(norm).length();
+                const offset = unitLine.copy().scale(z * Math.pow(u, d));
+                drop.points[p] = oldPoint.add(offset);
+            }
+            drop.makeDirty();
+        }
+    }
+
 }

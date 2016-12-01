@@ -51,6 +51,8 @@ class MarblingRenderer {
     context: CanvasRenderingContext2D;
     baseColor: Color = new Color(220,210,210);
 
+    private history: [Operation];
+
     constructor(container: HTMLElement) {
         this.domElement = document.createElement("canvas");
         container.insertBefore(this.domElement, container.firstChild);
@@ -79,56 +81,10 @@ class MarblingRenderer {
         this.drops = []
     }
 
-
-    private applyDrop(color: Color, radius: number, centerX: number, centerY: number) {
-        let newDrop = new Drop(color,radius,centerX,centerY);
-        const center = new Vec2(centerX, centerY);
-        const radius2 = Math.pow(radius, 2);
-        for (let d = 0; d < this.drops.length; d++) {
-            let drop = this.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const pointDir = oldPoint.sub(center);
-                const factor = Math.sqrt(1 + (radius2 /Math.pow(pointDir.length(),2)));
-
-                const newPoint = center.add(pointDir.scale(factor));
-                drop.points[p] = newPoint;
-            }
-            drop.makeDirty();
-        }
-
-        this.drops.push(newDrop);
-    }
-
-    private applyTine(origin: Vec2, line: Vec2) {
-        if (line.length() < 0.001) {
-            return;
-        }
-        const unitLine = line.norm();
-        const u = Math.pow(0.5, 1.0/8.0);
-        const z = 20.0;
-        // Unit normal to the tine line
-        const norm = line.perp().norm();
-        for (let d = 0; d < this.drops.length; d++) {
-            let drop = this.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const d = oldPoint.sub(origin).dot(norm).length();
-                const offset = unitLine.copy().scale(z * Math.pow(u,d));
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
-    }
-
     applyOperations(operations: [Operation]) {
         for (let i = 0; i < operations.length; i++) {
             const operation = operations[i];
-            if (operation instanceof InkDropOperation) {
-                this.applyDrop(operation.color, operation.radius, operation.position.x, operation.position.y)
-            } else if (operation instanceof LineTineOperation) {
-                this.applyTine(operation.origin, operation.direction)
-            }
+            operation.apply(this);
         }
     }
 

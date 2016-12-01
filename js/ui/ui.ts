@@ -24,7 +24,7 @@ class MarblingUI {
         this.colorPane = new ColorPane(colorContainer);
         this.textPane = new TextInputPane(textContainer);
         this.keyboardManager = new MarblingKeyboardUI();
-        this.keyboardManager.keyboardDelegate = this.didPressShortcut.bind(this);
+        this.keyboardManager.keyboardDelegate = this;
         container.onmousedown = this.mouseDown.bind(this);
         container.onmouseup = this.mouseUp.bind(this);
         this.cursorOverlay = new CursorOverlay(container);
@@ -51,7 +51,7 @@ class MarblingUI {
         this.vectorFieldOverlay.setSize(width, height);
     }
 
-    private didPressShortcut(shortcut: KeyboardShortcut) {
+    didPressShortcut(shortcut: KeyboardShortcut) {
         switch (shortcut) {
             case KeyboardShortcut.S:
                 this.keyboardManager.acceptingNewKeys = false;
@@ -67,6 +67,9 @@ class MarblingUI {
                 if (confirm("Clear the composition?")) {
                     this._delegate.reset();
                 }
+                return;
+            case KeyboardShortcut.F:
+                this.vectorFieldOverlay.toggleVisibility()
         }
     }
 
@@ -84,7 +87,7 @@ class MarblingUI {
     private mouseUp(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
-        let operation: Operation;;;;;;;;;;;;;;;;;;
+        let operation: Operation;
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
                 operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop], this.colorPane.currentColor);
