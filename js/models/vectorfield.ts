@@ -4,8 +4,13 @@ interface VectorField {
 }
 
 class UniformVectorField implements VectorField {
+    private vector: Vec2;
+
+    constructor(vector: Vec2) {
+        this.vector = vector
+    }
     atPoint(point: Vec2): Vec2 {
-        return new Vec2(0, 1);
+        return this.vector;
     }
 }
 

@@ -3,7 +3,7 @@
 class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
     private currentTool: Tool;
-    private currentToolParameter: number;
+    private currentToolParameter: Object;
     private lastMouseCoord: Vec2;
     private _previewOperation: Operation = null;
 
@@ -17,6 +17,7 @@ class VectorFieldOverlay {
 
     private toolChange(e: CustomEvent) {
         this.currentTool = e.detail.currentTool;
+        this.currentToolParameter = e.detail.parameters;
         this.previewOperation = null;
     }
 
@@ -43,7 +44,7 @@ class VectorFieldOverlay {
         const mouseCoords = new Vec2(x, y);
         switch (this.currentTool) {
             case Tool.Drop:
-                this.previewOperation = new InkDropOperation(mouseCoords, 10, null);
+                this.previewOperation = new InkDropOperation(mouseCoords, this.currentToolParameter.radius, null);
 
                 break;
             case Tool.TineLine:
@@ -72,20 +73,17 @@ class VectorFieldRenderer {
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
     private spacing: number = 20;
-    private arrowCanvas: HTMLCanvasElement;
     private visible: boolean = false;
-    private _vectorField: VectorField = new SinVectorField();
+    private _vectorField: VectorField = new UniformVectorField(new Vec2(0, 20));
+    private arrowWidth = 20;
+    private arrowHeight = 12;
+    private arrow = this.generateArrowPath();
 
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
         this.overlayCanvas.className = "marbling-vector-field-overlay";
         this.overlayContext = this.overlayCanvas.getContext("2d");
         container.appendChild(this.overlayCanvas);
-
-        this.arrowCanvas = document.createElement('canvas');
-        this.arrowCanvas.height = 20;
-        this.arrowCanvas.width = 6;
-        this.drawArrow();
         this.drawOverlay();
 
     }
@@ -101,49 +99,52 @@ class VectorFieldRenderer {
         }
 
         const ctx = this.overlayContext;
-        const width = this.arrowCanvas.width;
-        const height = this.arrowCanvas.height;
+        const width = this.arrowWidth;
+        const height = this.arrowHeight;
         ctx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
         if (this._vectorField == null) {
             requestAnimationFrame(this.drawOverlay.bind(this));
             return;
         }
 
+
+        const halfWidth = width / 2;
+        const halfHeight = height / 2;
+        ctx.fillStyle = "rgba(100,100,100, 0.8)";
         for (let x = 0; x < this.overlayCanvas.width; x += this.spacing) {
             for (let y = 0; y < this.overlayCanvas.height; y += this.spacing) {
                 const dir = this._vectorField.atPoint(new Vec2(x, y));
                 const angle = dir.angle();
-                const size = dir.length();
-                if (size > 0) {
-                    ctx.translate(x, y);
+                const size = dir.length() / this.arrowHeight;
+                if (size > 0.1) {
+                    ctx.translate(x - halfWidth, y - halfHeight);
                     ctx.scale(size, size);
                     ctx.rotate(angle);
-                    ctx.drawImage(this.arrowCanvas, -width / 2, -height / 2, width, height);
+
+                    ctx.fill(this.arrow);
                     ctx.scale(1 / size, 1 / size);
                     ctx.rotate(-angle);
-                    ctx.translate(-x, -y);
+                    ctx.translate(-x + halfWidth, -y + halfHeight);
                 }
             }
         }
-        this.overlayContext.drawImage(this.arrowCanvas, 0, 0);
         requestAnimationFrame(this.drawOverlay.bind(this));
 
     }
 
-    private drawArrow() {
-        const ctx = this.arrowCanvas.getContext("2d");
+
+    generateArrowPath() {
         const path = new Path2D();
-        path.moveTo(2, 0);
+        path.moveTo(0, 2);
         path.lineTo(2, 2);
-        path.lineTo(2, 12);
-        path.lineTo(6, 12);
-        path.lineTo(3, 20);
-        path.lineTo(0, 12);
-        path.lineTo(4, 12);
-        path.lineTo(4, 0);
-        path.lineTo(2, 0);
-        ctx.fillStyle = "rgba(0,0,0,0.3)";
-        ctx.fill(path);
+        path.lineTo(12, 2);
+        path.lineTo(12, 6);
+        path.lineTo(20, 3);
+        path.lineTo(12, 0);
+        path.lineTo(12, 4);
+        path.lineTo(0, 4);
+        path.closePath();
+        return path;
     }
 
 

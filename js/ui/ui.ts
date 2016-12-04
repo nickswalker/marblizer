@@ -29,7 +29,7 @@ class MarblingUI {
         container.onmousedown = this.mouseDown.bind(this);
         container.onmouseup = this.mouseUp.bind(this);
         container.addEventListener("mousemove", this.mouseMove.bind(this));
-        container.addEventListener("mousewheel", this.scroll.bind(this));;;;;;;;;;;;;;;;;;;;;;;;;;;
+        container.addEventListener("mousewheel", this.scroll.bind(this));
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
