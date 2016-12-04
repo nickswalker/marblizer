@@ -1,7 +1,8 @@
-///<reference path="../marbling.ts"/>
+///<reference path="../marbling_renderer.ts"/>
 ///<reference path="cursor_overlay.ts"/>
 ///<reference path="keyboard.ts"/>
 ///<reference path="vector_field_overlay.ts"/>
+///<reference path="../operations/linetine.ts"/>
 interface MarblingUIDelegate {
     reset();
     applyOperations(operations: [Operation]);
@@ -19,8 +20,6 @@ class MarblingUI {
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
 
-    private previewOperation: Operation = null;
-
     constructor(container: HTMLElement, toolsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
@@ -30,6 +29,7 @@ class MarblingUI {
         container.onmousedown = this.mouseDown.bind(this);
         container.onmouseup = this.mouseUp.bind(this);
         container.addEventListener("mousemove", this.mouseMove.bind(this));
+        container.addEventListener("mousewheel", this.scroll.bind(this));;;;;;;;;;;;;;;;;;;;;;;;;;;
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
@@ -93,12 +93,12 @@ class MarblingUI {
         let operation: Operation;
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
-                operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop], this.colorPane.currentColor);
+                operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop].radius, this.colorPane.currentColor);
                 this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine:
                 const currentCoord = new Vec2(x, y);
-                operation = new LineTineOperation(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord), 1, 0);
+                operation = new LineTine(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord), 1, 0);
                 this._delegate.applyOperations([operation]);
                 this.lastMouseCoord = null;
                 break;
@@ -110,16 +110,14 @@ class MarblingUI {
         const x = e.offsetX;
         const y = e.offsetY;
         const mouseCoords = new Vec2(x, y);
-        switch (this.toolsPane.currentTool) {
-            case Tool.Drop:
-                this.previewOperation = new InkDropOperation(mouseCoords, 10, null);
-                this.vectorFieldOverlay.vectorField = this.previewOperation;
-                break;
-            case Tool.TineLine:
-                if (this.lastMouseCoord != null) {
-                    this.previewOperation = new LineTineOperation(mouseCoords, mouseCoords.sub(this.lastMouseCoord), 1, 1);;;;;
-                    this.vectorFieldOverlay.vectorField = this.previewOperation;
-                }
+    }
+
+    private scroll(e: MouseWheelEvent) {
+        const delta = e.wheelDeltaY;
+        if (delta > 0) {
+            this.toolsPane.increaseToolParameter(this.toolsPane.currentTool);
+        } else {
+            this.toolsPane.decreaseToolParameter(this.toolsPane.currentTool);
         }
     }
 

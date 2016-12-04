@@ -62,8 +62,8 @@ class ToolsPane {
     resetButton: HTMLElement;
     toolToButtonMapping: {[key: number]: HTMLElement};
     delegate: MarblingUIDelegate;
-    currentTool: Tool;
-    toolParameters: {[key: number]: number};
+    private _currentTool: Tool;
+    toolParameters: {[key: number]: Object};
 
     constructor(container: HTMLElement) {
         this.container = container;
@@ -80,14 +80,15 @@ class ToolsPane {
         this.toolToButtonMapping[Tool.CircularTine] = circularButton;
         this.toolToButtonMapping[Tool.Vortex] = swirlButton;
         this.toolParameters = {};
-        this.toolParameters[Tool.Drop] = 50;
+        this.toolParameters[Tool.Drop] = {};
+        this.toolParameters[Tool.Drop]["radius"] = 50;
 
         this.resetButton = <HTMLElement>container.querySelector(".reset");
         this.resetButton.onclick = this.clickedReset.bind(this);
 
         // Set default tool
-        this.currentTool = Tool.Drop;
-        this.toolToButtonMapping[this.currentTool.valueOf()].className += " active";
+        this._currentTool = Tool.Drop;
+        this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
         for (const key in this.toolToButtonMapping) {
             this.toolToButtonMapping[key].onclick = this.toolClicked.bind(this);
         }
@@ -102,11 +103,12 @@ class ToolsPane {
         const target = event.target;
         for (let key in this.toolToButtonMapping) {
             if (this.toolToButtonMapping[key] == target) {
-                this.currentTool = <Tool>parseInt(key);
+                this._currentTool = <Tool>parseInt(key);
             }
         }
 
-        this.toolToButtonMapping[this.currentTool.valueOf()].className += " active";
+        this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
+        this.fireEvent();
     }
 
     private clickedReset(event: MouseEvent) {
@@ -115,14 +117,39 @@ class ToolsPane {
         }
     }
 
+    get currentTool(): Tool {
+        return this._currentTool;
+    }
+
+    set currentTool(value: Tool) {
+        this._currentTool = value;
+        this.fireEvent()
+    }
+
     increaseToolParameter(tool: Tool) {
-        this.toolParameters[tool] += 5;
+        switch (this.currentTool) {
+            case Tool.Drop:
+                const current = this.toolParameters[tool]["radius"];
+                this.toolParameters[tool]["radius"] = Math.min(100, current + 5);
+        }
+
+        this.fireEvent();
     }
 
     decreaseToolParameter(tool: Tool) {
-        this.toolParameters[tool] -= 5;
+        switch (this.currentTool) {
+            case Tool.Drop:
+                const current = this.toolParameters[tool]["radius"];
+                this.toolParameters[tool]["radius"] = Math.max(current - 5, 5);
+        }
+        this.fireEvent();
     }
 
+    private fireEvent() {
+        const dict = {"currentTool": this.currentTool, "parameters": this.toolParameters[this.currentTool]};
+        const event = new CustomEvent("toolchange", {detail: dict});
+        document.dispatchEvent(event);
+    }
 }
 
 class TextInputPane {

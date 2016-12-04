@@ -36,7 +36,7 @@ class MarblingKeyboardUI {
             case "s":
                 this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
                 return;
-            case "+":
+            case "=":
                 this.keyboardDelegate.didPressShortcut(KeyboardShortcut.Plus);
                 return;
             case "-":

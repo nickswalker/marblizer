@@ -36,7 +36,7 @@ class Drop {
 
     private static initialCirclePoints(radius: number, centerX: number, centerY: number) {
         let points: Array<Vec2> = [];
-        for(let i = 0.0; i < 2 * Math.PI; i+= 0.05 ) {
+        for (let i = 0.0; i < 2 * Math.PI; i += 0.001) {
             const newPoint = new Vec2(centerX + radius * Math.cos(i), centerY + radius * Math.sin(i));
             points.push(newPoint)
         }
@@ -46,7 +46,7 @@ class Drop {
 
 
 class MarblingRenderer {
-    domElement: HTMLCanvasElement;
+    renderCanvas: HTMLCanvasElement;
     drops: Drop[] = [];
     context: CanvasRenderingContext2D;
     baseColor: Color = new Color(220,210,210);
@@ -54,20 +54,21 @@ class MarblingRenderer {
     private history: [Operation];
 
     constructor(container: HTMLElement) {
-        this.domElement = document.createElement("canvas");
-        container.insertBefore(this.domElement, container.firstChild);
-        this.context = this.domElement.getContext("2d");
+        this.renderCanvas = document.createElement("canvas");
+        this.renderCanvas.className = "marbling-render-layer";
+        container.insertBefore(this.renderCanvas, container.firstChild);
+        this.context = this.renderCanvas.getContext("2d");
         window.requestAnimationFrame(this.draw.bind(this));
     }
 
     setSize(width: number, height: number) {
-        this.domElement.height = height;
-        this.domElement.width = width;
+        this.renderCanvas.width = width;
+        this.renderCanvas.height = height;
     }
 
     draw() {
         this.context.fillStyle = this.baseColor.toRGBString();
-        this.context.fillRect(0,0,this.domElement.width, this.domElement.height);
+        this.context.fillRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
         for (let i = 0; i < this.drops.length; i ++) {
             const drop = this.drops[i];
             this.context.fillStyle = drop.color.toRGBString();
