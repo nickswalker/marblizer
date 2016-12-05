@@ -2,15 +2,22 @@
 ///<reference path="operations.ts"/>
 ///<reference path="../ui/vector_field_overlay.ts"/>
 class LineTine extends Operation implements VectorField {
-    readonly direction: Vec2;
+    // N in the paper
+    readonly normal: Vec2;
+    // L in the paper
+    readonly line: Vec2;
+    // A in the paper
     readonly origin: Vec2;
     readonly numTines: number;
     readonly interval: number;
+    readonly alpha = 80.0;
+    readonly lambda = 32;
     private static regex = RegExp("//^l(?:ine)? " + vec2Regex + vec2Regex + floatRegex + floatRegex + "$/i");
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, interval: number) {
         super();
-        this.direction = direction;
+        this.line = direction.norm();
+        this.normal = this.line.perp().norm();
         this.origin = origin;
         this.numTines = numTines;
         this.interval = interval;
@@ -28,9 +35,6 @@ class LineTine extends Operation implements VectorField {
     }
 
     apply(renderer: MarblingRenderer) {
-        if (this.direction.length() < 0.001) {
-            return;
-        }
 
         for (let d = 0; d < renderer.drops.length; d++) {
             let drop = renderer.drops[d];
@@ -44,13 +48,9 @@ class LineTine extends Operation implements VectorField {
     }
 
     atPoint(point: Vec2): Vec2 {
-        const unitLine = this.direction.norm();
-        const alpha = 80.0;
-        const lambda = 32;
-        // Unit normal to the tine line
-        const norm = this.direction.perp().norm();
-        const d = point.sub(this.origin).dot(norm).length();
-        return unitLine.copy().scale(alpha * lambda / (d + lambda));
+        const d = Math.abs(point.sub(this.origin).dot(this.normal));
+        const factor = this.alpha * this.lambda / (d + this.lambda);
+        return this.line.copy().scale(factor);
     }
 
 }

@@ -15,6 +15,7 @@ class MarblingUI {
     colorPane: ColorPane;
     _delegate: MarblingUIDelegate;
     private lastMouseCoord: Vec2;
+    private mouseDownCoord: Vec2;
     private textPane: TextInputPane;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
@@ -71,6 +72,10 @@ class MarblingUI {
                     this._delegate.reset();
                 }
                 return;
+            case KeyboardShortcut.B:
+                const operation = new ChangeBaseColorOperation(this.colorPane.currentColor);
+                this._delegate.applyOperations([operation]);
+                return;
             case KeyboardShortcut.F:
                 this.vectorFieldOverlay.toggleVisibility()
         }
@@ -79,11 +84,11 @@ class MarblingUI {
     private mouseDown(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
+        this.mouseDownCoord = new Vec2(x, y);
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
                 break;
             case Tool.TineLine:
-                this.lastMouseCoord = new Vec2(x, y);
         }
     }
 
@@ -98,12 +103,17 @@ class MarblingUI {
                 break;
             case Tool.TineLine:
                 const currentCoord = new Vec2(x, y);
-                operation = new LineTine(this.lastMouseCoord, currentCoord.sub(this.lastMouseCoord), 1, 0);
-                this._delegate.applyOperations([operation]);
-                this.lastMouseCoord = null;
+                const direction = currentCoord.sub(this.mouseDownCoord);
+                if (direction.length() > 0.03) {
+                    operation = new LineTine(this.mouseDownCoord, direction, 1, 0);
+                    this._delegate.applyOperations([operation]);
+                }
+
                 break;
 
         }
+        this.lastMouseCoord = null;
+        this.mouseDownCoord = null;
     }
 
     private mouseMove(e: MouseEvent) {

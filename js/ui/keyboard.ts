@@ -12,7 +12,8 @@ enum KeyboardShortcut {
     C = 6,
     W = 7,
     V = 8,
-    F = 9
+    F = 9,
+    B = 10
 }
 
 interface MarblingKeyboardUIDelegate {
@@ -50,6 +51,9 @@ class MarblingKeyboardUI {
                 return;
             case "l":
                 this.keyboardDelegate.didPressShortcut(KeyboardShortcut.L);
+                return;
+            case "b":
+                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.B);
                 return;
             case "c":
                 this.keyboardDelegate.didPressShortcut(KeyboardShortcut.C);

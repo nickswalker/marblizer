@@ -31,11 +31,12 @@ class ChangeInkColorOperation {
     }
 }
 
-class ChangeBaseColorOperation {
+class ChangeBaseColorOperation extends Operation {
     private static regex = RegExp("//^b(?:ase)?" + colorRegex + "$/i");
     readonly color: Color;
 
     constructor(color: Color) {
+        super();
         this.color = color;
     }
 
@@ -45,6 +46,10 @@ class ChangeBaseColorOperation {
             const color = Color.withRGB(match[0]);
             return new ChangeBaseColorOperation(color);
         }
+    }
+
+    apply(renderer: MarblingRenderer) {
+        renderer.baseColor = this.color;
     }
 }
 

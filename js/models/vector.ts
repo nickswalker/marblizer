@@ -16,7 +16,7 @@ class Vec2 {
     }
 
     dot(other: Vec2) {
-        return new Vec2(this.x * other.x, this.y * other.y);
+        return this.x * other.x + this.y * other.y;
     }
 
     copy() {
@@ -43,7 +43,7 @@ class Vec2 {
 
 
     perp() {
-        return new Vec2(this.y, -1 * this.x);
+        return new Vec2(-1 * this.y, this.x);
     }
 
     length() {
@@ -52,5 +52,9 @@ class Vec2 {
 
     angle() {
         return Math.atan2(this.y, this.x);
+    }
+
+    mult(mat: Mat2x2) {
+        return new Vec2(this.x * mat.a + this.y + mat.c, this.x * mat.b + this.y * mat.d);
     }
 }

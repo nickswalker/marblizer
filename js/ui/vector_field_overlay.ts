@@ -1,9 +1,12 @@
 ///<reference path="../models/vectorfield.ts"/>
+///<reference path="../operations/vortex.ts"/>
+///<reference path="../operations/circularlinetine.ts"/>
 
 class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
     private currentTool: Tool;
     private currentToolParameter: Object;
+    private mouseDownCoord: Vec2;
     private lastMouseCoord: Vec2;
     private _previewOperation: Operation = null;
 
@@ -24,6 +27,7 @@ class VectorFieldOverlay {
     private mouseDown(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
+        this.mouseDownCoord = new Vec2(x, y);
         switch (this.currentTool) {
             case Tool.Drop:
                 break;
@@ -36,6 +40,7 @@ class VectorFieldOverlay {
         const x = e.offsetX;
         const y = e.offsetY;
         this.lastMouseCoord = null;
+        this.mouseDownCoord = null;
     }
 
     private mouseMove(e: MouseEvent) {
@@ -49,8 +54,14 @@ class VectorFieldOverlay {
                 break;
             case Tool.TineLine:
                 if (this.lastMouseCoord != null) {
-                    this.previewOperation = new LineTine(mouseCoords, mouseCoords.sub(this.lastMouseCoord), 1, 1);
+                    this.previewOperation = new LineTine(this.mouseDownCoord, mouseCoords.sub(this.mouseDownCoord), 1, 1);
                 }
+                break;
+            case Tool.CircularTine:
+                this.previewOperation = new CircularLineTine(mouseCoords, 50, 1, 1);
+                break;
+            case Tool.Vortex:
+                this.previewOperation = new Vortex(mouseCoords, 1, 1);
         }
     }
 

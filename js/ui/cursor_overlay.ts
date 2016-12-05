@@ -11,8 +11,8 @@ class CursorOverlay {
     private prevDrawMaxX: number;
     private prevDrawMaxY: number;
 
-    private currentTool: Tool;
-    private currentToolParameters: Object;
+    private currentTool: Tool = Tool.Drop;
+    private currentToolParameters: Object = {"radius": 50};
 
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
@@ -28,8 +28,9 @@ class CursorOverlay {
         container.onmousemove = this.mouseMove.bind(this);
         document.addEventListener("toolchange", this.toolChange.bind(this));
 
-        this.drawOverlay();
         this.drawCursor();
+        this.drawOverlay();
+
 
     }
 
@@ -59,7 +60,7 @@ class CursorOverlay {
         const width = this.cursorCanvas.width;
         const height = this.cursorCanvas.height;
         ctx.clearRect(0, 0, width, height);
-        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.strokeStyle = "rgba(100,100,100, 0.8)";
         switch (this.currentTool) {
             case Tool.Drop:
                 const radius = this.currentToolParameters.radius;
