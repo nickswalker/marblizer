@@ -77,7 +77,13 @@ class MarblingUI {
                 this._delegate.applyOperations([operation]);
                 return;
             case KeyboardShortcut.F:
-                this.vectorFieldOverlay.toggleVisibility()
+                this.vectorFieldOverlay.toggleVisibility();
+                return;
+            case KeyboardShortcut.Q:
+                this.vectorFieldOverlay.decreaseResolution();
+                return;
+            case KeyboardShortcut.W:
+                this.vectorFieldOverlay.increaseResolution();
         }
     }
 
@@ -123,6 +129,20 @@ class MarblingUI {
         const x = e.offsetX;
         const y = e.offsetY;
         const mouseCoords = new Vec2(x, y);
+        switch (this.toolsPane.currentTool) {
+            case Tool.Spatter:
+                if (this.mouseDownCoord != null) {
+                    const variablity = this.toolsPane.toolParameters[Tool.Spatter].variability;
+                    const radius = this.toolsPane.toolParameters[Tool.Spatter].radius;
+                    const currentColor = this.colorPane.currentColor;
+                    if (Math.random() < 0.1) {
+                        const newOrigin = mouseCoords.add(new Vec2(Math.random() * radius, Math.random() * radius));
+                        const newRadius = Math.random() * variablity + 10;
+                        const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
+                        this._delegate.applyOperations([operation]);
+                    }
+                }
+        }
     }
 
     private scroll(e: MouseWheelEvent) {

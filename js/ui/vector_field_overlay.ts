@@ -1,11 +1,12 @@
 ///<reference path="../models/vectorfield.ts"/>
 ///<reference path="../operations/vortex.ts"/>
 ///<reference path="../operations/circularlinetine.ts"/>
+///<reference path="../operations/inkdrop.ts"/>
 
 class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
-    private currentTool: Tool;
-    private currentToolParameter: Object;
+    private currentTool: Tool = Tool.Drop;
+    private currentToolParameter: Object = {"radius": 50};
     private mouseDownCoord: Vec2;
     private lastMouseCoord: Vec2;
     private _previewOperation: Operation = null;
@@ -21,7 +22,7 @@ class VectorFieldOverlay {
     private toolChange(e: CustomEvent) {
         this.currentTool = e.detail.currentTool;
         this.currentToolParameter = e.detail.parameters;
-        this.previewOperation = null;
+        this.generatePreviewOperation();
     }
 
     private mouseDown(e: MouseEvent) {
@@ -46,27 +47,31 @@ class VectorFieldOverlay {
     private mouseMove(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
-        const mouseCoords = new Vec2(x, y);
+        this.lastMouseCoord = new Vec2(x, y);
+        this.generatePreviewOperation();
+    }
+
+    private generatePreviewOperation() {
         switch (this.currentTool) {
             case Tool.Drop:
                 const radius = this.currentToolParameter.radius;
-                this.previewOperation = new InkDropOperation(mouseCoords, radius, null);
+                this.previewOperation = new InkDropOperation(this.lastMouseCoord, radius, null);
 
                 break;
             case Tool.TineLine:
-                if (this.lastMouseCoord != null) {
+                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
                     const spacing = this.currentToolParameter.spacing;
                     const numTines = this.currentToolParameter.numTines;
-                    this.previewOperation = new LineTine(this.mouseDownCoord, mouseCoords.sub(this.mouseDownCoord), numTines, spacing);
+                    this.previewOperation = new LineTine(this.mouseDownCoord, this.lastMouseCoord.sub(this.mouseDownCoord), numTines, spacing);
                 } else {
                     this.previewOperation = null;
                 }
                 break;
             case Tool.CircularTine:
-                this.previewOperation = new CircularLineTine(mouseCoords, 50, 1, 1);
+                this.previewOperation = new CircularLineTine(this.lastMouseCoord, 50, 1, 1);
                 break;
             case Tool.Vortex:
-                this.previewOperation = new Vortex(mouseCoords, 1, 1);
+                this.previewOperation = new Vortex(this.lastMouseCoord, 1, 1);
         }
     }
 
@@ -82,15 +87,23 @@ class VectorFieldOverlay {
     toggleVisibility() {
         this.renderer.toggleVisibility();
     }
+
+    increaseResolution() {
+        this.renderer.spacing = Math.min(80, this.renderer.spacing + 2);
+    }
+
+    decreaseResolution() {
+        this.renderer.spacing = Math.max(5, this.renderer.spacing - 2);
+    }
 }
 
 class VectorFieldRenderer {
-
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
-    private spacing: number = 20;
+    private _spacing: number = 40;
     private visible: boolean = false;
-    private _vectorField: VectorField = new UniformVectorField(new Vec2(0, 20));
+    private _vectorField: VectorField = null;
+    private dirty: boolean = true;
     private arrowWidth = 20;
     private arrowHeight = 12;
     private arrow = this.generateArrowPath();
@@ -106,11 +119,26 @@ class VectorFieldRenderer {
 
     set vectorField(value: VectorField) {
         this._vectorField = value;
+        this.dirty = true;
         //  if the vectorfield is already rendering, it'll switch out automatically
+    }
+
+    set spacing(value: number) {
+        this._spacing = value;
+        this.dirty = true;
+    }
+
+    get spacing(): number {
+        return this._spacing;
     }
 
     private drawOverlay() {
         if (!this.visible) {
+            return;
+        }
+
+        if (!this.dirty) {
+            requestAnimationFrame(this.drawOverlay.bind(this));
             return;
         }
 
@@ -127,8 +155,8 @@ class VectorFieldRenderer {
         const halfWidth = width / 2;
         const halfHeight = height / 2;
         ctx.fillStyle = "rgba(100,100,100, 0.8)";
-        for (let x = 0; x < this.overlayCanvas.width; x += this.spacing) {
-            for (let y = 0; y < this.overlayCanvas.height; y += this.spacing) {
+        for (let x = 0; x < this.overlayCanvas.width; x += this._spacing) {
+            for (let y = 0; y < this.overlayCanvas.height; y += this._spacing) {
                 const dir = this._vectorField.atPoint(new Vec2(x, y));
                 const angle = dir.angle();
                 const size = dir.length() / this.arrowHeight;
@@ -144,6 +172,7 @@ class VectorFieldRenderer {
                 }
             }
         }
+        this.dirty = false;
         requestAnimationFrame(this.drawOverlay.bind(this));
 
     }
@@ -167,6 +196,7 @@ class VectorFieldRenderer {
     setSize(width: number, height: number) {
         this.overlayCanvas.width = width;
         this.overlayCanvas.height = height;
+        this.dirty = true;
     }
 
     toggleVisibility() {

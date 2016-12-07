@@ -51,10 +51,11 @@ class ColorPane {
 
 enum Tool {
     Drop = 0,
-    TineLine = 1,
-    WavyLine = 2,
-    CircularTine = 3,
-    Vortex = 4
+    Spatter = 1,
+    TineLine = 2,
+    WavyLine = 3,
+    CircularTine = 4,
+    Vortex = 5
 }
 
 class ToolsPane {
@@ -68,6 +69,7 @@ class ToolsPane {
     constructor(container: HTMLElement) {
         this.container = container;
         const dropButton = <HTMLElement>container.querySelector(".drop-tool");
+        const spatterButton = <HTMLElement>container.querySelector(".spatter-tool");
         const tineButton = <HTMLElement>container.querySelector(".tine-tool");
         const wavyButton = <HTMLElement>container.querySelector(".wavy-tine-tool");
         const circularButton = <HTMLElement>container.querySelector(".circular-tine-tool");
@@ -75,6 +77,7 @@ class ToolsPane {
 
         this.toolToButtonMapping = {};
         this.toolToButtonMapping[Tool.Drop] = dropButton;
+        this.toolToButtonMapping[Tool.Spatter] = spatterButton;
         this.toolToButtonMapping[Tool.TineLine] = tineButton;
         this.toolToButtonMapping[Tool.WavyLine] = wavyButton;
         this.toolToButtonMapping[Tool.CircularTine] = circularButton;
@@ -82,6 +85,10 @@ class ToolsPane {
         this.toolParameters = {};
         this.toolParameters[Tool.Drop] = {};
         this.toolParameters[Tool.Drop]["radius"] = 50;
+        this.toolParameters[Tool.Spatter] = {};
+        this.toolParameters[Tool.Spatter]["radius"] = 100;
+        this.toolParameters[Tool.Spatter]["number"] = 100;
+        this.toolParameters[Tool.Spatter]["variability"] = 20;
         this.toolParameters[Tool.TineLine] = {};
         this.toolParameters[Tool.TineLine]["numTines"] = 1;
         this.toolParameters[Tool.TineLine]["spacing"] = 200;
@@ -135,6 +142,10 @@ class ToolsPane {
                 const current = this.toolParameters[tool]["radius"];
                 this.toolParameters[tool]["radius"] = Math.min(100, current + 5);
                 break;
+            case Tool.Spatter:
+                const currentSpatterRadius = this.toolParameters[tool]["radius"];
+                this.toolParameters[tool]["radius"] = Math.min(300, currentSpatterRadius + 5);
+                break;
             case Tool.TineLine:
                 const currentSpacing = this.toolParameters[tool]["spacing"];
                 this.toolParameters[tool]["spacing"] = Math.min(500, currentSpacing + 5);
@@ -149,6 +160,10 @@ class ToolsPane {
             case Tool.Drop:
                 const current = this.toolParameters[tool]["radius"];
                 this.toolParameters[tool]["radius"] = Math.max(current - 5, 5);
+                break;
+            case Tool.Spatter:
+                const currentSpatterRadius = this.toolParameters[tool]["radius"];
+                this.toolParameters[tool]["radius"] = Math.max(currentSpatterRadius - 5, 20);
                 break;
             case Tool.TineLine:
                 const currentSpacing = this.toolParameters[tool]["spacing"];

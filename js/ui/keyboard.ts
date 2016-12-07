@@ -13,8 +13,24 @@ enum KeyboardShortcut {
     W = 7,
     V = 8,
     F = 9,
-    B = 10
+    B = 10,
+    Q = 11
 }
+
+const keyMapping = {
+    "=": KeyboardShortcut.Plus,
+    "-": KeyboardShortcut.Minus,
+    "s": KeyboardShortcut.S,
+    "r": KeyboardShortcut.R,
+    "d": KeyboardShortcut.D,
+    "l": KeyboardShortcut.L,
+    "c": KeyboardShortcut.C,
+    "q": KeyboardShortcut.Q,
+    "w": KeyboardShortcut.W,
+    "v": KeyboardShortcut.V,
+    "f": KeyboardShortcut.F,
+    "b": KeyboardShortcut.B
+};;;;;;;;;;;;;;;;;;;;;;;;;;
 
 interface MarblingKeyboardUIDelegate {
     didPressShortcut(shortcut: KeyboardShortcut)
@@ -33,42 +49,8 @@ class MarblingKeyboardUI {
         if (!this.acceptingNewKeys) {
             return;
         }
-        switch (event.key) {
-            case "s":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
-                return;
-            case "=":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.Plus);
-                return;
-            case "-":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.Minus);
-                return;
-            case "r":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.R);
-                return;
-            case "d":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.D);
-                return;
-            case "l":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.L);
-                return;
-            case "b":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.B);
-                return;
-            case "c":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.C);
-                return;
-            case "w":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.W);
-                return;
-            case "v":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.V);
-                return;
-            case "f":
-                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.F);
-                return;
-
-        }
+        const shortcut = keyMapping[event.key];
+        this.keyboardDelegate.didPressShortcut(shortcut);
     }
 
 
