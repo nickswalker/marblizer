@@ -49,12 +49,17 @@ class VectorFieldOverlay {
         const mouseCoords = new Vec2(x, y);
         switch (this.currentTool) {
             case Tool.Drop:
-                this.previewOperation = new InkDropOperation(mouseCoords, this.currentToolParameter.radius, null);
+                const radius = this.currentToolParameter.radius;
+                this.previewOperation = new InkDropOperation(mouseCoords, radius, null);
 
                 break;
             case Tool.TineLine:
                 if (this.lastMouseCoord != null) {
-                    this.previewOperation = new LineTine(this.mouseDownCoord, mouseCoords.sub(this.mouseDownCoord), 1, 1);
+                    const spacing = this.currentToolParameter.spacing;
+                    const numTines = this.currentToolParameter.numTines;
+                    this.previewOperation = new LineTine(this.mouseDownCoord, mouseCoords.sub(this.mouseDownCoord), numTines, spacing);
+                } else {
+                    this.previewOperation = null;
                 }
                 break;
             case Tool.CircularTine:

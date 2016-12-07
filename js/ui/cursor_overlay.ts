@@ -1,15 +1,22 @@
 ///<reference path="panes.ts"/>
+
+function circle(ctx: CanvasRenderingContext2D, origin: Vec2) {
+    ctx.beginPath();
+    ctx.arc(origin.x, origin.y, 4, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.fill();
+}
 class CursorOverlay {
 
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
     private cursorCanvas: HTMLCanvasElement;
 
-    private mouseX: number;
-    private mouseY: number;
+    private lastMoveCoord: Vec2 = new Vec2(-1, -1);
+    private mouseDownCoord: Vec2 = null;
 
-    private prevDrawMaxX: number;
-    private prevDrawMaxY: number;
+    private prevDrawOrigin: Vec2 = new Vec2(-1, -1);
+    private prevDrawSize: Vec2 = new Vec2(-1, -1);
 
     private currentTool: Tool = Tool.Drop;
     private currentToolParameters: Object = {"radius": 50};
@@ -25,12 +32,13 @@ class CursorOverlay {
         this.cursorCanvas.width = 200;
         this.cursorCanvas.height = 200;
 
-        container.onmousemove = this.mouseMove.bind(this);
+        container.addEventListener("mousemove", this.mouseMove.bind(this));
+        container.addEventListener("mousedown", this.mouseDown.bind(this));
+        container.addEventListener("mouseup", this.mouseUp.bind(this));
         document.addEventListener("toolchange", this.toolChange.bind(this));
 
         this.drawCursor();
         this.drawOverlay();
-
 
     }
 
@@ -40,18 +48,71 @@ class CursorOverlay {
         this.drawCursor();
     }
 
+    private mouseDown(e: MouseEvent) {
+        this.mouseDownCoord = new Vec2(e.offsetX, e.offsetY);
+    }
+
     private mouseMove(e: MouseEvent) {
-        this.mouseX = e.offsetX;
-        this.mouseY = e.offsetY;
+        this.lastMoveCoord = new Vec2(e.offsetX, e.offsetY);
+    }
+
+    private mouseUp(e: MouseEvent) {
+        this.mouseDownCoord = null;
     }
 
     private drawOverlay() {
-        this.overlayContext.clearRect(this.prevDrawMaxX, this.prevDrawMaxY, 200, 200);
-        const newX = this.mouseX - (this.cursorCanvas.width / 2);
-        const newY = this.mouseY - (this.cursorCanvas.height / 2);
-        this.overlayContext.drawImage(this.cursorCanvas, newX, newY);
-        this.prevDrawMaxX = newX;
-        this.prevDrawMaxY = newY;
+        const ctx = this.overlayContext;
+        ctx.clearRect(this.prevDrawOrigin.x, this.prevDrawOrigin.y, this.prevDrawSize.x, this.prevDrawSize.y);
+        const newX = this.lastMoveCoord.x - (this.cursorCanvas.width / 2);
+        const newY = this.lastMoveCoord.y - (this.cursorCanvas.height / 2);
+        ctx.drawImage(this.cursorCanvas, newX, newY);
+        let minExtent = new Vec2(newX, newY);
+        let maxExtent = minExtent.add(new Vec2(200, 200));
+        ctx.strokeStyle = "rgba(100,100,100, 0.1)";
+
+        switch (this.currentTool) {
+            case Tool.TineLine:
+                if (this.mouseDownCoord != null) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.lastMoveCoord.x, this.lastMoveCoord.y);
+                    ctx.lineTo(this.mouseDownCoord.x, this.mouseDownCoord.y);
+                    ctx.closePath();
+                    ctx.stroke();
+                    const minPoint = vecMin(this.lastMoveCoord, this.mouseDownCoord);
+                    const maxPoint = vecMax(this.lastMoveCoord, this.mouseDownCoord);
+
+
+                    maxExtent = vecMax(maxExtent, maxPoint);
+                    minExtent = vecMin(minExtent, minPoint);
+
+                    ctx.fillStyle = "rgba(100,100,100, 0.4)";
+                    const spacing = this.currentToolParameters.spacing;
+                    const numTines = this.currentToolParameters.numTines;
+                    const dir = this.lastMoveCoord.sub(this.mouseDownCoord).norm().perp();
+                    for (let i = 0; i <= numTines; i++) {
+                        const tineOrigin = this.mouseDownCoord.add(dir.copy().scale(i * spacing));
+                        circle(ctx, tineOrigin);
+                        const secondOrigin = this.mouseDownCoord.add(dir.copy().scale(-i * spacing));
+                        circle(ctx, secondOrigin);
+
+                        maxExtent = vecMax(maxExtent, tineOrigin);
+                        maxExtent = vecMax(maxExtent, secondOrigin);
+                        minExtent = vecMin(minExtent, tineOrigin);
+                        minExtent = vecMin(minExtent, secondOrigin);
+                    }
+                    // Wiggle room to account for stroke width
+                    minExtent = minExtent.sub(new Vec2(5, 5));
+                    maxExtent = maxExtent.add(new Vec2(5, 5));
+
+
+                }
+        }
+
+        this.prevDrawSize = maxExtent.sub(minExtent);
+        this.prevDrawOrigin = minExtent;
+        //  highlight region that was drawn over
+        //ctx.fillRect(this.prevDrawOrigin.x, this.prevDrawOrigin.y, this.prevDrawSize.x, this.prevDrawSize.y);
+
         requestAnimationFrame(this.drawOverlay.bind(this));
     }
 

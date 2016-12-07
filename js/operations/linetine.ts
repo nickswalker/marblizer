@@ -1,6 +1,9 @@
 ///<reference path="../models/vector.ts"/>
 ///<reference path="operations.ts"/>
 ///<reference path="../ui/vector_field_overlay.ts"/>
+Math.fmod = function (a, b) {
+    return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
+};
 class LineTine extends Operation implements VectorField {
     // N in the paper
     readonly normal: Vec2;
@@ -9,18 +12,21 @@ class LineTine extends Operation implements VectorField {
     // A in the paper
     readonly origin: Vec2;
     readonly numTines: number;
-    readonly interval: number;
-    readonly alpha = 80.0;
+    readonly spacing: number;
+    readonly alpha = 30.0;
     readonly lambda = 32;
     private static regex = RegExp("//^l(?:ine)? " + vec2Regex + vec2Regex + floatRegex + floatRegex + "$/i");
 
-    constructor(origin: Vec2, direction: Vec2, numTines: number, interval: number) {
+    constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
         super();
+        const strength = direction.length();
         this.line = direction.norm();
         this.normal = this.line.perp().norm();
         this.origin = origin;
         this.numTines = numTines;
-        this.interval = interval;
+        this.spacing = spacing;
+
+        this.alpha += strength / 10.0;
     }
 
     static fromString(str: string) {
@@ -48,7 +54,16 @@ class LineTine extends Operation implements VectorField {
     }
 
     atPoint(point: Vec2): Vec2 {
-        const d = Math.abs(point.sub(this.origin).dot(this.normal));
+        let d = Math.abs(point.sub(this.origin).dot(this.normal));
+        const halfSpace = this.spacing / 2.0;
+
+        if (d / this.spacing < this.numTines) {
+            const test = Math.fmod(d, this.spacing);
+            d = halfSpace - Math.abs(test - halfSpace);
+        } else {
+            d = d - this.spacing * this.numTines;
+        }
+
         const factor = this.alpha * this.lambda / (d + this.lambda);
         return this.line.copy().scale(factor);
     }

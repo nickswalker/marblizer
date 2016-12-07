@@ -58,3 +58,11 @@ class Vec2 {
         return new Vec2(this.x * mat.a + this.y + mat.c, this.x * mat.b + this.y * mat.d);
     }
 }
+
+function vecMax(first: Vec2, second: Vec2) {
+    return new Vec2(Math.max(first.x, second.x), Math.max(first.y, second.y));
+}
+
+function vecMin(first: Vec2, second: Vec2) {
+    return new Vec2(Math.min(first.x, second.x), Math.min(first.y, second.y));
+}

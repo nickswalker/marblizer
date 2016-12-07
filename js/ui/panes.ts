@@ -82,6 +82,9 @@ class ToolsPane {
         this.toolParameters = {};
         this.toolParameters[Tool.Drop] = {};
         this.toolParameters[Tool.Drop]["radius"] = 50;
+        this.toolParameters[Tool.TineLine] = {};
+        this.toolParameters[Tool.TineLine]["numTines"] = 1;
+        this.toolParameters[Tool.TineLine]["spacing"] = 200;
 
         this.resetButton = <HTMLElement>container.querySelector(".reset");
         this.resetButton.onclick = this.clickedReset.bind(this);
@@ -131,6 +134,11 @@ class ToolsPane {
             case Tool.Drop:
                 const current = this.toolParameters[tool]["radius"];
                 this.toolParameters[tool]["radius"] = Math.min(100, current + 5);
+                break;
+            case Tool.TineLine:
+                const currentSpacing = this.toolParameters[tool]["spacing"];
+                this.toolParameters[tool]["spacing"] = Math.min(500, currentSpacing + 5);
+                break;
         }
 
         this.fireEvent();
@@ -141,6 +149,11 @@ class ToolsPane {
             case Tool.Drop:
                 const current = this.toolParameters[tool]["radius"];
                 this.toolParameters[tool]["radius"] = Math.max(current - 5, 5);
+                break;
+            case Tool.TineLine:
+                const currentSpacing = this.toolParameters[tool]["spacing"];
+                this.toolParameters[tool]["spacing"] = Math.max(currentSpacing - 5, 5);
+                break;
         }
         this.fireEvent();
     }

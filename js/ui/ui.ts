@@ -98,14 +98,17 @@ class MarblingUI {
         let operation: Operation;
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
-                operation = new InkDropOperation(new Vec2(x, y), this.toolsPane.toolParameters[Tool.Drop].radius, this.colorPane.currentColor);
+                const dropRadius = this.toolsPane.toolParameters[Tool.Drop].radius;
+                operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor);
                 this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine:
                 const currentCoord = new Vec2(x, y);
                 const direction = currentCoord.sub(this.mouseDownCoord);
                 if (direction.length() > 0.03) {
-                    operation = new LineTine(this.mouseDownCoord, direction, 1, 0);
+                    const numTines = this.toolsPane.toolParameters[Tool.TineLine].numTines;
+                    const spacing = this.toolsPane.toolParameters[Tool.TineLine].spacing;
+                    operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
                 }
 
