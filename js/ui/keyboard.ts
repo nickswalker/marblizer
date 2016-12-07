@@ -1,5 +1,5 @@
 ///<reference path="ui.ts"/>
-///<reference path="panes.ts"/>
+///<reference path="panes/textinputpane.ts"/>
 ///<reference path="../operations/parsing.ts"/>
 
 enum KeyboardShortcut {
@@ -39,10 +39,16 @@ interface MarblingKeyboardUIDelegate {
 class MarblingKeyboardUI {
     keyboardDelegate: MarblingKeyboardUIDelegate;
     acceptingNewKeys: boolean = true;
+    shiftDown: boolean = false;
 
     constructor() {
         window.onkeypress = this.keyWasPressed.bind(this);
+        document.addEventListener("keydown", this.shiftChange.bind(this));
+        document.addEventListener("keyup", this.shiftChange.bind(this));
+    }
 
+    private shiftChange(e: KeyboardEvent) {
+        this.shiftDown = e.shiftKey;
     }
 
     keyWasPressed(event: KeyboardEvent) {

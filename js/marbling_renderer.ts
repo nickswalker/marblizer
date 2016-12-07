@@ -1,7 +1,7 @@
 ///<reference path="models/vector.ts"/>
 ///<reference path="models/color.ts"/>
 ///<reference path=".d.ts"/>
-///<reference path="ui/panes.ts"/>
+///<reference path="ui/panes/textinputpane.ts"/>
 ///<reference path="operations/operations.ts"/>
 
 class Drop {

@@ -1,4 +1,4 @@
-///<reference path="panes.ts"/>
+///<reference path="panes/textinputpane.ts"/>
 
 function circle(ctx: CanvasRenderingContext2D, origin: Vec2) {
     ctx.beginPath();

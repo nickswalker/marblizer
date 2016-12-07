@@ -3,6 +3,7 @@
 ///<reference path="keyboard.ts"/>
 ///<reference path="vector_field_overlay.ts"/>
 ///<reference path="../operations/linetine.ts"/>
+///<reference path="panes/toolspane.ts"/>
 interface MarblingUIDelegate {
     reset();
     applyOperations(operations: [Operation]);
@@ -62,10 +63,10 @@ class MarblingUI {
                 this.textPane.getInput(this.didEnterInput.bind(this));
                 return;
             case KeyboardShortcut.Plus:
-                this.toolsPane.increaseToolParameter(this.toolsPane.currentTool);
+                this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
                 return;
             case KeyboardShortcut.Minus:
-                this.toolsPane.decreaseToolParameter(this.toolsPane.currentTool);
+                this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
                 return;
             case KeyboardShortcut.R:
                 if (confirm("Clear the composition?")) {
@@ -104,7 +105,7 @@ class MarblingUI {
         let operation: Operation;
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
-                const dropRadius = this.toolsPane.toolParameters[Tool.Drop].radius;
+                const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop).radius;
                 operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor);
                 this._delegate.applyOperations([operation]);
                 break;
@@ -112,8 +113,8 @@ class MarblingUI {
                 const currentCoord = new Vec2(x, y);
                 const direction = currentCoord.sub(this.mouseDownCoord);
                 if (direction.length() > 0.03) {
-                    const numTines = this.toolsPane.toolParameters[Tool.TineLine].numTines;
-                    const spacing = this.toolsPane.toolParameters[Tool.TineLine].spacing;
+                    const numTines = this.toolsPane.toolParameters.forTool(Tool.TineLine).numTines;
+                    const spacing = this.toolsPane.toolParameters.forTool(Tool.TineLine).spacing;
                     operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
                 }
@@ -132,8 +133,8 @@ class MarblingUI {
         switch (this.toolsPane.currentTool) {
             case Tool.Spatter:
                 if (this.mouseDownCoord != null) {
-                    const variablity = this.toolsPane.toolParameters[Tool.Spatter].variability;
-                    const radius = this.toolsPane.toolParameters[Tool.Spatter].radius;
+                    const variablity = this.toolsPane.toolParameters.forTool(Tool.Spatter).variability;
+                    const radius = this.toolsPane.toolParameters.forTool(Tool.Spatter).radius;
                     const currentColor = this.colorPane.currentColor;
                     if (Math.random() < 0.1) {
                         const newOrigin = mouseCoords.add(new Vec2(Math.random() * radius, Math.random() * radius));
@@ -145,12 +146,21 @@ class MarblingUI {
         }
     }
 
+
     private scroll(e: MouseWheelEvent) {
-        const delta = e.wheelDeltaY;
+        const delta = e.wheelDelta;
         if (delta > 0) {
-            this.toolsPane.increaseToolParameter(this.toolsPane.currentTool);
+            if (!this.keyboardManager.shiftDown) {
+                this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
+            } else {
+                this.toolsPane.toolParameters.increaseSecondary(this.toolsPane.currentTool);
+            }
         } else {
-            this.toolsPane.decreaseToolParameter(this.toolsPane.currentTool);
+            if (!this.keyboardManager.shiftDown) {
+                this.toolsPane.toolParameters.decreasePrimary(this.toolsPane.currentTool);
+            } else {
+                this.toolsPane.toolParameters.decreaseSecondary(this.toolsPane.currentTool);
+            }
         }
     }
 
