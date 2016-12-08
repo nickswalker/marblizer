@@ -11,7 +11,7 @@ class UniformVectorField implements VectorField {
     }
     atPoint(point: Vec2): Vec2 {
         return this.vector;
-    }
+    } s
 }
 
 

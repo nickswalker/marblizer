@@ -30,7 +30,7 @@ const keyMapping = {
     "v": KeyboardShortcut.V,
     "f": KeyboardShortcut.F,
     "b": KeyboardShortcut.B
-};;;;;;;;;;;;;;;;;;;;;;;;;;
+};
 
 interface MarblingKeyboardUIDelegate {
     didPressShortcut(shortcut: KeyboardShortcut)

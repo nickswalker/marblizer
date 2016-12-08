@@ -1,18 +1,13 @@
 ///<reference path="panes/textinputpane.ts"/>
 
-function circle(ctx: CanvasRenderingContext2D, origin: Vec2) {
-    ctx.beginPath();
-    ctx.arc(origin.x, origin.y, 4, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.fill();
-}
+
 class CursorOverlay {
 
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
     private cursorCanvas: HTMLCanvasElement;
 
-    private lastMoveCoord: Vec2 = new Vec2(-1, -1);
+    private lastMoveCoord: Vec2 = null;
     private mouseDownCoord: Vec2 = null;
 
     private prevDrawOrigin: Vec2 = new Vec2(-1, -1);
@@ -35,6 +30,7 @@ class CursorOverlay {
         container.addEventListener("mousemove", this.mouseMove.bind(this));
         container.addEventListener("mousedown", this.mouseDown.bind(this));
         container.addEventListener("mouseup", this.mouseUp.bind(this));
+        document.addEventListener("mouseout", this.mouseOut.bind(this));
         document.addEventListener("toolchange", this.toolChange.bind(this));
 
         this.drawCursor();
@@ -60,9 +56,18 @@ class CursorOverlay {
         this.mouseDownCoord = null;
     }
 
+    private mouseOut(e: MouseEvent) {
+        this.lastMoveCoord = null;
+    }
+
     private drawOverlay() {
         const ctx = this.overlayContext;
         ctx.clearRect(this.prevDrawOrigin.x, this.prevDrawOrigin.y, this.prevDrawSize.x, this.prevDrawSize.y);
+
+        if (this.lastMoveCoord == null) {
+            requestAnimationFrame(this.drawOverlay.bind(this));
+            return;
+        }
         const newX = this.lastMoveCoord.x - (this.cursorCanvas.width / 2);
         const newY = this.lastMoveCoord.y - (this.cursorCanvas.height / 2);
         ctx.drawImage(this.cursorCanvas, newX, newY);
@@ -130,14 +135,7 @@ class CursorOverlay {
                 ctx.stroke();
                 break;
             default:
-                ctx.beginPath();
-                ctx.moveTo(100, 90);
-                ctx.lineTo(100, 110);
-                ctx.stroke();
 
-                ctx.moveTo(90, 100);
-                ctx.lineTo(110, 100);
-                ctx.stroke();
         }
     }
 
