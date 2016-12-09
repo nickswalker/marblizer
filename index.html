@@ -58,9 +58,9 @@
 </div>
 
 <script>
-    let workspace = document.getElementById("workspace");
-    let ui = new MarblingUI(workspace, document.getElementById("marbling-tools"), document.getElementById("marbling-colors"), document.getElementById("operations-input"));
-    let scene = new MarblingRenderer(workspace);
+    let marblingWorkspace = document.getElementById("workspace");
+    let ui = new MarblingUI(marblingWorkspace, document.getElementById("marbling-tools"), document.getElementById("marbling-colors"), document.getElementById("operations-input"));
+    let scene = new MarblingRenderer(marblingWorkspace);
     ui.delegate = scene;
     scene.setSize(window.innerWidth, window.innerHeight);
     ui.setSize(window.innerWidth, window.innerHeight);
