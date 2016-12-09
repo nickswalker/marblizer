@@ -1,5 +1,5 @@
 ///<reference path="../marbling_renderer.ts"/>
-///<reference path="cursor_overlay.ts"/>
+///<reference path="cursor/cursor_overlay.ts"/>
 ///<reference path="keyboard.ts"/>
 ///<reference path="vector_field_overlay.ts"/>
 ///<reference path="../operations/linetine.ts"/>
