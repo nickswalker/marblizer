@@ -8,7 +8,7 @@ class Vortex implements Operation, VectorField {
     readonly lambda = 32;
     private static regex = RegExp("//^v(?:ortex)? " + vec2Regex + floatRegex + "$/i");
 
-    constructor(origin: Vec2, radius: number, counterclockwise: boolean = False) {
+    constructor(origin: Vec2, radius: number, counterclockwise: boolean = false) {
         this.center = origin;
         this.radius = radius;
         this.counterclockwise = counterclockwise;

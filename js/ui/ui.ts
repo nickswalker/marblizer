@@ -153,7 +153,7 @@ class MarblingUI {
                     const radius = this.toolsPane.toolParameters.forTool(Tool.Spatter).radius;
                     const currentColor = this.colorPane.currentColor;
                     if (Math.random() < 0.1) {
-                        const newOrigin = mouseCoords.add(new Vec2(Math.random() * radius, Math.random() * radius));
+                        const newOrigin = mouseCoords.add(new Vec2(Math.random() * 2 * radius - radius, Math.random() * 2 * radius - radius));
                         const newRadius = Math.random() * variablity + 10;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);
