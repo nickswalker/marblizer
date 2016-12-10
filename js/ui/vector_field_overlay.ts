@@ -54,12 +54,12 @@ class VectorFieldOverlay {
 
     private generatePreviewOperation() {
         switch (this.currentTool) {
-            case Tool.Drop:
+            case Tool.Drop: {
                 const radius = this.currentToolParameter.radius;
                 this.previewOperation = new InkDropOperation(this.lastMouseCoord, radius, null);
-
                 break;
-            case Tool.TineLine:
+            }
+            case Tool.TineLine: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
                     const spacing = this.currentToolParameter.spacing;
                     const numTines = this.currentToolParameter.numTines;
@@ -71,6 +71,21 @@ class VectorFieldOverlay {
                     this.previewOperation = null;
                 }
                 break;
+            }
+            case Tool.WavyLine: {
+                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
+                    const spacing = this.currentToolParameter.spacing;
+                    const numTines = this.currentToolParameter.numTines;
+                    const dir = this.lastMouseCoord.sub(this.mouseDownCoord);
+                    if (dir.length() > 0.03) {
+                        this.previewOperation = new WavyLineTine(this.mouseDownCoord, dir, numTines, spacing);
+                    }
+                    break;
+                } else {
+                    this.previewOperation = null;
+                }
+                break;
+            }
             case Tool.CircularTine: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
                     const spacing = this.currentToolParameter.spacing;

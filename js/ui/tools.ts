@@ -22,6 +22,7 @@ const primaryKeys = toolInitializedObject();
 primaryKeys[Tool.Drop] = "radius";
 primaryKeys[Tool.Spatter] = "radius";
 primaryKeys[Tool.TineLine] = "spacing";
+primaryKeys[Tool.WavyLine] = "spacing";
 primaryKeys[Tool.CircularTine] = "spacing";
 
 const guides = toolInitializedObject();
@@ -29,6 +30,8 @@ guides[Tool.Drop]["radius"] = [5, 300, 5];
 guides[Tool.Spatter]["radius"] = [20, 300, 5];
 guides[Tool.TineLine]["spacing"] = [5, 300, 5];
 guides[Tool.TineLine]["numTines"] = [0, 20, 1];
+guides[Tool.WavyLine]["spacing"] = [5, 300, 5];
+guides[Tool.WavyLine]["numTines"] = [0, 20, 1];
 guides[Tool.CircularTine]["spacing"] = [5, 300, 5];
 guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
@@ -51,6 +54,8 @@ class ToolParameters {
         this.parameters[Tool.Spatter]["variability"] = 20;
         this.parameters[Tool.TineLine]["numTines"] = 1;
         this.parameters[Tool.TineLine]["spacing"] = 200;
+        this.parameters[Tool.WavyLine]["numTines"] = 1;
+        this.parameters[Tool.WavyLine]["spacing"] = 200;
         this.parameters[Tool.CircularTine]["numTines"] = 1;
         this.parameters[Tool.CircularTine]["spacing"] = 200;
     }

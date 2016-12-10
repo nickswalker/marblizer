@@ -133,6 +133,16 @@ class MarblingUI {
                 }
                 break;
             }
+            case Tool.WavyLine: {
+                const direction = currentCoord.sub(this.mouseDownCoord);
+                if (direction.length() > 0.03) {
+                    const numTines = this.toolsPane.toolParameters.forTool(Tool.WavyLine).numTines;
+                    const spacing = this.toolsPane.toolParameters.forTool(Tool.WavyLine).spacing;
+                    operation = new WavyLineTine(this.mouseDownCoord, direction, numTines, spacing);
+                    this._delegate.applyOperations([operation]);
+                }
+                break;
+            }
             case Tool.CircularTine: {
                 const radius = currentCoord.sub(this.mouseDownCoord).length();
                 const numTines = this.toolsPane.toolParameters.forTool(Tool.CircularTine).numTines;
