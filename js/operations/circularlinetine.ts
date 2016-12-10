@@ -12,7 +12,6 @@ class CircularLineTine implements Operation, VectorField {
     readonly alpha = 80.0;
     readonly lambda = 32;
     readonly counterClockwise: boolean;
-    private static regex = RegExp("//^c(?:ircle)? " + vec2Regex + floatRegex + floatRegex + floatRegex + "$/i");
 
     constructor(origin: Vec2, radius: number, numTines: number, interval: number, counterClockwise: boolean = false) {
         this.radius = radius;
@@ -22,16 +21,6 @@ class CircularLineTine implements Operation, VectorField {
         this.counterClockwise = counterClockwise;
     }
 
-    static fromString(str: string) {
-        const match = CircularLineTine.regex.exec(str);
-        if (match != null && match.length > 0) {
-            const origin = new Vec2(parseFloat(match[0]), parseFloat(match[1]));
-            const radius = parseFloat(match[2]);
-            const numTines = parseFloat(match[3]);
-            const interval = parseFloat(match[4]);
-            return new CircularLineTine(origin, radius, numTines, interval);
-        }
-    }
 
     apply(renderer: MarblingRenderer) {
         for (let d = 0; d < renderer.drops.length; d++) {

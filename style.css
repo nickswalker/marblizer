@@ -8,19 +8,25 @@ body {
     height: 100%;
     font-family: sans-serif;
     user-select: none;
+    position: relative;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
 }
 
 #workspace {
     width: 100%;
     height: 100%;
     cursor: none;
-}
-
-#workspace canvas {
     position: absolute;
 }
 
-canvas { width: 100%; height: 100% }
+canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
 
 .marbling-pane {
     background-color: rgba(255,255,255,0.8);
@@ -80,15 +86,28 @@ input {
 
 /* Operations input*/
 
+body {
+    position: relative;
+}
 #operations-input {
-    position: absolute;
     top: 20px;
+    margin: 0 auto;
+    width: 80%;
+    height: 80%;
+    min-height: 200px;
+    max-width: 800px;
     background-color: white;
     visibility: hidden;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 10px;
+    z-index: 1;
 }
 
-#operations-input textarea {
-    font-family: monospace;
+#operations-input .input-container {
+    height: 90%;
+}
+
+#operations-input .CodeMirror {
+    height: 100%;
 }
 
 #operations-input .cancel {

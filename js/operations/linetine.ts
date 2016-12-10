@@ -15,7 +15,6 @@ class LineTine implements Operation, VectorField {
     readonly spacing: number;
     readonly alpha = 30.0;
     readonly lambda = 32;
-    private static regex = RegExp("//^l(?:ine)? " + vec2Regex + vec2Regex + floatRegex + floatRegex + "$/i");
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
         const strength = direction.length();
@@ -26,17 +25,6 @@ class LineTine implements Operation, VectorField {
         this.spacing = spacing;
 
         this.alpha += strength / 10.0;
-    }
-
-    static fromString(str: string) {
-        const match = LineTine.regex.exec(str);
-        if (match != null && match.length > 0) {
-            const origin = new Vec2(parseFloat(match[0]), parseFloat(match[1]));
-            const direction = new Vec2(parseFloat(match[2]), parseFloat(match[3]));
-            const numTines = parseFloat(match[4]);
-            const interval = parseFloat(match[5]);
-            return new LineTine(origin, direction, numTines, interval);
-        }
     }
 
     apply(renderer: MarblingRenderer) {

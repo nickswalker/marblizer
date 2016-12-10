@@ -10,7 +10,6 @@
     <script src="js/operations/linetine.js"></script>
     <script src="js/operations/circularlinetine.js"></script>
     <script src="js/operations/vortex.js"></script>
-    <script src="js/operations/parsing.js"></script>
     <script src="js/ui/ui.js"></script>
     <script src="js/ui/tools.js"></script>
     <script src="js/ui/panes/colorpane.js"></script>
@@ -24,6 +23,10 @@
     <script src="js/models/vector.js"></script>
     <script src="js/models/matrix.js"></script>
     <script src="js/models/vectorfield.js"></script>
+    <script src="js/example_scripts.js"></script>
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/theme/solarized.min.css">
 </head>
 <body>
 <div id="workspace">
@@ -31,7 +34,7 @@
 </div>
 
 <div id="operations-input">
-    <textarea title="operations-input"></textarea>
+    <div class="input-container"></div>
     <div class="cancel">Cancel</div>
     <div class="confirm">Confirm</div>
 </div>
@@ -59,18 +62,28 @@
     </ul>
 </div>
 
+<script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/mode/javascript/javascript.min.js"></script>
 <script>
-    let marblingWorkspace = document.getElementById("workspace");
-    let ui = new MarblingUI(marblingWorkspace, document.getElementById("marbling-tools"), document.getElementById("marbling-colors"), document.getElementById("operations-input"));
-    let scene = new MarblingRenderer(marblingWorkspace);
-    ui.delegate = scene;
-    scene.setSize(window.innerWidth, window.innerHeight);
-    ui.setSize(window.innerWidth, window.innerHeight);
-
-    window.onresize = function (event) {
+    addEventListener('load', function () {
+        let marblingWorkspace = document.getElementById("workspace");
+        let toolsPane = document.getElementById("marbling-tools");
+        let colorsPane = document.getElementById("marbling-colors");
+        let operationsInput = document.getElementById("operations-input");
+        let ui = new MarblingUI(marblingWorkspace, toolsPane, colorsPane, operationsInput);
+        let scene = new MarblingRenderer(marblingWorkspace);
+        ui.delegate = scene;
         scene.setSize(window.innerWidth, window.innerHeight);
         ui.setSize(window.innerWidth, window.innerHeight);
-    }
+
+        window.onresize = function (event) {
+            scene.setSize(window.innerWidth, window.innerHeight);
+            ui.setSize(window.innerWidth, window.innerHeight);
+        };
+
+    });
 </script>
+
+
 </body>
 </html>

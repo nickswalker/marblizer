@@ -41,9 +41,14 @@ class MarblingUI {
 
     private didEnterInput(input: string) {
         this.keyboardManager.acceptingNewKeys = true;
-        const parsed = <[Operation]>OperationsParser.parse(input);
-        if (parsed != null && parsed.length > 0) {
-            this._delegate.applyOperations(parsed);
+        let result: [Operation];
+        try {
+            result = new Function(input)();
+        } catch (e) {
+            alert(e);
+        }
+        if (result != null && result.length > 0) {
+            this._delegate.applyOperations(result);
         }
 
     }
