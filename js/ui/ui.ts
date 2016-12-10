@@ -6,6 +6,7 @@
 ///<reference path="../operations/circularlinetine.ts"/>
 ///<reference path="panes/toolspane.ts"/>
 ///<reference path="panes/colorpane.ts"/>
+///<reference path="help_overlay.ts"/>
 
 interface MarblingUIDelegate {
     reset();
@@ -21,6 +22,7 @@ class MarblingUI {
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
     private textPane: TextInputPane;
+    private keyboardShortcutOverlay: KeyboardShortcutOverlay;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
@@ -29,6 +31,7 @@ class MarblingUI {
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
         this.textPane = new TextInputPane(textContainer);
+        this.keyboardShortcutOverlay = new KeyboardShortcutOverlay();
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
         container.onmousedown = this.mouseDown.bind(this);
@@ -93,6 +96,12 @@ class MarblingUI {
                 return;
             case KeyboardShortcut.W:
                 this.vectorFieldOverlay.increaseResolution();
+                return;
+            case KeyboardShortcut.QuestionMark:
+                if (this.keyboardManager.shiftDown) {
+                    this.keyboardShortcutOverlay.show();
+                }
+
         }
     }
 

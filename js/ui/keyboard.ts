@@ -14,7 +14,8 @@ enum KeyboardShortcut {
     V = 8,
     F = 9,
     B = 10,
-    Q = 11
+    Q = 11,
+    QuestionMark = 12
 }
 
 const keyMapping = {
@@ -29,7 +30,8 @@ const keyMapping = {
     "w": KeyboardShortcut.W,
     "v": KeyboardShortcut.V,
     "f": KeyboardShortcut.F,
-    "b": KeyboardShortcut.B
+    "b": KeyboardShortcut.B,
+    "?": KeyboardShortcut.QuestionMark
 };
 
 interface MarblingKeyboardUIDelegate {
@@ -58,7 +60,6 @@ class MarblingKeyboardUI {
         const shortcut = keyMapping[event.key];
         this.keyboardDelegate.didPressShortcut(shortcut);
     }
-
 
 
 }

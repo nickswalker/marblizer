@@ -27,16 +27,20 @@
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/theme/solarized.min.css">
+
+    <link rel="stylesheet" href="help.css?v=1.0.5">
 </head>
 <body>
 <div id="workspace">
 
 </div>
 
-<div id="operations-input">
-    <div class="input-container"></div>
-    <div class="cancel">Cancel</div>
-    <div class="confirm">Confirm</div>
+<div class="modal-container">
+    <div id="operations-input" class="center-pane">
+        <div class="input-container"></div>
+        <div class="cancel">Cancel</div>
+        <div class="confirm">Confirm</div>
+    </div>
 </div>
 
 <div id="marbling-colors" class="marbling-pane">
@@ -64,6 +68,7 @@
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/mode/javascript/javascript.min.js"></script>
+<script src="js/ui/help_overlay.js"></script>
 <script>
     addEventListener('load', function () {
         let marblingWorkspace = document.getElementById("workspace");

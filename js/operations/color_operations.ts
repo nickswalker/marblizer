@@ -1,5 +1,6 @@
 ///<reference path="../models/color.ts"/>
 ///<reference path="../models/vector.ts"/>
+///<reference path="../marbling_renderer.ts"/>
 interface Operation {
     apply(renderer: MarblingRenderer);
 }
