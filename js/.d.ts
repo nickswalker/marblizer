@@ -202,15 +202,15 @@ declare namespace CodeMirror {
         setValue(content: string): void;
 
         /** Sets the gutter marker for the given gutter (identified by its CSS class, see the gutters option) to the given value.
-         Value can be either null, to clear the marker, or a DOM element, to set it. The DOM element will be shown in the specified gutter next to the specified line. */
+         Value can be either null, to clear the marker, or a DOM modal, to set it. The DOM modal will be shown in the specified gutter next to the specified line. */
         setGutterMarker(line: any, gutterID: string, value: HTMLElement): CodeMirror.LineHandle;
 
         /** Remove all gutter markers in the gutter with the given ID. */
         clearGutter(gutterID: string): void;
 
         /** Set a CSS class name for the given line.line can be a number or a line handle.
-         where determines to which element this class should be applied, can can be one of "text" (the text element, which lies in front of the selection),
-         "background"(a background element that will be behind the selection),
+         where determines to which modal this class should be applied, can can be one of "text" (the text modal, which lies in front of the selection),
+         "background"(a background modal that will be behind the selection),
          or "wrap" (the wrapper node that wraps all of the line's elements, including gutter elements).
          class should be the name of the class to apply. */
         addLineClass(line: any, where: string, _class_: string): CodeMirror.LineHandle;
@@ -239,7 +239,7 @@ declare namespace CodeMirror {
          To remove the widget again, simply use DOM methods (move it somewhere else, or call removeChild on its parent). */
         addWidget(pos: CodeMirror.Position, node: HTMLElement, scrollIntoView: boolean): void;
 
-        /** Adds a line widget, an element shown below a line, spanning the whole of the editor's width, and moving the lines below it downwards.
+        /** Adds a line widget, an modal shown below a line, spanning the whole of the editor's width, and moving the lines below it downwards.
          line should be either an integer or a line handle, and node should be a DOM node, which will be displayed below the given line.
          options, when given, should be an object that configures the behavior of the widget.
          Note that the widget node will become a descendant of nodes with CodeMirror-specific CSS classes, and those classes might in some cases affect it. */
@@ -267,19 +267,19 @@ declare namespace CodeMirror {
          and the size of the visible area(minus scrollbars). */
         getScrollInfo(): CodeMirror.ScrollInfo;
 
-        /** Scrolls the given element into view. pos is a { line , ch } position, referring to a given character, null, to refer to the cursor.
+        /** Scrolls the given modal into view. pos is a { line , ch } position, referring to a given character, null, to refer to the cursor.
          The margin parameter is optional. When given, it indicates the amount of pixels around the given area that should be made visible as well. */
         scrollIntoView(pos: CodeMirror.Position, margin?: number): void;
 
-        /** Scrolls the given element into view. pos is a { left , top , right , bottom } object, in editor-local coordinates.
+        /** Scrolls the given modal into view. pos is a { left , top , right , bottom } object, in editor-local coordinates.
          The margin parameter is optional. When given, it indicates the amount of pixels around the given area that should be made visible as well. */
         scrollIntoView(pos: { left: number; top: number; right: number; bottom: number; }, margin: number): void;
 
-        /** Scrolls the given element into view. pos is a { line, ch } object, in editor-local coordinates.
+        /** Scrolls the given modal into view. pos is a { line, ch } object, in editor-local coordinates.
          The margin parameter is optional. When given, it indicates the amount of pixels around the given area that should be made visible as well. */
         scrollIntoView(pos: { line: number, ch: number }, margin?: number): void;
 
-        /** Scrolls the given element into view. pos is a { from, to } object, in editor-local coordinates.
+        /** Scrolls the given modal into view. pos is a { from, to } object, in editor-local coordinates.
          The margin parameter is optional. When given, it indicates the amount of pixels around the given area that should be made visible as well. */
         scrollIntoView(pos: { from: CodeMirror.Position, to: CodeMirror.Position }, margin: number): void;
 
@@ -316,7 +316,7 @@ declare namespace CodeMirror {
          See also the viewportChange event. */
         getViewport(): { from: number; to: number };
 
-        /** If your code does something to change the size of the editor element (window resizes are already listened for), or unhides it,
+        /** If your code does something to change the size of the editor modal (window resizes are already listened for), or unhides it,
          you should probably follow up by calling this method to ensure CodeMirror is still looking as intended. */
         refresh(): void;
 
@@ -433,8 +433,8 @@ declare namespace CodeMirror {
         on(eventName: 'update', handler: (instance: CodeMirror.Editor) => void): void;
         off(eventName: 'update', handler: (instance: CodeMirror.Editor) => void): void;
 
-        /** Fired whenever a line is (re-)rendered to the DOM. Fired right after the DOM element is built, before it is added to the document.
-         The handler may mess with the style of the resulting element, or add event handlers, but should not try to change the state of the editor. */
+        /** Fired whenever a line is (re-)rendered to the DOM. Fired right after the DOM modal is built, before it is added to the document.
+         The handler may mess with the style of the resulting modal, or add event handlers, but should not try to change the state of the editor. */
         on(eventName: 'renderLine', handler: (instance: CodeMirror.Editor, line: number, element: HTMLElement) => void): void;
         off(eventName: 'renderLine', handler: (instance: CodeMirror.Editor, line: number, element: HTMLElement) => void): void;
 
@@ -1132,7 +1132,7 @@ declare namespace CodeMirror {
 
     /**
      * async specifies that the lint process runs asynchronously. hasGutters specifies that lint errors should be displayed in the CodeMirror
-     * gutter, note that you must use this in conjunction with [ "CodeMirror-lint-markers" ] as an element in the gutters argument on
+     * gutter, note that you must use this in conjunction with [ "CodeMirror-lint-markers" ] as an modal in the gutters argument on
      * initialization of the CodeMirror instance.
      */
     interface LintStateOptions {

@@ -34,10 +34,11 @@ class MarblingUI {
         this.keyboardShortcutOverlay = new KeyboardShortcutOverlay();
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
-        container.onmousedown = this.mouseDown.bind(this);
-        container.onmouseup = this.mouseUp.bind(this);
+        container.addEventListener("mousedown", this.mouseDown.bind(this));
+        container.addEventListener("mouseup", this.mouseUp.bind(this));
         container.addEventListener("mousemove", this.mouseMove.bind(this));
         container.addEventListener("mousewheel", this.scroll.bind(this));
+        document.addEventListener("mouseout", this.mouseOut.bind(this));
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
@@ -174,6 +175,11 @@ class MarblingUI {
                     }
                 }
         }
+    }
+
+    private mouseOut(e: MouseEvent) {
+        this.mouseDownCoord = null;
+        this.lastMouseCoord = null;
     }
 
 

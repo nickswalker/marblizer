@@ -85,6 +85,7 @@ class CursorOverlay {
 
     private mouseOut(e: MouseEvent) {
         this.lastMoveCoord = null;
+        this.mouseDownCoord = null;
     }
 
     private drawOverlay() {

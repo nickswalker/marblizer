@@ -8,6 +8,7 @@ body {
     height: 100%;
     font-family: sans-serif;
     user-select: none;
+    position: relative;
 }
 
 #workspace {
@@ -24,14 +25,10 @@ canvas {
 }
 
 .marbling-pane {
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(30, 30, 30, 0.8);
+    color: #eeeeee;
 }
-.marbling-pane ul {
-    height: 25px;
-}
-.marbling-pane li {
-    vertical-align: middle;
-}
+
 
 #marbling-tools {
     position: absolute;
@@ -45,27 +42,32 @@ canvas {
     bottom: 0;
 }
 
-.marbling-pane ul {
+/*
+TOOLBAR
+ */
+
+ul.toolbar {
+    height: 25px;
     margin: 0;
     padding: 10px;
 }
 
-.marbling-pane li {
+.toolbar li {
     list-style: none;
     display: inline-block;
     margin: 0 5px;
-}
-
-#marbling-tools li {
+    vertical-align: middle;
     border: 2px solid transparent;
     padding: 3px;
-}
-#marbling-tools li:hover {
-    border: 2px solid gray;
-    background-color: rgba(0,0,0, 0.1);
+    box-sizing: border-box;
 }
 
-#marbling-tools .active {
+.toolbar li:hover {
+    border: 2px solid gray;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.toolbar .active {
     border: 2px solid rgb(72, 151, 170);
     background-color: rgba(72, 151, 170, 0.6);
 }
@@ -73,21 +75,24 @@ canvas {
 li[class^="swatch"] {
     width: 50px;
     height: 100%;
+    padding: 0;
 }
 
 input {
     vertical-align: top;
 }
 
-.keyboard-shortcut-overlay {
-    background-color: rgba(255, 255, 255, 0.8);
-}
+/*
+MODAL
+ */
 
 .modal-container {
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 2;
     display: flex;
     flex-flow: row;
     align-items: center;
@@ -104,18 +109,8 @@ input {
 
 /* Operations input*/
 
-body {
-    position: relative;
-}
-#operations-input {
-
-    background-color: white;
-    visibility: hidden;
-    z-index: 1;
-}
-
 #operations-input .input-container {
-    height: 90%;
+    height: calc(100% - 45px);
 }
 
 #operations-input .CodeMirror {

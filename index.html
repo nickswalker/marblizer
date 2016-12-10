@@ -19,6 +19,7 @@
     <script src="js/ui/cursor/cursor_overlay.js"></script>
     <script src="js/ui/cursor/cursor_renderer.js"></script>
     <script src="js/ui/vector_field_overlay.js"></script>
+    <script src="js/ui/help_overlay.js"></script>
     <script src="js/models/color.js"></script>
     <script src="js/models/vector.js"></script>
     <script src="js/models/matrix.js"></script>
@@ -28,23 +29,25 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/theme/solarized.min.css">
 
-    <link rel="stylesheet" href="help.css?v=1.0.5">
+    <link rel="stylesheet" href="help.css">
 </head>
 <body>
 <div id="workspace">
 
 </div>
 
-<div class="modal-container">
-    <div id="operations-input" class="center-pane">
+<div class="modal-container" style="display:none;">
+    <div id="operations-input" class="marbling-pane center-pane">
+        <ul class="toolbar">
+            <li class="close-button tool">Close</li>
+            <li class="run-button tool">Run</li>
+        </ul>
         <div class="input-container"></div>
-        <div class="cancel">Cancel</div>
-        <div class="confirm">Confirm</div>
     </div>
 </div>
 
 <div id="marbling-colors" class="marbling-pane">
-    <ul>
+    <ul class="toolbar">
         <input type="color" class="color-picker" value="#FFFFFF">
         <li class="swatch-0"></li>
         <li class="swatch-1"></li>
@@ -55,7 +58,7 @@
     </ul>
 </div>
 <div id="marbling-tools" class="marbling-pane">
-    <ul>
+    <ul class="toolbar">
         <li class="drop-tool tool" title="Ink drop">Drop</li>
         <li class="spatter-tool tool" title="Spatter">Spatter</li>
         <li class="tine-tool tool" title="Tine line">Line</li>
@@ -68,7 +71,7 @@
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/mode/javascript/javascript.min.js"></script>
-<script src="js/ui/help_overlay.js"></script>
+
 <script>
     addEventListener('load', function () {
         let marblingWorkspace = document.getElementById("workspace");
