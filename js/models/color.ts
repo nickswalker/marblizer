@@ -13,6 +13,10 @@ class Color {
     toRGBString() {
         return "rgb(" + this.r + ", " + this.g + ", " + this.b + ")";
     }
+
+    toRGBAString() {
+        return "rgba(" + this.r + ", " + this.g + ", " + this.b + "," + this.a + ")";
+    }
     toHexString() {
         function componentToHex(c) {
             let hex = c.toString(16);

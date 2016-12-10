@@ -7,6 +7,10 @@ class Vec2 {
         this.y = y;
     }
 
+    static zero() {
+        return new Vec2(0, 0);
+    }
+
     sub(other: Vec2) {
         return new Vec2(this.x - other.x, this.y - other.y);
     }

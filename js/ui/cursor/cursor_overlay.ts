@@ -1,5 +1,7 @@
 ///<reference path="../panes/textinputpane.ts"/>
 ///<reference path="cursor_renderer.ts"/>
+///<reference path="tine_renderer.ts"/>
+///<reference path="dynamic_radius_renderer.ts"/>
 
 
 class CursorOverlay {
@@ -96,6 +98,7 @@ class CursorOverlay {
             requestAnimationFrame(this.drawOverlay.bind(this));
             return;
         }
+
 
         let minExtent: Vec2;
         let drawSize: Vec2;

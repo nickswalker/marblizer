@@ -1,4 +1,6 @@
 ///<reference path="color_operations.ts"/>
+///<reference path="../models/vectorfield.ts"/>
+///<reference path="../models/matrix.ts"/>
 class Vortex implements Operation, VectorField {
     // C in the paper
     readonly center: Vec2;
@@ -6,6 +8,7 @@ class Vortex implements Operation, VectorField {
     readonly strength: number;
     readonly alpha = 80.0;
     readonly lambda = 32;
+    readonly counterclockwise: boolean;
 
     constructor(origin: Vec2, radius: number, counterclockwise: boolean = false) {
         this.center = origin;
