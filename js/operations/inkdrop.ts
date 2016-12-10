@@ -2,7 +2,7 @@
 ///<reference path="../models/vectorfield.ts"/>
 ///<reference path="../marbling_renderer.ts"/>
 
-class InkDropOperation extends Operation implements VectorField {
+class InkDropOperation implements Operation, VectorField {
     readonly position: Vec2;
     readonly radius: number;
     readonly color: Color;
@@ -10,7 +10,6 @@ class InkDropOperation extends Operation implements VectorField {
     private static regex = RegExp("//^d(?:rop)? " + vec2Regex + positiveFloatRegex + colorRegex + "$/i");
 
     constructor(position: Vec2, radius: number, color: Color, displacing: boolean = true) {
-        super();
         this.position = position;
         this.radius = radius;
         this.color = color;

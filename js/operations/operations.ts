@@ -1,7 +1,7 @@
 ///<reference path="../models/color.ts"/>
 ///<reference path="../models/vector.ts"/>
-abstract class Operation {
-    abstract apply(renderer: MarblingRenderer);
+interface Operation {
+    apply(renderer: MarblingRenderer);
 }
 
 const positiveFloatRegex = "(\\d*(?:\\.\\d+)?)";
@@ -10,7 +10,7 @@ const colorRegex = "(#?[A-Fa-f\\d]{2}[A-Fa-f\\d]{2}[A-Fa-f\\d]{2})";
 const vec2Regex = "\\(" + floatRegex + ",\\s*" + floatRegex + "\\)";
 
 
-class ChangeInkColorOperation {
+class ChangeInkColorOperation implements Operation {
     private static regex = RegExp("//^i(?:nk)?" + colorRegex + "$/i");
     readonly color: Color;
 
@@ -31,7 +31,7 @@ class ChangeInkColorOperation {
     }
 }
 
-class ChangeBaseColorOperation extends Operation {
+class ChangeBaseColorOperation implements Operation {
     private static regex = RegExp("//^b(?:ase)?" + colorRegex + "$/i");
     readonly color: Color;
 

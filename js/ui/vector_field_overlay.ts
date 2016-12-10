@@ -2,6 +2,7 @@
 ///<reference path="../operations/vortex.ts"/>
 ///<reference path="../operations/circularlinetine.ts"/>
 ///<reference path="../operations/inkdrop.ts"/>
+///<reference path="panes/toolspane.ts"/>
 
 class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
@@ -62,16 +63,30 @@ class VectorFieldOverlay {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
                     const spacing = this.currentToolParameter.spacing;
                     const numTines = this.currentToolParameter.numTines;
-                    this.previewOperation = new LineTine(this.mouseDownCoord, this.lastMouseCoord.sub(this.mouseDownCoord), numTines, spacing);
+                    const dir = this.lastMouseCoord.sub(this.mouseDownCoord);
+                    if (dir.length() > 0.03) {
+                        this.previewOperation = new LineTine(this.mouseDownCoord, dir, numTines, spacing);
+                    }
                 } else {
                     this.previewOperation = null;
                 }
                 break;
             case Tool.CircularTine:
-                this.previewOperation = new CircularLineTine(this.lastMouseCoord, 50, 1, 1);
+                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
+                    const spacing = this.currentToolParameter.spacing;
+                    const numTines = this.currentToolParameter.numTines;
+                    const radius = this.lastMouseCoord.sub(this.mouseDownCoord).length();
+                    if (radius > 0.03) {
+                        this.previewOperation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
+                    }
+                    break;
+                } else {
+                    this.previewOperation = null;
+                }
                 break;
             case Tool.Vortex:
                 this.previewOperation = new Vortex(this.lastMouseCoord, 1, 1);
+                break;
         }
     }
 

@@ -3,7 +3,10 @@
 ///<reference path="keyboard.ts"/>
 ///<reference path="vector_field_overlay.ts"/>
 ///<reference path="../operations/linetine.ts"/>
+///<reference path="../operations/circularlinetine.ts"/>
 ///<reference path="panes/toolspane.ts"/>
+///<reference path="panes/colorpane.ts"/>
+
 interface MarblingUIDelegate {
     reset();
     applyOperations(operations: [Operation]);
@@ -92,17 +95,13 @@ class MarblingUI {
         const x = e.offsetX;
         const y = e.offsetY;
         this.mouseDownCoord = new Vec2(x, y);
-        switch (this.toolsPane.currentTool) {
-            case Tool.Drop:
-                break;
-            case Tool.TineLine:
-        }
     }
 
     private mouseUp(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
         let operation: Operation;
+        const currentCoord = new Vec2(x, y);
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
                 const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop).radius;
@@ -110,7 +109,6 @@ class MarblingUI {
                 this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine:
-                const currentCoord = new Vec2(x, y);
                 const direction = currentCoord.sub(this.mouseDownCoord);
                 if (direction.length() > 0.03) {
                     const numTines = this.toolsPane.toolParameters.forTool(Tool.TineLine).numTines;
@@ -118,8 +116,15 @@ class MarblingUI {
                     operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
                 }
-
                 break;
+            case Tool.CircularTine:
+                const radius = currentCoord.sub(this.mouseDownCoord).length();
+                const numTines = this.toolsPane.toolParameters.forTool(Tool.CircularTine).numTines;
+                const spacing = this.toolsPane.toolParameters.forTool(Tool.CircularTine).spacing;
+                if (radius > 0.03) {
+                    operation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
+                    this._delegate.applyOperations([operation]);
+                }
 
         }
         this.lastMouseCoord = null;

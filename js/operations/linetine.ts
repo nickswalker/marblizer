@@ -4,7 +4,7 @@
 Math.fmod = function (a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 };
-class LineTine extends Operation implements VectorField {
+class LineTine implements Operation, VectorField {
     // N in the paper
     readonly normal: Vec2;
     // L in the paper
@@ -18,7 +18,6 @@ class LineTine extends Operation implements VectorField {
     private static regex = RegExp("//^l(?:ine)? " + vec2Regex + vec2Regex + floatRegex + floatRegex + "$/i");
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
-        super();
         const strength = direction.length();
         this.line = direction.norm();
         this.normal = this.line.perp().norm();

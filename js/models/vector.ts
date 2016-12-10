@@ -55,7 +55,7 @@ class Vec2 {
     }
 
     mult(mat: Mat2x2) {
-        return new Vec2(this.x * mat.a + this.y + mat.c, this.x * mat.b + this.y * mat.d);
+        return new Vec2(this.x * mat.m11 + this.y * mat.m21, this.x * mat.m12 + this.y * mat.m22);
     }
 }
 
