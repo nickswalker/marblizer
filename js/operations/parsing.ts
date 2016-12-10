@@ -1,6 +1,6 @@
 ///<reference path="../models/vector.ts"/>
 ///<reference path="../models/color.ts"/>
-///<reference path="operations.ts"/>
+///<reference path="color_operations.ts"/>
 
 
 class OperationsParser {

@@ -1,4 +1,4 @@
-///<reference path="operations.ts"/>
+///<reference path="color_operations.ts"/>
 ///<reference path="../models/vectorfield.ts"/>
 ///<reference path="../marbling_renderer.ts"/>
 

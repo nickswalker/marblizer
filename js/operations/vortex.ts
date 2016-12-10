@@ -1,17 +1,17 @@
-///<reference path="operations.ts"/>
+///<reference path="color_operations.ts"/>
 class Vortex implements Operation, VectorField {
     // C in the paper
-    readonly origin: Vec2;
-    readonly numTines: number;
-    readonly interval: number;
+    readonly center: Vec2;
+    readonly radius: number;
     readonly strength: number;
     readonly alpha = 80.0;
     readonly lambda = 32;
     private static regex = RegExp("//^v(?:ortex)? " + vec2Regex + floatRegex + "$/i");
 
-    constructor(origin: Vec2, strength: number) {
-        this.origin = origin;
-        this.strength = strength
+    constructor(origin: Vec2, radius: number, counterclockwise: boolean = False) {
+        this.center = origin;
+        this.radius = radius;
+        this.counterclockwise = counterclockwise;
     }
 
     static fromString(str: string) {
@@ -36,9 +36,17 @@ class Vortex implements Operation, VectorField {
     }
 
     atPoint(point: Vec2): Vec2 {
-        const d = Math.abs(point.sub(this.origin).dot(this.normal));
-        const factor = this.alpha * this.lambda / (d + this.lambda);
-        return this.line.copy().scale(factor);
+        const pLessC = point.sub(this.center);
+        const pLessCLen = pLessC.length();
+        const d = Math.abs(100 / this.radius * pLessCLen);
+        const l = this.alpha * this.lambda / (d + this.lambda);
+        const theta = this.counterclockwise ? -l / pLessCLen : l / pLessCLen;
+        const sinT = Math.sin(theta);
+        const cosT = Math.cos(theta);
+        const mat = new Mat2x2(cosT, sinT, -sinT, cosT);
+        const addend = pLessC.mult(mat);
+        const trans = this.center.add(addend);
+        return trans.sub(point);
     }
 
 }

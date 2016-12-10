@@ -71,7 +71,7 @@ class VectorFieldOverlay {
                     this.previewOperation = null;
                 }
                 break;
-            case Tool.CircularTine:
+            case Tool.CircularTine: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
                     const spacing = this.currentToolParameter.spacing;
                     const numTines = this.currentToolParameter.numTines;
@@ -84,9 +84,19 @@ class VectorFieldOverlay {
                     this.previewOperation = null;
                 }
                 break;
-            case Tool.Vortex:
-                this.previewOperation = new Vortex(this.lastMouseCoord, 1, 1);
+            }
+            case Tool.Vortex: {
+                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
+                    const radius = this.lastMouseCoord.sub(this.mouseDownCoord).length();
+                    if (radius > 0.03) {
+                        this.previewOperation = new Vortex(this.mouseDownCoord, radius);
+                    }
+                    break;
+                } else {
+                    this.previewOperation = null;
+                }
                 break;
+            }
         }
     }
 

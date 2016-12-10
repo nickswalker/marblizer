@@ -2,7 +2,7 @@
 ///<reference path="models/color.ts"/>
 ///<reference path=".d.ts"/>
 ///<reference path="ui/panes/textinputpane.ts"/>
-///<reference path="operations/operations.ts"/>
+///<reference path="operations/color_operations.ts"/>
 
 class Drop {
     points: Array<Vec2>;

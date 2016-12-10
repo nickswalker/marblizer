@@ -36,7 +36,6 @@ class ChangeBaseColorOperation implements Operation {
     readonly color: Color;
 
     constructor(color: Color) {
-        super();
         this.color = color;
     }
 

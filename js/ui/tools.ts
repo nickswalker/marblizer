@@ -25,7 +25,7 @@ primaryKeys[Tool.TineLine] = "spacing";
 primaryKeys[Tool.CircularTine] = "spacing";
 
 const guides = toolInitializedObject();
-guides[Tool.Drop]["radius"] = [5, 100, 5];
+guides[Tool.Drop]["radius"] = [5, 300, 5];
 guides[Tool.Spatter]["radius"] = [20, 300, 5];
 guides[Tool.TineLine]["spacing"] = [5, 300, 5];
 guides[Tool.TineLine]["numTines"] = [0, 20, 1];

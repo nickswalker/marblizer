@@ -108,7 +108,7 @@ class MarblingUI {
                 operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor);
                 this._delegate.applyOperations([operation]);
                 break;
-            case Tool.TineLine:
+            case Tool.TineLine: {
                 const direction = currentCoord.sub(this.mouseDownCoord);
                 if (direction.length() > 0.03) {
                     const numTines = this.toolsPane.toolParameters.forTool(Tool.TineLine).numTines;
@@ -117,7 +117,8 @@ class MarblingUI {
                     this._delegate.applyOperations([operation]);
                 }
                 break;
-            case Tool.CircularTine:
+            }
+            case Tool.CircularTine: {
                 const radius = currentCoord.sub(this.mouseDownCoord).length();
                 const numTines = this.toolsPane.toolParameters.forTool(Tool.CircularTine).numTines;
                 const spacing = this.toolsPane.toolParameters.forTool(Tool.CircularTine).spacing;
@@ -125,6 +126,16 @@ class MarblingUI {
                     operation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
                     this._delegate.applyOperations([operation]);
                 }
+                break;
+            }
+            case Tool.Vortex: {
+                const radius = currentCoord.sub(this.mouseDownCoord).length();
+                if (radius > 0.03) {
+                    operation = new Vortex(this.mouseDownCoord, radius);
+                    this._delegate.applyOperations([operation]);
+                }
+                break;
+            }
 
         }
         this.lastMouseCoord = null;
