@@ -62,10 +62,16 @@ class Color {
     }
 }
 
+const black = new Color(0, 0, 0);
+const white = new Color(255, 255, 255);
+const red = new Color(255, 0, 0);
+const green = new Color(0, 255, 0);
+const blue = new Color(0, 0, 255);
+
 const colorSets = [
     [Color.withHex("27372d"), Color.withHex("a98918"), Color.withHex("891920"), Color.withHex("d0b9a0"), Color.withHex("2b231b")],
-    [Color.withHex("FFFFFF"), Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")],
     [Color.withHex("605B73"), Color.withHex("414257"), Color.withHex("4E7F9E"), Color.withHex("AFBDD9"), Color.withHex("5A87A0")],
     [Color.withHex("C5BDA6"), Color.withHex("CF5725"), Color.withHex("1B1C21"), Color.withHex("849C86"), Color.withHex("BDA99E")],
+    [Color.withHex("FFFFFF"), Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]
 ];
 
