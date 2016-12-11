@@ -8,6 +8,7 @@ class ToolsPane {
     delegate: MarblingUIDelegate;
     private _currentTool: Tool;
     toolParameters: ToolParameters;
+    private shiftDown: boolean = false;
 
     constructor(container: HTMLElement) {
         this.container = container;
@@ -37,8 +38,13 @@ class ToolsPane {
         for (const key in this.toolToButtonMapping) {
             this.toolToButtonMapping[key].onclick = this.toolClicked.bind(this);
         }
+        document.addEventListener("keydown", this.shiftChange.bind(this));
+        document.addEventListener("keyup", this.shiftChange.bind(this));
     }
 
+    private shiftChange(e: KeyboardEvent) {
+        this.shiftDown = e.shiftKey;
+    }
 
     private toolClicked(event: MouseEvent) {
         for (let key in this.toolToButtonMapping) {
@@ -57,7 +63,7 @@ class ToolsPane {
     }
 
     private clickedReset(event: MouseEvent) {
-        if (confirm("Are you sure you want to reset?")) {
+        if (this.shiftDown || confirm("Are you sure you want to reset?")) {
             this.delegate.reset();
         }
     }

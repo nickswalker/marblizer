@@ -14,9 +14,11 @@
     <script src="js/operations/vortex.js"></script>
     <script src="js/ui/ui.js"></script>
     <script src="js/ui/tools.js"></script>
+    <script src="js/ui/panes/modal.js"></script>
+    <script src="js/ui/panes/notification.js"></script>
     <script src="js/ui/panes/colorpane.js"></script>
     <script src="js/ui/panes/toolspane.js"></script>
-    <script src="js/ui/panes/textinputpane.js"></script>
+    <script src="js/ui/panes/scriptingpane.js"></script>
     <script src="js/ui/keyboard.js"></script>
     <script src="js/ui/cursor/cursor_overlay.js"></script>
     <script src="js/ui/cursor/cursor_renderer.js"></script>
@@ -30,7 +32,9 @@
     <script src="js/models/matrix.js"></script>
     <script src="js/models/vectorfield.js"></script>
     <script src="js/drawing_utilities.js"></script>
-    <script src="js/example_scripts.js"></script>
+    <script src="js/parse_query_string.js"></script>
+    <script src="js/scripting/user_program.js"></script>
+    <script src="js/scripting/example_scripts.js"></script>
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/theme/solarized.min.css">
@@ -46,6 +50,7 @@
     <div id="operations-input" class="marbling-pane center-pane">
         <ul class="toolbar">
             <li class="close-button tool">Close</li>
+            <li class="get-url-button tool">Get URL</li>
             <li class="run-button tool">Run</li>
         </ul>
         <div class="input-container"></div>
@@ -78,6 +83,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/mode/javascript/javascript.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.3.6/svg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
 <script>
     addEventListener('load', function () {
@@ -86,15 +92,22 @@
         let colorsPane = document.getElementById("marbling-colors");
         let operationsInput = document.getElementById("operations-input");
         let ui = new MarblingUI(marblingWorkspace, toolsPane, colorsPane, operationsInput);
-        let scene = new MarblingRenderer(marblingWorkspace);
-        ui.delegate = scene;
-        scene.setSize(window.innerWidth, window.innerHeight);
-        ui.setSize(window.innerWidth, window.innerHeight);
+        let renderer = new MarblingRenderer(marblingWorkspace);
+        ui.delegate = renderer;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        ui.size = new Vec2(window.innerWidth, window.innerHeight);
 
         window.onresize = function (event) {
-            scene.setSize(window.innerWidth, window.innerHeight);
-            ui.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            ui.size = new Vec2(window.innerWidth, window.innerHeight);
         };
+
+        const parameter = getParameterByName("p");
+        if (parameter != null && confirm("Execute passed in program?")) {
+            const decompressed = LZString.decompressFromEncodedURIComponent(parameter);
+            const program = new UserProgram(decompressed);
+            renderer.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+        }
 
     });
 </script>

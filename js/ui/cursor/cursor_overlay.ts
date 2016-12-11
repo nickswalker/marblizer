@@ -1,4 +1,4 @@
-///<reference path="../panes/textinputpane.ts"/>
+///<reference path="../panes/scriptingpane.ts"/>
 ///<reference path="cursor_renderer.ts"/>
 ///<reference path="tine_renderer.ts"/>
 ///<reference path="dynamic_radius_renderer.ts"/>

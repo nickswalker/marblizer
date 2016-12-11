@@ -1,7 +1,7 @@
 ///<reference path="models/vector.ts"/>
 ///<reference path="models/color.ts"/>
 ///<reference path=".d.ts"/>
-///<reference path="ui/panes/textinputpane.ts"/>
+///<reference path="ui/panes/scriptingpane.ts"/>
 ///<reference path="operations/color_operations.ts"/>
 
 class Drop {
@@ -69,6 +69,7 @@ class MarblingRenderer {
         this.displayCanvas.height = height;
         this.renderCanvas.width = width;
         this.renderCanvas.height = height;
+        this.dirty = true;
     }
 
     render() {
@@ -93,7 +94,8 @@ class MarblingRenderer {
     }
 
     reset() {
-        this.drops = []
+        this.drops = [];
+        this.dirty = true;
     }
 
     applyOperations(operations: [Operation]) {

@@ -1,25 +1,18 @@
-var KeyboardShortcutOverlay = (function () {
-    function KeyboardShortcutOverlay() {
-        this.container = document.createElement("div");
-        this.container.className = "modal-container";
-        document.body.insertBefore(this.container, document.body.firstChild);
-        this.modal = document.createElement("div");
-        this.container.appendChild(this.modal);
-        this.modal.className = "keyboard-shortcut-overlay center-pane marbling-pane";
+///<reference path="panes/modal.ts"/>
+class KeyboardShortcutOverlay extends Modal {
+
+    constructor() {
+        super();
+        this.modal.className += " keyboard-shortcut-overlay";
         this.fetchContent();
-        this.hide();
-        this.container.onclick = this.hide.bind(this);
     }
 
-    KeyboardShortcutOverlay.prototype.show = function () {
-        this.container.removeAttribute("style");
-    };
-    KeyboardShortcutOverlay.prototype.hide = function () {
-        this.container.style.visibility = "hidden";
-        this.container.style.display = "none";
-    };
-    KeyboardShortcutOverlay.prototype.handleResponse = function (e) {
-        var response = e.currentTarget;
+    willDismiss() {
+        // Nothing to do here
+    }
+
+    private handleResponse(e: Event) {
+        const response: XMLHttpRequest = e.currentTarget;
         if (response.readyState === 4) {
             if (response.status === 200 || response.status === 304) {
                 this.modal.innerHTML += response.responseText;
@@ -27,12 +20,13 @@ var KeyboardShortcutOverlay = (function () {
             }
         }
     };
-    KeyboardShortcutOverlay.prototype.fetchContent = function () {
-        var request = new XMLHttpRequest();
+
+    private fetchContent() {
+        const request = new XMLHttpRequest();
         request.onreadystatechange = this.handleResponse.bind(this);
         request.open("POST", "views/keyboard_shortcuts.html", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         request.send(null);
     };
-    return KeyboardShortcutOverlay;
-}());
+
+}

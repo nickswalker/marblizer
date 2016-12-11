@@ -108,6 +108,10 @@ MODAL
     box-shadow: rgba(30, 30, 30, 0.1) 0px 2px 10px;
 }
 
+.notification {
+    user-select: all;
+}
+
 /* Operations input*/
 
 #operations-input .input-container {

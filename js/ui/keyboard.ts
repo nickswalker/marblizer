@@ -1,5 +1,5 @@
 ///<reference path="ui.ts"/>
-///<reference path="panes/textinputpane.ts"/>
+///<reference path="panes/scriptingpane.ts"/>
 ///<reference path="./parsing.ts"/>
 
 enum KeyboardShortcut {

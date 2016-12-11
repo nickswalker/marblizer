@@ -7,6 +7,8 @@
 ///<reference path="panes/toolspane.ts"/>
 ///<reference path="panes/colorpane.ts"/>
 ///<reference path="help_overlay.ts"/>
+///<reference path="../operations/wavylinetine.ts"/>
+///<reference path="../scripting/user_program.ts"/>
 
 interface MarblingUIDelegate {
     reset();
@@ -19,10 +21,11 @@ class MarblingUI {
     toolsPane: ToolsPane;
     colorPane: ColorPane;
     _delegate: MarblingUIDelegate;
+    private _size: Vec2;
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
-    private textPane: TextInputPane;
-    private keyboardShortcutOverlay: KeyboardShortcutOverlay;
+    private textPane: ScriptingPane;
+    private keyboardShortcutOverlay: MarblingUIDelegate;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
@@ -30,7 +33,7 @@ class MarblingUI {
     constructor(container: HTMLElement, toolsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
-        this.textPane = new TextInputPane(textContainer);
+        this.textPane = new ScriptingPane(textContainer);
         this.keyboardShortcutOverlay = new KeyboardShortcutOverlay();
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
@@ -44,10 +47,14 @@ class MarblingUI {
     }
 
     private didEnterInput(input: string) {
+        if (input == null) {
+            return;
+        }
         this.keyboardManager.acceptingNewKeys = true;
         let result: [Operation];
         try {
-            result = new Function(input)();
+            const userProgram = new UserProgram(input);
+            result = userProgram.execute(this._size);
         } catch (e) {
             alert(e);
         }
@@ -63,9 +70,10 @@ class MarblingUI {
         this.colorPane.delegate = delegate;
     }
 
-    setSize(width: number, height: number) {
-        this.cursorOverlay.setSize(width, height);
-        this.vectorFieldOverlay.setSize(width, height);
+    set size(size: Vec2) {
+        this.cursorOverlay.setSize(size.x, size.y);
+        this.vectorFieldOverlay.setSize(size.x, size.y);
+        this._size = size;
     }
 
     didPressShortcut(shortcut: KeyboardShortcut) {
