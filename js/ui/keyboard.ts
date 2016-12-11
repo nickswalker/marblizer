@@ -42,15 +42,37 @@ class MarblingKeyboardUI {
     keyboardDelegate: MarblingKeyboardUIDelegate;
     acceptingNewKeys: boolean = true;
     shiftDown: boolean = false;
+    controlDown: boolean = false;
+    altDown: boolean = false;
+    metaDown: boolean = false;
 
     constructor() {
-        window.onkeypress = this.keyWasPressed.bind(this);
-        document.addEventListener("keydown", this.shiftChange.bind(this));
-        document.addEventListener("keyup", this.shiftChange.bind(this));
+        window.addEventListener("keypress", this.keyWasPressed.bind(this));
+        window.addEventListener("keydown", this.keyDown.bind(this));
+        window.addEventListener("keyup", this.keyUp.bind(this));
+
     }
 
-    private shiftChange(e: KeyboardEvent) {
+    private keyDown(e: KeyboardEvent) {
         this.shiftDown = e.shiftKey;
+        this.controlDown = e.ctrlKey;
+        this.altDown = e.altKey;
+        this.metaDown = e.metaKey;
+
+        const shortcut = keyMapping[e.key];
+        if (this.controlDown && e.keyCode == 83) {
+            event.preventDefault();
+            this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
+
+            return false;
+        }
+    }
+
+    private keyUp(e: KeyboardEvent) {
+        this.shiftDown = e.shiftKey;
+        this.controlDown = e.ctrlKey;
+        this.altDown = e.altKey;
+        this.metaDown = e.metaKey;
     }
 
     keyWasPressed(event: KeyboardEvent) {
@@ -59,6 +81,7 @@ class MarblingKeyboardUI {
         }
         const shortcut = keyMapping[event.key];
         this.keyboardDelegate.didPressShortcut(shortcut);
+
     }
 
 

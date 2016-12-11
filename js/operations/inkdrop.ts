@@ -1,6 +1,6 @@
 ///<reference path="color_operations.ts"/>
 ///<reference path="../models/vectorfield.ts"/>
-///<reference path="../marbling_renderer.ts"/>
+///<reference path="../renderer/curve_renderer.ts"/>
 
 class InkDropOperation implements Operation, VectorField {
     readonly position: Vec2;
@@ -15,7 +15,7 @@ class InkDropOperation implements Operation, VectorField {
         this.displacing = displacing;
     }
 
-    apply(renderer: MarblingRenderer) {
+    apply(renderer: InteractiveCurveRenderer) {
         let newDrop = new Drop(this.color, this.radius, this.position.x, this.position.y);
         if (this.displacing) {
             for (let d = 0; d < renderer.drops.length; d++) {

@@ -1,4 +1,4 @@
-///<reference path="../marbling_renderer.ts"/>
+///<reference path="../renderer/curve_renderer.ts"/>
 ///<reference path="cursor/cursor_overlay.ts"/>
 ///<reference path="keyboard.ts"/>
 ///<reference path="vector_field_overlay.ts"/>
@@ -13,6 +13,7 @@
 interface MarblingUIDelegate {
     reset();
     applyOperations(operations: [Operation]);
+    save();
 
 }
 
@@ -79,9 +80,13 @@ class MarblingUI {
     didPressShortcut(shortcut: KeyboardShortcut) {
         switch (shortcut) {
             case KeyboardShortcut.S:
-                this.keyboardManager.acceptingNewKeys = false;
-                this.textPane.getInput(this.didEnterInput.bind(this));
-                return;
+                if (this.keyboardManager.controlDown) {
+                    this._delegate.save();
+                } else {
+                    this.keyboardManager.acceptingNewKeys = false;
+                    this.textPane.getInput(this.didEnterInput.bind(this));
+                    return;
+                }
             case KeyboardShortcut.Plus:
                 this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
                 return;
@@ -182,12 +187,12 @@ class MarblingUI {
         switch (this.toolsPane.currentTool) {
             case Tool.Spatter:
                 if (this.mouseDownCoord != null) {
-                    const variablity = this.toolsPane.toolParameters.forTool(Tool.Spatter).variability;
-                    const radius = this.toolsPane.toolParameters.forTool(Tool.Spatter).radius;
+                    const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter).dropRadius;
+                    const scatterRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter).scatterRadius;
                     const currentColor = this.colorPane.currentColor;
                     if (Math.random() < 0.1) {
-                        const newOrigin = mouseCoords.add(new Vec2(Math.random() * 2 * radius - radius, Math.random() * 2 * radius - radius));
-                        const newRadius = Math.random() * variablity + 10;
+                        const newOrigin = mouseCoords.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
+                        const newRadius = Math.random() * dropRadius + 10;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);
                     }

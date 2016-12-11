@@ -1,8 +1,8 @@
-///<reference path="models/vector.ts"/>
-///<reference path="models/color.ts"/>
-///<reference path=".d.ts"/>
-///<reference path="ui/panes/scriptingpane.ts"/>
-///<reference path="operations/color_operations.ts"/>
+///<reference path="../models/vector.ts"/>
+///<reference path="../models/color.ts"/>
+///<reference path="../.d.ts"/>
+///<reference path="../ui/panes/scriptingpane.ts"/>
+///<reference path="../operations/color_operations.ts"/>
 
 class Drop {
     points: Array<Vec2>;
@@ -47,7 +47,12 @@ class Drop {
 }
 
 
-class MarblingRenderer {
+interface MarblingRenderer {
+    applyOperations(operations: [Operation]);
+    save();
+}
+
+class InteractiveCurveRenderer implements MarblingRenderer {
     renderCanvas: HTMLCanvasElement;
     displayCanvas: HTMLCanvasElement;
     drops: Drop[] = [];
@@ -108,6 +113,11 @@ class MarblingRenderer {
             drop.getPath();
         }
         this.dirty = true;
+    }
+
+    save() {
+        const newWindow = window.open('about:new', 'Ink Marbling Image');
+        newWindow.document.write("<img src='" + this.renderCanvas.toDataURL("image/png") + "' alt='from canvas'/>");
     }
 
 }

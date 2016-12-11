@@ -1,7 +1,7 @@
 ///<reference path="../models/vector.ts"/>
 ///<reference path="color_operations.ts"/>
 ///<reference path="../ui/vector_field_overlay.ts"/>
-///<reference path="../marbling_renderer.ts"/>
+///<reference path="../renderer/curve_renderer.ts"/>
 ///<reference path="../models/matrix.ts"/>
 class CircularLineTine implements Operation, VectorField {
     // C in the paper
@@ -22,7 +22,7 @@ class CircularLineTine implements Operation, VectorField {
     }
 
 
-    apply(renderer: MarblingRenderer) {
+    apply(renderer: InteractiveCurveRenderer) {
         for (let d = 0; d < renderer.drops.length; d++) {
             let drop = renderer.drops[d];
             for (let p = 0; p < drop.points.length; p++) {

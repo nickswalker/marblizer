@@ -20,14 +20,20 @@ function toolInitializedObject(): {[key: number]: Object} {
 
 const primaryKeys = toolInitializedObject();
 primaryKeys[Tool.Drop] = "radius";
-primaryKeys[Tool.Spatter] = "radius";
+primaryKeys[Tool.Spatter] = "scatterRadius";
 primaryKeys[Tool.TineLine] = "spacing";
 primaryKeys[Tool.WavyLine] = "spacing";
 primaryKeys[Tool.CircularTine] = "spacing";
 
+const secondaryKeys = toolInitializedObject();
+secondaryKeys[Tool.Spatter] = "dropRadius";
+secondaryKeys[Tool.TineLine] = "numTines";
+secondaryKeys[Tool.CircularTine] = "numTines";
+
 const guides = toolInitializedObject();
 guides[Tool.Drop]["radius"] = [5, 300, 5];
-guides[Tool.Spatter]["radius"] = [20, 300, 5];
+guides[Tool.Spatter]["scatterRadius"] = [20, 300, 5];
+guides[Tool.Spatter]["dropRadius"] = [5, 40, 5];
 guides[Tool.TineLine]["spacing"] = [5, 300, 5];
 guides[Tool.TineLine]["numTines"] = [0, 20, 1];
 guides[Tool.WavyLine]["spacing"] = [5, 300, 5];
@@ -35,10 +41,7 @@ guides[Tool.WavyLine]["numTines"] = [0, 20, 1];
 guides[Tool.CircularTine]["spacing"] = [5, 300, 5];
 guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
-const secondaryKeys = toolInitializedObject();
-secondaryKeys[Tool.Spatter] = "variability";
-secondaryKeys[Tool.TineLine] = "numTines";
-secondaryKeys[Tool.CircularTine] = "numTines";
+
 
 
 class ToolParameters {
@@ -49,7 +52,8 @@ class ToolParameters {
         this.onchange = onchange;
         this.parameters = toolInitializedObject();
         this.parameters[Tool.Drop]["radius"] = 50;
-        this.parameters[Tool.Spatter]["radius"] = 100;
+        this.parameters[Tool.Spatter]["scatterRadius"] = 100;
+        this.parameters[Tool.Spatter]["dropRadius"] = 10;
         this.parameters[Tool.Spatter]["number"] = 100;
         this.parameters[Tool.Spatter]["variability"] = 20;
         this.parameters[Tool.TineLine]["numTines"] = 1;

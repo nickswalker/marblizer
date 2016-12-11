@@ -5,7 +5,8 @@
     <title>Paper Marbling</title>
     <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="css/help.css">
-    <script src="js/marbling_renderer.js"></script>
+    <script src="js/renderer/curve_renderer.js"></script>
+    <script src="js/renderer/svg_renderer.js"></script>
     <script src="js/operations/color_operations.js"></script>
     <script src="js/operations/inkdrop.js"></script>
     <script src="js/operations/linetine.js"></script>
@@ -86,13 +87,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
 <script>
+    let renderer = null;
     addEventListener('load', function () {
         let marblingWorkspace = document.getElementById("workspace");
         let toolsPane = document.getElementById("marbling-tools");
         let colorsPane = document.getElementById("marbling-colors");
         let operationsInput = document.getElementById("operations-input");
         let ui = new MarblingUI(marblingWorkspace, toolsPane, colorsPane, operationsInput);
-        let renderer = new MarblingRenderer(marblingWorkspace);
+        renderer = new InteractiveCurveRenderer(marblingWorkspace);
         ui.delegate = renderer;
         renderer.setSize(window.innerWidth, window.innerHeight);
         ui.size = new Vec2(window.innerWidth, window.innerHeight);

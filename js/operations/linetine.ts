@@ -27,7 +27,7 @@ class LineTine implements Operation, VectorField {
         this.alpha += strength / 10.0;
     }
 
-    apply(renderer: MarblingRenderer) {
+    apply(renderer: InteractiveCurveRenderer) {
 
         for (let d = 0; d < renderer.drops.length; d++) {
             let drop = renderer.drops[d];

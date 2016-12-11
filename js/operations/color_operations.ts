@@ -1,8 +1,8 @@
 ///<reference path="../models/color.ts"/>
 ///<reference path="../models/vector.ts"/>
-///<reference path="../marbling_renderer.ts"/>
+///<reference path="../renderer/curve_renderer.ts"/>
 interface Operation {
-    apply(renderer: MarblingRenderer);
+    apply(renderer: InteractiveCurveRenderer);
 }
 
 class ChangeBaseColorOperation implements Operation {
@@ -12,7 +12,7 @@ class ChangeBaseColorOperation implements Operation {
         this.color = color;
     }
 
-    apply(renderer: MarblingRenderer) {
+    apply(renderer: InteractiveCurveRenderer) {
         renderer.baseColor = this.color;
     }
 }
