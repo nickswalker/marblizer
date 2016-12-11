@@ -102,8 +102,6 @@ class CursorOverlay {
 
         let minExtent: Vec2;
         let drawSize: Vec2;
-        ctx.strokeStyle = "rgba(100,100,100, 0.1)";
-        ctx.fillStyle = "rgba(100,100,100, 0.1)";
         if (this.mouseDownCoord == null) {
             [minExtent, drawSize] = this.currentCursorRenderer.drawAtRest(ctx, this.lastMoveCoord);
         } else {

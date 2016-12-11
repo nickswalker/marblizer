@@ -21,12 +21,20 @@ class CircleRenderer implements CursorRenderer {
     }
 
     private updateCursor() {
-        this.canvas.width = this._radius * 2 + 3;
-        this.canvas.height = this._radius * 2 + 3;
+        if (this._radius < 3) {
+            return;
+        }
+        this.canvas.width = this._radius * 2 + 4;
+        this.canvas.height = this._radius * 2 + 4;
         const ctx = this.canvas.getContext("2d");
-        ctx.strokeStyle = "rgba(100,100,100,0.3)";
+
         const origin = new Vec2(this.canvas.width / 2, this.canvas.height / 2);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "rgba(0,0,0,0.8)";
         circle(ctx, origin, this._radius);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
+        circle(ctx, origin, this._radius - 2);
         ctx.stroke();
     }
     drawAtRest(ctx: CanvasRenderingContext2D, position: Vec2): [Vec2, Vec2] {
@@ -61,8 +69,13 @@ class CrossRenderer implements CursorRenderer {
         this.canvas.width = this.size + 4;
         this.canvas.height = this.size + 4;
         const ctx = this.canvas.getContext("2d");
-        ctx.strokeStyle = "rgba(100,100,100, 0.4)";
         const origin = new Vec2(this.canvas.width / 2, this.canvas.height / 2);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "rgba(0,0,0,0.8)";
+        cross(ctx, origin, this.size + 2);
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
         cross(ctx, origin, this.size);
         ctx.stroke();
     }

@@ -32,17 +32,42 @@ class DynamicRadiusRenderer implements CursorRenderer {
     }
 
     drawActive(ctx: CanvasRenderingContext2D, mouseDown: Vec2, cursor: Vec2): [Vec2, Vec2] {
-        const [crossMin, crossSize] = this.crossRenderer.drawAtRest(ctx, cursor);
-        this.circleRenderer.radius = mouseDown.sub(cursor).length();
-        const [circleMin, circleSize] = this.circleRenderer.drawAtRest(ctx, mouseDown);
 
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "rgba(0,0,0,0.8)";
         ctx.beginPath();
         ctx.moveTo(mouseDown.x, mouseDown.y);
         ctx.lineTo(cursor.x, cursor.y);
         ctx.closePath();
         ctx.stroke();
-        circle(ctx, mouseDown, 3);
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
+        ctx.beginPath();
+        ctx.moveTo(mouseDown.x, mouseDown.y);
+        ctx.lineTo(cursor.x, cursor.y);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.lineWidth = 2;
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.beginPath();
+        ctx.moveTo(mouseDown.x, mouseDown.y);
+        ctx.lineTo(cursor.x, cursor.y);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        circle(ctx, mouseDown, 4);
         ctx.fill();
+
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        circle(ctx, mouseDown, 2);
+        ctx.fill();
+
+        const [crossMin, crossSize] = this.crossRenderer.drawAtRest(ctx, cursor);
+        this.circleRenderer.radius = mouseDown.sub(cursor).length();
+        const [circleMin, circleSize] = this.circleRenderer.drawAtRest(ctx, mouseDown);
 
         const min = vecMin(crossMin, circleMin);
         const max = vecMax(crossMin.add(crossSize), circleMin.add(circleSize));
