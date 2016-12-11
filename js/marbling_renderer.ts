@@ -49,34 +49,46 @@ class Drop {
 
 class MarblingRenderer {
     renderCanvas: HTMLCanvasElement;
+    displayCanvas: HTMLCanvasElement;
     drops: Drop[] = [];
-    context: CanvasRenderingContext2D;
     baseColor: Color = new Color(220,210,210);
-
+    private dirty: boolean = true;
     private history: [Operation];
 
     constructor(container: HTMLElement) {
+        this.displayCanvas = document.createElement("canvas");
+        this.displayCanvas.className = "marbling-render-layer";
+        container.insertBefore(this.displayCanvas, container.firstChild);
         this.renderCanvas = document.createElement("canvas");
-        this.renderCanvas.className = "marbling-render-layer";
-        container.insertBefore(this.renderCanvas, container.firstChild);
-        this.context = this.renderCanvas.getContext("2d");
+        this.render();
         window.requestAnimationFrame(this.draw.bind(this));
     }
 
     setSize(width: number, height: number) {
+        this.displayCanvas.width = width;
+        this.displayCanvas.height = height;
         this.renderCanvas.width = width;
         this.renderCanvas.height = height;
     }
 
-    draw() {
-        this.context.fillStyle = this.baseColor.toRGBString();
-        this.context.fillRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
-        for (let i = 0; i < this.drops.length; i ++) {
+    render() {
+        const ctx = this.renderCanvas.getContext("2d");
+        ctx.fillStyle = this.baseColor.toRGBString();
+        ctx.fillRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
+        for (let i = 0; i < this.drops.length; i++) {
             const drop = this.drops[i];
-            this.context.fillStyle = drop.color.toRGBString();
-            this.context.fill(drop.getPath());
+            ctx.fillStyle = drop.color.toRGBString();
+            ctx.fill(drop.getPath());
         }
+    }
 
+    draw() {
+        if (this.dirty) {
+            this.render();
+            this.dirty = false;
+        }
+        const ctx = this.displayCanvas.getContext("2d");
+        ctx.drawImage(this.renderCanvas, 0, 0);
         window.requestAnimationFrame(this.draw.bind(this));
     }
 
@@ -89,6 +101,11 @@ class MarblingRenderer {
             const operation = operations[i];
             operation.apply(this);
         }
+        for (let i = 0; i < this.drops.length; i++) {
+            const drop = this.drops[i];
+            drop.getPath();
+        }
+        this.dirty = true;
     }
 
 }

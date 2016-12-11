@@ -17,6 +17,7 @@ class WavyLineTine implements Operation, VectorField {
     readonly lambda: number = 32;
     readonly amplitude: number = 10;
     readonly phase: number = 0.0;
+    readonly angle: number;
     readonly wavelength: number = 400.0;
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
@@ -26,8 +27,8 @@ class WavyLineTine implements Operation, VectorField {
         this.origin = origin;
         this.numTines = numTines;
         this.spacing = spacing;
-
-        this.alpha += strength / 10.0;
+        this.angle = this.line.angle();
+        this.amplitude += strength / 10.0;
     }
 
     apply(renderer: MarblingRenderer) {
@@ -44,9 +45,8 @@ class WavyLineTine implements Operation, VectorField {
     }
 
     atPoint(point: Vec2): Vec2 {
-        const t = 0.0;
-        const sinT = Math.sin(t);
-        const cosT = Math.cos(t);
+        const sinT = Math.sin(this.angle);
+        const cosT = Math.cos(this.angle);
 
         const v = point.dot(new Vec2(sinT, -cosT));
         const factor = this.amplitude * Math.sin(2 * Math.PI / this.wavelength * v + this.phase);
