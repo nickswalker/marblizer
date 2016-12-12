@@ -57,7 +57,7 @@
 %	DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
 
-\title{Interactive Ink Marbling}
+\title{Interactive Paper Marbling}
 
 \author{\textsc{Nick Walker}}
 
@@ -75,10 +75,10 @@
 
 Marbling is a traditional art practice in which acrylic inks are floated on a liquid surface, then transferred to a sheet of paper. The resulting patterns can resemble marble, but common outputs range from intricate spiraling patters to spattered, space-like designs.
 
-Several works have modeled marbling as a Naiver-Stokes fluid simulation, however, this is computationally demanding and dissipative. The resulting images are chronically blurry and fail to capture the well defined boundaries between colored areas that are characteristic of marbled patterns. In contrast, a paper from Lu et. al. describes a closed form approximate solution for the position of vertices along the boundaries of ink
+Several works have modeled marbling as a Navier-Stokes fluid simulation, however, this is computationally demanding and dissipative. The resulting images are chronically blurry and fail to capture the well defined boundaries between colored areas that are characteristic of marbled patterns. In contrast, a paper from Lu et. al. describes a closed form approximate solution for the position of vertices along the boundaries of ink
 drops under various marbling operations \cite{Shufang2012}.
  
-In the Lu work, compositions are completely described by a sequence of marbling operations. We provide the equations that describe the deformations created by each operation, describe how these operations can be rendered, and present our interactive implementation.
+In the Lu work, compositions are completely described by a sequence of marbling operations. We provide the equations that define the deformations created by each operation, describe how these operations can be rendered, and present our interactive implementation.
 
 
 %----------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ Operations may have parameters that control their placement of effect. We will n
 The ink drop operation places a colored circle of radius $r$ at point $\cb$. It deforms other points according to the field 
 \begin{gather*}
 	r \in \mathbb{R}^+\\
-	\boldsymbol{O}(\pb | \cb, r) =  \pb - \Bigg(\cb - (\pb - \cb )\sqrt{1 + \frac{r^2}{\lVert\pb - \cb\rVert^2}}\Bigg)
+	\boldsymbol{O}(\pb | \cb, r) =  -\pb + \Bigg(\cb - (\pb - \cb )\sqrt{1 + \frac{r^2}{\lVert\pb - \cb\rVert^2}}\Bigg)
 \end{gather*}
 which has the property of preserving the area of surrounding ink drops.
 
@@ -140,7 +140,7 @@ The wavy comb operator simulates moving a comb of tines through the marbling sur
 \subsection{Tine Circle}
 The tine circle operator simulates moving a tine in a circle with radius $r$ and center $\cb$.
 \begin{gather*}
-	\boldsymbol{O}(\pb | \cb, r) =  \pb - \bigg(\cb - (\pb - \cb) ^ \top \begin{bmatrix}
+	\boldsymbol{O}(\pb | \cb, r) =  -\pb + \bigg(\cb - (\pb - \cb) ^ \top \begin{bmatrix}
 	\cos(\theta) &\sin(\theta)\\
 	-\sin(\theta) &\cos(\theta)\\
 	\end{bmatrix} \bigg)\\
@@ -167,7 +167,11 @@ A sequence of operations fully describes a marbling composition. In order to ren
 \begin{algorithm}
 	\caption{Render}
 	\label{alg:update}
+
 	\begin{algorithmic}[1] % The number tells where the line numbering should start
+			
+		\State \textbf{Input:}  list of operations $\bm{O}$, $r$ geometry resolution
+		\State \textbf{Output:}  bitmap image
 		\Procedure{Render}{$\bm{O}$, $r$}
 		\State drops $\gets$ []
 		\For{$o$ in $\bm{O}$ } {}
@@ -176,7 +180,9 @@ A sequence of operations fully describes a marbling composition. In order to ren
                     \State $\bm{p}$ $\gets$ $\bm{p} + o$.displacementAtPoint($\bm{p}$)
                 \EndFor
             \EndFor
-            \State $o$.createGeometry()
+            \If{o instance of InkDropOperation}{}
+                        \State drops.append $o$.createGeometry(r))
+                   \EndIf
         \EndFor
         \State image $\gets$ baseColor
         \For{drop in drops}{}
@@ -212,7 +218,7 @@ Our tool lets users
 
 \subsection{Interactive controls}
 
-Users can control operations by clicking and dragging. Most operations accept the $c$ parameter as their origin. We map this to mouse down coordinates on our canvas. Operations that require a direction allow the user to drag while the left mouse-button is held to create a direction vector. The length of this vector is mapped to strength related parameters of the tool. Some parameters, which the user may wish to set and persist across multiple applications of the operation, are mapped to the scroll wheel. We designed a flexible cursor rendering system which lets users see how their adjustments and movements are affecting the tool.
+Users can control operations by clicking and dragging. Most operations accept the $c$ parameter as their origin. We map this parameter to mouse-down coordinates on our canvas. Operations that require a direction allow the user to drag while the left mouse-button is held to create a direction vector. The length of this vector is mapped to strength related parameters of the tool. Some parameters, which the user may wish to set and persist across multiple applications of the operation, are mapped to the scroll wheel, and shift-scrolling sometimes controls a secondary parameter. We designed a flexible cursor rendering system which lets users see how their adjustments and movements are affecting the tool.
 
 \begin{figure}
     \includegraphics[width=8cm]{cursor.png}
@@ -239,7 +245,9 @@ Taking advantage of Javascript's dynamic nature, we provide the same object-orie
 
 Although the rendering approach we used allows for arbitrary precision, it has expense proportional to ink-drop point density. As more drops are added, the rendering process slows significantly, and the user will notice a delay between releasing the mouse and seeing the results of their operation. A raster rendering approach, in which operations are applied to pixels and not points along ink-drop boundaries would enable GPU acceleration and frame rates sufficient to provide intra-operation animation.
 
-Because of the single threaded nature of Javascript virtual machines, long rendering times impact UI responsiveness. Support for background threads is becoming more widespread, however there is additional implementation complexity involved in sharing data.
+Because of the single threaded nature of Javascript virtual machines, long rendering times impact UI responsiveness. Support for background threads is becoming more widespread, however it brings additional implementation complexity.
+
+A fundamental limitation of this marbling approach is its simplicity. As opposed to more sophisticated fluid simulation approaches, it cannot reproduce highly dynamic behavior seen in some types of marbling.
 
 \begin{figure}
     \includegraphics[width=8cm]{example1.png}
