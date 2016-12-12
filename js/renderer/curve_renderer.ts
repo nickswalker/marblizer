@@ -36,7 +36,7 @@ class Drop {
 
     private static initialCirclePoints(radius: number, centerX: number, centerY: number) {
         let points: Array<Vec2> = [];
-        const desiredArcLength = 0.05;
+        const desiredArcLength = 0.01;
         const stepSize = desiredArcLength / radius;
         for (let i = 0.0; i < 2 * Math.PI; i += stepSize) {
             const newPoint = new Vec2(centerX + radius * Math.cos(i), centerY + radius * Math.sin(i));
