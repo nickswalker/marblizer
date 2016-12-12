@@ -48,10 +48,10 @@ class MarblingUI {
     }
 
     private didEnterInput(input: string) {
+        this.keyboardManager.acceptingNewKeys = true;
         if (input == null) {
             return;
         }
-        this.keyboardManager.acceptingNewKeys = true;
         let result: [Operation];
         try {
             const userProgram = new UserProgram(input);
@@ -85,8 +85,8 @@ class MarblingUI {
                 } else {
                     this.keyboardManager.acceptingNewKeys = false;
                     this.textPane.getInput(this.didEnterInput.bind(this));
-                    return;
                 }
+                return;
             case KeyboardShortcut.Plus:
                 this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
                 return;
@@ -115,6 +115,7 @@ class MarblingUI {
                 if (this.keyboardManager.shiftDown) {
                     this.keyboardShortcutOverlay.show();
                 }
+                return;
 
         }
     }
@@ -133,7 +134,7 @@ class MarblingUI {
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
                 const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop).radius;
-                operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor);
+                operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor, !this.keyboardManager.shiftDown);
                 this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine: {
@@ -192,7 +193,7 @@ class MarblingUI {
                     const currentColor = this.colorPane.currentColor;
                     if (Math.random() < 0.1) {
                         const newOrigin = mouseCoords.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
-                        const newRadius = Math.random() * dropRadius + 10;
+                        const newRadius = Math.random() * 6 + dropRadius - 3;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);
                     }

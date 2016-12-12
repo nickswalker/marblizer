@@ -21,6 +21,8 @@
 
 \usepackage{amsmath,amsfonts,amssymb}
 
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{amssymb}
 \usepackage{tikz}
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
@@ -39,13 +41,13 @@
 
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 
-\newcommand{\Ab}{\boldsymbol{A}}
-\newcommand{\Cb}{\boldsymbol{C}}
-\newcommand{\Db}{\boldsymbol{D}}
+\newcommand{\ab}{\boldsymbol{a}}
+\newcommand{\cb}{\boldsymbol{c}}
+\newcommand{\db}{\boldsymbol{d}}
 \newcommand{\Fb}{\boldsymbol{F}}
-\newcommand{\Mb}{\boldsymbol{M}}
-\newcommand{\Nb}{\boldsymbol{N}}
-\newcommand{\Pb}{\boldsymbol{P}}
+\newcommand{\mb}{\boldsymbol{m}}
+\newcommand{\nb}{\boldsymbol{n}}
+\newcommand{\pb}{\boldsymbol{p}}
 \newcommand{\Tb}{\boldsymbol{T}}
 \renewcommand{\sin}{\text{sin}}
 \renewcommand{\cos}{\text{cos}}
@@ -73,10 +75,15 @@
 
 Marbling is a traditional art practice in which acrylic inks are floated on a liquid surface, then transferred to a sheet of paper. The resulting patterns can resemble marble, but common outputs range from intricate spiraling patters to spattered, space-like designs.
 
-Several works have modeled marbling as a Naiver-Stokes fluid simulation, however, this is computationally demanding and dissipative. The resulting images are chronically blurry, failing to capture the well defined boundaries between colored areas that are characteristic of marbled patterns. In contrast, a paper from Shufang Lu et. al. describes a closed form approximate solution for the position of vertices along the boundaries of ink
-dots under various marbling operations \cite{Shufang2012}. The resulting images can have arbitrary precision, and the authors show them being projected onto 3D geometry with no loss of quality.
+Several works have modeled marbling as a Naiver-Stokes fluid simulation, however, this is computationally demanding and dissipative. The resulting images are chronically blurry and fail to capture the well defined boundaries between colored areas that are characteristic of marbled patterns. In contrast, a paper from Lu et. al. describes a closed form approximate solution for the position of vertices along the boundaries of ink
+drops under various marbling operations \cite{Shufang2012}.
+ 
+In the Lu work, compositions are completely described by a sequence of marbling operations. We provide the equations that describe the deformations created by each operation, describe how these operations can be rendered, and present our interactive implementation.
 
-We implement the Shufang paper as an interactive Javascript application.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 2
+%----------------------------------------------------------------------------------------
 
 \section{Operations}
 
@@ -85,34 +92,39 @@ Each marbling operation defines a force field over the marbling surface. That is
 		\Fb: \mathbb{R}^2 \rightarrow \mathbb{R}^2
 \end{equation*}
 
-Operators may have parameters that control their placement of effect. We will notate these additional parameters as variables upon which the operation is conditioned. For example, here is the definition of the translation operation $\Tb$ given real scalar parameter $s$, which translates all points up along the y-axis by $s$. 
+Operations may have parameters that control their placement of effect. We will notate these additional parameters as variables upon which the operation is conditioned. For example, here is the translation operation $\Tb$, given real scalar parameter $s$, which translates all points up along the y-axis by $s$. 
 \begin{gather*}
-			\Pb = \begin{bmatrix}
+			\pb = \begin{bmatrix}
 	x \\
 	y\\
 	\end{bmatrix}\\
 	\\
-	\Tb(\Pb | s) = \begin{bmatrix}
+	\Tb(\pb | s) = \begin{bmatrix}
 	0 \\
 	s
 	\end{bmatrix}
 \end{gather*}
 
 \subsection{Ink Drop}
+
+The ink drop operation places a colored circle of radius $r$ at point $\cb$. It deforms other points according to the field 
 \begin{gather*}
 	r \in \mathbb{R}^+\\
-	\boldmath{O}(\Pb | \Cb, r) =  \Pb - \Bigg(\Cb - (\Pb - \Cb )\sqrt{1 + \frac{r^2}{|\Pb - \Cb|^2}}\Bigg)
+	\boldsymbol{O}(\pb | \cb, r) =  \pb - \Bigg(\cb - (\pb - \cb )\sqrt{1 + \frac{r^2}{\lVert\pb - \cb\rVert^2}}\Bigg)
 \end{gather*}
 
-\subsection{Line Comb}
-\begin{align*}
-	\boldmath{L}(\Pb | \Cb, \Db, \alpha, \lambda) = \frac{\alpha\lambda}{d + \lambda}\Mb \\
-    d = \lVert(\Pb - \Cb) ^ \top \Nb\rVert
-\end{align*}
+\subsection{Tine Line}
+The line line operation simulates dragging a pointed instrument through the marbling surface. Its principle parameters are $\cb$, a point on the line that will be combed through, and $\db$, the direction in which to comb. The strength of the force field is inversely proportional to the distance between $\pb$ and $cb$. Parameters $\alpha$ and $\lambda$ control the magnitude and sharpness of the displacement falloff. 
+\begin{gather*} 
+	\alpha, \lambda \in \mathbb{R}^+\\
+	\boldsymbol{L}(\pb | \cb, \db, \alpha, \lambda) = \frac{\alpha\lambda}{d + \lambda}\hat{\db} \\	
+    d = \lVert(\pb - \cb) ^ \top \hat{\cb}\rVert
+\end{gather*}
 
 \subsection{Wavy Comb}
+The wavy comb operator simulates moving a comb of tines through the marbling surface in a sinusoidal pattern.
 \begin{gather*}
-	\boldmath{F}(\Pb| \theta, A, \omega) = f\bigg(\Pb^\top \begin{bmatrix}
+	\boldsymbol{W}(\pb| \theta, A, \omega) = f\bigg(\pb^\top \begin{bmatrix}
 	\sin(\theta)\\
 	 -\cos(\theta)
 	\end{bmatrix}\bigg) \begin{bmatrix}
@@ -122,22 +134,51 @@ Operators may have parameters that control their placement of effect. We will no
     f(v) = A \sin(\omega v)
 \end{gather*}
 
-\subsection{Circular Comb}
+\subsection{Tine Circle}
+The tine circle operator simulates moving a tine in a circle with radius $r$ and center $\cb$.
 \begin{gather*}
-	\boldmath{O}(\Pb | \Cb, r) =  \Pb - \bigg(\Cb - (\Pb - \Cb) ^ \top \begin{bmatrix}
+	\boldsymbol{O}(\pb | \cb, r) =  \pb - \bigg(\cb - (\pb - \cb) ^ \top \begin{bmatrix}
 	\cos(\theta) &\sin(\theta)\\
 	-\sin(\theta) &\cos(\theta)\\
 	\end{bmatrix} \bigg)\\
 	l = \frac{\alpha \lambda}{d + \lambda}\\
-	\theta = \frac{l}{|\Pb - \Cb|}\\
-    d = |\lVert \Pb - \Cb\rVert - r|
+	\theta = \frac{l}{\lVert\pb - \cb\rVert}\\
+    d = |\lVert \pb - \cb\rVert - r|
 \end{gather*}
 
 \subsection{Vortex}
+The vortex operation is identical to the tine circle operator except that the distance term no longer falls off with the radius.
 \begin{gather*}
-	d = \lVert\Pb - \Cb\rVert
+	d = \lVert\pb - \cb\rVert
 \end{gather*}
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION 4
+%----------------------------------------------------------------------------------------
+
 \section{Rendering}
+
+A sequence of operations fully describes a marbling composition. In order to render the composition, we evaluate each operation in sequence
+
+\begin{algorithm}
+	\caption{Render}
+	\label{alg:update}
+	\begin{algorithmic}[1] % The number tells where the line numbering should start
+		\Procedure{Render}{$\bm{O}$, $r$}
+		
+		\For{condition}
+		
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+%----------------------------------------------------------------------------------------
+%	SECTION 5
+%----------------------------------------------------------------------------------------
+\section{Implementation}
+
+
 
 \bibliography{references}
 \bibliographystyle{plain}
