@@ -1,0 +1,145 @@
+\documentclass{article}
+
+\usepackage{graphicx} % Required for the inclusion of images
+\usepackage{natbib} % Required to change bibliography style to APA
+\usepackage{amsmath} % Required for some math elements 
+\usepackage[final]{pdfpages}
+\usepackage[parfill]{parskip}
+\usepackage{bm}
+
+\usepackage[utf8]{inputenc}
+\usepackage{mathpazo}
+\usepackage{eulervm}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{mathtools} 
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\usepackage{amsmath,amsfonts,amssymb}
+
+\usepackage{amssymb}
+\usepackage{tikz}
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+\usepackage[letterpaper, portrait]{geometry}
+ \geometry{
+ letterpaper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ bottom=20mm
+ }
+ \frenchspacing
+\setlength{\columnsep}{10mm}
+\usepackage{sectsty}
+\sectionfont{\fontsize{12}{0}\selectfont}
+
+\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+
+\newcommand{\Ab}{\boldsymbol{A}}
+\newcommand{\Cb}{\boldsymbol{C}}
+\newcommand{\Db}{\boldsymbol{D}}
+\newcommand{\Fb}{\boldsymbol{F}}
+\newcommand{\Mb}{\boldsymbol{M}}
+\newcommand{\Nb}{\boldsymbol{N}}
+\newcommand{\Pb}{\boldsymbol{P}}
+\newcommand{\Tb}{\boldsymbol{T}}
+\renewcommand{\sin}{\text{sin}}
+\renewcommand{\cos}{\text{cos}}
+\long\def\/*#1*/{}
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{Interactive Ink Marbling}
+
+\author{\textsc{Nick Walker}}
+
+\date{CS354 Fall 2016} % Date for the report
+
+\begin{document}
+\twocolumn	
+\maketitle % Insert the title, author and date
+
+%----------------------------------------------------------------------------------------
+%	SECTION 1
+%----------------------------------------------------------------------------------------
+
+\section{Introduction}
+
+Marbling is a traditional art practice in which acrylic inks are floated on a liquid surface, then transferred to a sheet of paper. The resulting patterns can resemble marble, but common outputs range from intricate spiraling patters to spattered, space-like designs.
+
+Several works have modeled marbling as a Naiver-Stokes fluid simulation, however, this is computationally demanding and dissipative. The resulting images are chronically blurry, failing to capture the well defined boundaries between colored areas that are characteristic of marbled patterns. In contrast, a paper from Shufang Lu et. al. describes a closed form approximate solution for the position of vertices along the boundaries of ink
+dots under various marbling operations \cite{Shufang2012}. The resulting images can have arbitrary precision, and the authors show them being projected onto 3D geometry with no loss of quality.
+
+We implement the Shufang paper as an interactive Javascript application.
+
+\section{Operations}
+
+Each marbling operation defines a force field over the marbling surface. That is, each operation $\Fb$ accepts an coordinate on the marbling surface and returns a displacement vector.
+\begin{equation*}
+		\Fb: \mathbb{R}^2 \rightarrow \mathbb{R}^2
+\end{equation*}
+
+Operators may have parameters that control their placement of effect. We will notate these additional parameters as variables upon which the operation is conditioned. For example, here is the definition of the translation operation $\Tb$ given real scalar parameter $s$, which translates all points up along the y-axis by $s$. 
+\begin{gather*}
+			\Pb = \begin{bmatrix}
+	x \\
+	y\\
+	\end{bmatrix}\\
+	\\
+	\Tb(\Pb | s) = \begin{bmatrix}
+	0 \\
+	s
+	\end{bmatrix}
+\end{gather*}
+
+\subsection{Ink Drop}
+\begin{gather*}
+	r \in \mathbb{R}^+\\
+	\boldmath{O}(\Pb | \Cb, r) =  \Pb - \Bigg(\Cb - (\Pb - \Cb )\sqrt{1 + \frac{r^2}{|\Pb - \Cb|^2}}\Bigg)
+\end{gather*}
+
+\subsection{Line Comb}
+\begin{align*}
+	\boldmath{L}(\Pb | \Cb, \Db, \alpha, \lambda) = \frac{\alpha\lambda}{d + \lambda}\Mb \\
+    d = \lVert(\Pb - \Cb) ^ \top \Nb\rVert
+\end{align*}
+
+\subsection{Wavy Comb}
+\begin{gather*}
+	\boldmath{F}(\Pb| \theta, A, \omega) = f\bigg(\Pb^\top \begin{bmatrix}
+	\sin(\theta)\\
+	 -\cos(\theta)
+	\end{bmatrix}\bigg) \begin{bmatrix}
+	\cos(\theta)\\
+	 \sin(\theta)
+	\end{bmatrix}\\
+    f(v) = A \sin(\omega v)
+\end{gather*}
+
+\subsection{Circular Comb}
+\begin{gather*}
+	\boldmath{O}(\Pb | \Cb, r) =  \Pb - \bigg(\Cb - (\Pb - \Cb) ^ \top \begin{bmatrix}
+	\cos(\theta) &\sin(\theta)\\
+	-\sin(\theta) &\cos(\theta)\\
+	\end{bmatrix} \bigg)\\
+	l = \frac{\alpha \lambda}{d + \lambda}\\
+	\theta = \frac{l}{|\Pb - \Cb|}\\
+    d = |\lVert \Pb - \Cb\rVert - r|
+\end{gather*}
+
+\subsection{Vortex}
+\begin{gather*}
+	d = \lVert\Pb - \Cb\rVert
+\end{gather*}
+\section{Rendering}
+
+\bibliography{references}
+\bibliographystyle{plain}
+\end{document}
+
