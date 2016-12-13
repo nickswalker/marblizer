@@ -117,7 +117,7 @@ which has the property of preserving the area of surrounding ink drops.
 In addition to the field it applies, ink drop is the only operation that adds geometry to the simulation. The points it creates are subject to deformation by subsequent operations. 
 
 \subsection{Tine Line}
-The line line operation simulates dragging a pointed instrument through the marbling surface. Its principle parameters are $\cb$, a point on the line that will be combed through, and $\db$, the direction in which to comb. The strength of the force field is inversely proportional to the distance between $\pb$ and $cb$. Parameters $\alpha$ and $\lambda$ control the magnitude and sharpness of the displacement falloff. 
+The tine line operation simulates dragging a pointed instrument through the marbling surface. Its principle parameters are $\cb$, a point on the line that will be combed through, and $\db$, the direction in which to comb. The strength of the force field is inversely proportional to the distance between $\pb$ and $cb$. Parameters $\alpha$ and $\lambda$ control the magnitude and sharpness of the displacement falloff. 
 \begin{gather*} 
 	\alpha, \lambda \in \mathbb{R}^+\\
 	\boldsymbol{L}(\pb | \cb, \db, \alpha, \lambda) = \frac{\alpha\lambda}{d + \lambda}\hat{\db} \\	
