@@ -1,53 +1,27 @@
 .keyboard-shortcut-overlay {
-    padding: 20px;
+    padding: 24px;
 }
 
-.help-modal-content {
-    padding: 0 20px;
+.keyboard-shortcut-overlay h1 {
+    margin: 12px 0;
 }
 
-.help-close {
+#helpClose {
     position: absolute;
     top: .4em;
     right: .5em;
     font-size: 1.8em;
     cursor: pointer;
-    -webkit-transition: color .2s linear;
-    -moz-transition: color .2s linear;
-    -o-transition: color .2s linear;
     transition: color .2s linear;
 }
 
-.help-close:hover {
+#helpClose:hover {
     color: #000;
 }
 
-.help-modal h1 {
-    text-align: center;
-    border-bottom: solid 2px #ccc;
-    font-weight: normal;
-}
-
-.help-modal h1 .help-key {
-    float: none;
-    line-height: 1.5;
-    position: relative;
-    bottom: 4px;
-}
-
-.help-isVisible {
-    opacity: 1;
-    visibility: visible;
-    height: auto;
-    z-index: 8888;
-}
-
 .help-list-wrap {
-    overflow: hidden;
     margin: 0 auto;
-    -webkit-transition: width .2s linear;
-    -moz-transition: width .2s linear;
-    -o-transition: width .2s linear;
+    columns: 2;
     transition: width .2s linear;
 }
 
@@ -56,10 +30,11 @@
     margin: 0;
     padding: 0 0 10px 0;
     overflow: hidden;
+    break-inside: avoid;
 }
 
 .help-list li {
-    margin-right: 40px;
+    display: flex;
 }
 
 .help-key-unit {
@@ -69,9 +44,7 @@
 }
 
 .help-key {
-    min-width: 60px;
-    float: left;
-    clear: left;
+    flex: none;
     position: relative;
     bottom: 2px;
 }
@@ -91,6 +64,7 @@
 }
 
 .help-key-def {
+    flex-shrink: 1;
     display: inline-block;
-    margin-left: 1em;
+    margin-left: 12px;
 }

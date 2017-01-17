@@ -2,41 +2,57 @@
 <html>
 <head>
     <meta charset=utf-8>
-    <title>Paper Marbling</title>
-    <link rel="stylesheet" href="css/style.css"/>
-    <link rel="stylesheet" href="css/help.css">
-    <script src="js/renderer/curve_renderer.js"></script>
-    <script src="js/renderer/svg_renderer.js"></script>
-    <script src="js/operations/color_operations.js"></script>
-    <script src="js/operations/inkdrop.js"></script>
-    <script src="js/operations/linetine.js"></script>
-    <script src="js/operations/circularlinetine.js"></script>
-    <script src="js/operations/wavylinetine.js"></script>
-    <script src="js/operations/vortex.js"></script>
-    <script src="js/ui/ui.js"></script>
-    <script src="js/ui/tools.js"></script>
-    <script src="js/ui/panes/modal.js"></script>
-    <script src="js/ui/panes/notification.js"></script>
-    <script src="js/ui/panes/colorpane.js"></script>
-    <script src="js/ui/panes/toolspane.js"></script>
-    <script src="js/ui/panes/scriptingpane.js"></script>
-    <script src="js/ui/keyboard.js"></script>
-    <script src="js/ui/cursor/cursor_overlay.js"></script>
-    <script src="js/ui/cursor/cursor_renderer.js"></script>
-    <script src="js/ui/cursor/function_renderer.js"></script>
-    <script src="js/ui/cursor/dynamic_radius_renderer.js"></script>
-    <script src="js/ui/cursor/tine_renderer.js"></script>
-    <script src="js/ui/vector_field_overlay.js"></script>
-    <script src="js/ui/help_overlay.js"></script>
-    <script src="js/models/color.js"></script>
-    <script src="js/models/vector.js"></script>
-    <script src="js/models/matrix.js"></script>
-    <script src="js/models/vectorfield.js"></script>
-    <script src="js/drawing_utilities.js"></script>
-    <script src="js/parse_query_string.js"></script>
-    <script src="js/scripting/user_program.js"></script>
-    <script src="js/scripting/example_scripts.js"></script>
+    <title>Marblizer</title>
+    <meta name="description" content="Interactive paper marbling simulation. Create awesome patterns.">
+    <meta name="author" content="Nick Walker"/>
+    <meta property="og:image" content="https://marblizer.nickwalker.us/media/images/og-banner.jpg"/>
+    <link rel="canonical" href="https://marblizer.nickwalker.us/">
 
+    <link rel="shortcut icon" href="/media/images/favicon.png"/>
+    <link rel="apple-touch-icon" href="/media/images/apple-touch-icon.png">
+    <link rel="mask-icon" href="/media/images/mask.svg" color="#891920">
+
+    <link rel="stylesheet" href="media/css/style.css"/>
+    <link rel="stylesheet" href="media/css/help.css">
+    <script src="media/js/renderer/curve_renderer.js"></script>
+    <script src="media/js/renderer/svg_renderer.js"></script>
+    <script src="media/js/operations/color_operations.js"></script>
+    <script src="media/js/operations/inkdrop.js"></script>
+    <script src="media/js/operations/linetine.js"></script>
+    <script src="media/js/operations/circularlinetine.js"></script>
+    <script src="media/js/operations/wavylinetine.js"></script>
+    <script src="media/js/operations/vortex.js"></script>
+    <script src="media/js/ui/ui.js"></script>
+    <script src="media/js/ui/tools.js"></script>
+    <script src="media/js/ui/panes/modal.js"></script>
+    <script src="media/js/ui/panes/notification.js"></script>
+    <script src="media/js/ui/panes/colorpane.js"></script>
+    <script src="media/js/ui/panes/toolspane.js"></script>
+    <script src="media/js/ui/panes/controlspane.js"></script>
+    <script src="media/js/ui/panes/scriptingpane.js"></script>
+    <script src="media/js/ui/keyboard.js"></script>
+    <script src="media/js/ui/cursor/cursor_overlay.js"></script>
+    <script src="media/js/ui/cursor/cursor_renderer.js"></script>
+    <script src="media/js/ui/cursor/function_renderer.js"></script>
+    <script src="media/js/ui/cursor/dynamic_radius_renderer.js"></script>
+    <script src="media/js/ui/cursor/tine_renderer.js"></script>
+    <script src="media/js/ui/vector_field_overlay.js"></script>
+    <script src="media/js/ui/help_overlay.js"></script>
+    <script src="media/js/models/color.js"></script>
+    <script src="media/js/models/vector.js"></script>
+    <script src="media/js/models/matrix.js"></script>
+    <script src="media/js/models/vectorfield.js"></script>
+    <script src="media/js/drawing_utilities.js"></script>
+    <script src="media/js/parse_query_string.js"></script>
+    <script src="media/js/scripting/user_program.js"></script>
+    <script src="media/js/scripting/example_scripts.js"></script>
+
+    <script
+            src="https://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+            crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/theme/solarized.min.css">
 
@@ -49,7 +65,7 @@
 
 <div class="modal-container" style="display:none;">
     <div id="operations-input" class="marbling-pane center-pane">
-        <ul class="toolbar">
+        <ul class="button-section">
             <li class="close-button tool">Close</li>
             <li class="get-url-button tool">Get URL</li>
             <li class="run-button tool">Run</li>
@@ -58,27 +74,39 @@
     </div>
 </div>
 
-<div id="marbling-colors" class="marbling-pane">
-    <ul class="toolbar">
-        <input type="color" class="color-picker" value="#FFFFFF">
-        <li class="swatch-0"></li>
-        <li class="swatch-1"></li>
-        <li class="swatch-2"></li>
-        <li class="swatch-3"></li>
-        <li class="swatch-4"></li>
-        <li class="next-color-set">-></li>
-    </ul>
-</div>
 <div id="marbling-tools" class="marbling-pane">
-    <ul class="toolbar">
-        <li class="drop-tool tool" title="Ink drop">Drop</li>
-        <li class="spatter-tool tool" title="Spatter">Spatter</li>
-        <li class="tine-tool tool" title="Tine line">Line</li>
-        <li class="wavy-tine-tool tool" title="Wavy ">Wavy</li>
-        <li class="circular-tine-tool tool" title="Circular tine-line">Circular</li>
-        <li class="vortex-tool tool" title="Vortex">Vortex</li>
-        <li class="reset">Reset</li>
+    <ul class="button-section" id="tools">
+        <li class="drop-tool tool" title="Ink drop"><img src="media/images/drop.svg"/></li>
+        <li class="spatter-tool tool" title="Spatter"><img src="media/images/spatter.svg"/></li>
+        <li class="tine-tool tool" title="Tine line"><img src="media/images/tine-line.svg"/></li>
+        <li class="wavy-tine-tool tool" title="Wavy "><img src="media/images/wavy-tine.svg"></li>
+        <li class="circular-tine-tool tool" title="Circular tine-line"><img src="media/images/circular-tine.svg"></li>
+        <li class="vortex-tool tool" title="Vortex"><img src="media/images/vortex.svg"/></li>
     </ul>
+    <hr class="tools-divider">
+    <ul class="button-section options" id="options">
+        <li class="show-script-editor tool" title="Script editor"><img src="media/images/script.svg"></li>
+        <li class="save-image tool" title="Save image"><img src="media/images/save.svg"></li>
+        <li class="show-field tool" title="Show tool force field"><img src="media/images/field.svg"></li>
+        <li class="reset" title="Reset canvas"><img src="media/images/reset.svg"></li>
+        <li class="help" title="Help"><img src="media/images/help.svg"></li>
+        <li class="show-keyboard-shortcuts" title="Show keyboard shortcuts"><img src="media/images/shortcuts.svg"></li>
+    </ul>
+    <hr class="tools-divider">
+    <div id="colors">
+        <div id="color-inputs">
+            <input type="color" class="color-picker foreground" value="#891920" title="Foreground color">
+            <input type="color" class="color-picker background" value="#DCD2D2" title="Background color">
+        </div>
+        <ul class="button-section" id="recent-colors">
+            <li class="swatch-0"></li>
+            <li class="swatch-1"></li>
+            <li class="swatch-2"></li>
+            <li class="swatch-3"></li>
+            <li class="swatch-4"></li>
+        </ul>
+    </div>
+    <div id="logo"><img src="media/images/logo.svg"/></div>
 </div>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.js"></script>
@@ -88,12 +116,13 @@
 
 <script>
     let renderer = null;
-    addEventListener('load', function () {
+    addEventListener('DOMContentLoaded', function () {
         let marblingWorkspace = document.getElementById("workspace");
-        let toolsPane = document.getElementById("marbling-tools");
-        let colorsPane = document.getElementById("marbling-colors");
+        let toolsPane = document.getElementById("tools");
+        let optionsPane = document.getElementById("options");
+        let colorsPane = document.getElementById("colors");
         let operationsInput = document.getElementById("operations-input");
-        let ui = new MarblingUI(marblingWorkspace, toolsPane, colorsPane, operationsInput);
+        let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput);
         renderer = new InteractiveCurveRenderer(marblingWorkspace);
         ui.delegate = renderer;
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -110,6 +139,33 @@
             const program = new UserProgram(decompressed);
             renderer.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
         }
+
+        const palette = [];
+        for (let i = 0; i < colorSets.length; i++) {
+            palette.push([]);
+            for (let j = 0; j < colorSets[0].length; j++) {
+                palette[i].push(colorSets[i][j].toHexString());
+            }
+        }
+        $("input[type='color'].foreground").spectrum({
+            showPalette: true,
+            preferredFormat: "hex",
+            showSelectionPalette: true,
+            maxSelectionSize: 5,
+            palette: palette,
+            replacerClassName: "foreground-spectrum"
+        });
+        $("input[type='color'].background").spectrum({
+            showPalette: true,
+            preferredFormat: "hex",
+            showSelectionPalette: true,
+            maxSelectionSize: 5,
+            palette: palette,
+            replacerClassName: "background-spectrum"
+        });
+
+        const event = new CustomEvent("colorPickersInstalled");
+        document.dispatchEvent(event);
 
     });
 </script>

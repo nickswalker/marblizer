@@ -3,9 +3,8 @@
 
 class ToolsPane {
     container: HTMLElement;
-    resetButton: HTMLElement;
     toolToButtonMapping: {[key: number]: HTMLElement};
-    delegate: MarblingUIDelegate;
+    delegate: MarblingRendererDelegate;
     private _currentTool: Tool;
     toolParameters: ToolParameters;
     private shiftDown: boolean = false;
@@ -29,9 +28,6 @@ class ToolsPane {
 
         this.toolParameters = new ToolParameters(this.fireEvent.bind(this));
 
-        this.resetButton = <HTMLElement>container.querySelector(".reset");
-        this.resetButton.onclick = this.clickedReset.bind(this);
-
         // Set default tool
         this._currentTool = Tool.Drop;
         this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
@@ -51,7 +47,7 @@ class ToolsPane {
             let newClasses = this.toolToButtonMapping[key].className.replace(/(\s|^)active(\s|$)/, ' ');
             this.toolToButtonMapping[key].className = newClasses;
         }
-        const target = event.target;
+        const target = event.currentTarget;
         for (let key in this.toolToButtonMapping) {
             if (this.toolToButtonMapping[key] == target) {
                 this._currentTool = <Tool>parseInt(key);
@@ -60,12 +56,6 @@ class ToolsPane {
 
         this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
         this.fireEvent();
-    }
-
-    private clickedReset(event: MouseEvent) {
-        if (this.shiftDown || confirm("Are you sure you want to reset?")) {
-            this.delegate.reset();
-        }
     }
 
     get currentTool(): Tool {

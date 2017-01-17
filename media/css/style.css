@@ -1,0 +1,220 @@
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    margin: 0;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /*Prevent scrolling*/
+    font-family: sans-serif;
+    user-select: none;
+    position: relative;
+}
+
+#workspace {
+    flex-grow: 1;
+    order: 0;
+    cursor: none;
+    position: relative;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+
+.marbling-pane {
+    background-color: rgba(30, 30, 30, 0.8);
+    color: #eeeeee;
+}
+
+/*
+TOOL PANE
+ */
+
+#marbling-tools {
+    padding: 10px;
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    max-width: 55px;
+}
+
+#marbling-tools ul {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-content: center;
+    align-items: center;
+}
+
+#marbling-colors {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+hr {
+    margin: 12px 0;
+    border: 0;
+    border-top: 1px solid #777;
+    width: 100%;
+}
+
+/*
+BUTTONS
+ */
+
+ul.button-section {
+    margin: 0;
+    display: flex;
+}
+
+.button-section li {
+    list-style: none;
+    flex: none;
+    height: 40px;
+    width: 40px;
+    vertical-align: middle;
+    border: 2px solid transparent;
+    padding: 3px;
+    box-sizing: border-box;
+    display: inline-block;
+}
+
+.button-section li:hover {
+    border: 2px solid gray;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.button-section .active {
+    border: 2px solid rgb(72, 151, 170);
+    background-color: rgba(72, 151, 170, 0.6);
+}
+
+/*
+COLORS
+ */
+
+#colors {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    margin-bottom: 12px;
+}
+
+#color-inputs {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+#color-inputs input,
+.sp-replacer {
+    width: 35px;
+    height: 35px;
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 3px !important;
+}
+
+input.foreground,
+.foreground-spectrum {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+input.background,
+.background-spectrum {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.sp-preview {
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    height: 100% !important;
+}
+
+.sp-dd {
+    display: none;
+}
+
+ul#recent-colors {
+    flex-flow: row wrap;
+}
+
+li[class^="swatch"] {
+    flex: auto;
+    padding: 0;
+    height: 20px;
+}
+
+#logo {
+    margin-top: auto;
+}
+
+/*
+MODAL
+ */
+
+.modal-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 2;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.marbling-pane {
+    position: relative;
+}
+
+.center-pane {
+    overflow-y: scroll;
+    width: 80%;
+    height: 80%;
+    min-height: 200px;
+    max-width: 800px;
+    box-shadow: rgba(30, 30, 30, 0.1) 0px 2px 10px;
+}
+
+.notification {
+    user-select: all;
+}
+
+/* Operations input*/
+
+#operations-input .input-container {
+    height: calc(100% - 45px);
+}
+
+#operations-input .CodeMirror {
+    height: 100%;
+}
+
+#operations-input .cancel {
+
+}

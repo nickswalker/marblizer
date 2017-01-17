@@ -10,31 +10,38 @@
 ///<reference path="../operations/wavylinetine.ts"/>
 ///<reference path="../scripting/user_program.ts"/>
 
-interface MarblingUIDelegate {
+interface MarblingRendererDelegate {
     reset();
     applyOperations(operations: [Operation]);
     save();
-
 }
 
-class MarblingUI {
+interface MarblingUIDelegate {
+    applyCommand(command: UICommand)
+}
 
+class MarblingUI implements MarblingUIDelegate {
     toolsPane: ToolsPane;
     colorPane: ColorPane;
-    _delegate: MarblingUIDelegate;
+    controlsPane: ControlsPane;
+    private scriptingPane: ScriptingPane;
+    _delegate: MarblingRendererDelegate;
     private _size: Vec2;
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
-    private textPane: ScriptingPane;
-    private keyboardShortcutOverlay: MarblingUIDelegate;
+
+    private keyboardShortcutOverlay: MarblingRendererDelegate;
     private keyboardManager: MarblingKeyboardUI;
+
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
 
-    constructor(container: HTMLElement, toolsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
+    constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
-        this.textPane = new ScriptingPane(textContainer);
+        this.scriptingPane = new ScriptingPane(textContainer);
+        this.controlsPane = new ControlsPane(optionsContainer);
+        this.controlsPane.uiDelegate = this;
         this.keyboardShortcutOverlay = new KeyboardShortcutOverlay();
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
@@ -65,9 +72,10 @@ class MarblingUI {
 
     }
 
-    set delegate(delegate: MarblingUIDelegate) {
+    set delegate(delegate: MarblingRendererDelegate) {
         this._delegate = delegate;
         this.toolsPane.delegate = delegate;
+        this.controlsPane.delegate = delegate;
         this.colorPane.delegate = delegate;
     }
 
@@ -84,7 +92,7 @@ class MarblingUI {
                     this._delegate.save();
                 } else {
                     this.keyboardManager.acceptingNewKeys = false;
-                    this.textPane.getInput(this.didEnterInput.bind(this));
+                    this.scriptingPane.getInput(this.didEnterInput.bind(this));
                 }
                 return;
             case KeyboardShortcut.Plus:
@@ -97,10 +105,6 @@ class MarblingUI {
                 if (confirm("Clear the composition?")) {
                     this._delegate.reset();
                 }
-                return;
-            case KeyboardShortcut.B:
-                const operation = new ChangeBaseColorOperation(this.colorPane.currentColor);
-                this._delegate.applyOperations([operation]);
                 return;
             case KeyboardShortcut.F:
                 this.vectorFieldOverlay.toggleVisibility();
@@ -117,6 +121,35 @@ class MarblingUI {
                 }
                 return;
 
+        }
+    }
+
+    applyCommand(command: UICommand) {
+        switch (command) {
+            case UICommand.Reset: {
+                if (confirm("Clear the composition?")) {
+                    this._delegate.reset();
+                }
+                return;
+            }
+            case UICommand.Save: {
+                this._delegate.save();
+                return;
+            }
+            case UICommand.ShowField: {
+                this.vectorFieldOverlay.toggleVisibility();
+                return;
+            }
+            case UICommand.ShowHelp: {
+                return;
+            }
+            case UICommand.ShowKeyboardShortcutOverlay: {
+                this.keyboardShortcutOverlay.show();
+                return;
+            }
+            case UICommand.ShowScriptEditor: {
+                this.scriptingPane.getInput(this.didEnterInput.bind(this));
+            }
         }
     }
 
