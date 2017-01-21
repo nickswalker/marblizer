@@ -29,6 +29,7 @@ class MarblingUI implements MarblingUIDelegate {
     private _size: Vec2;
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
+    private mouseInterval: number;
 
     private keyboardShortcutOverlay: MarblingRendererDelegate;
     private keyboardManager: MarblingKeyboardUI;
@@ -95,11 +96,17 @@ class MarblingUI implements MarblingUIDelegate {
                     this.scriptingPane.getInput(this.didEnterInput.bind(this));
                 }
                 return;
-            case KeyboardShortcut.Plus:
+            case KeyboardShortcut.Up:
                 this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
                 return;
-            case KeyboardShortcut.Minus:
-                this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
+            case KeyboardShortcut.Down:
+                this.toolsPane.toolParameters.decreasePrimary(this.toolsPane.currentTool);
+                return;
+            case KeyboardShortcut.Right:
+                this.toolsPane.toolParameters.increaseSecondary(this.toolsPane.currentTool);
+                return;
+            case KeyboardShortcut.Left:
+                this.toolsPane.toolParameters.decreaseSecondary(this.toolsPane.currentTool);
                 return;
             case KeyboardShortcut.R:
                 if (confirm("Clear the composition?")) {
@@ -157,6 +164,7 @@ class MarblingUI implements MarblingUIDelegate {
         const x = e.offsetX;
         const y = e.offsetY;
         this.mouseDownCoord = new Vec2(x, y);
+        this.mouseInterval = setInterval(this.mouseHeldHandler.bind(this), 50)
     }
 
     private mouseUp(e: MouseEvent) {
@@ -212,31 +220,37 @@ class MarblingUI implements MarblingUIDelegate {
         }
         this.lastMouseCoord = null;
         this.mouseDownCoord = null;
+        clearInterval(this.mouseInterval);
+        this.mouseInterval = 0;
     }
 
     private mouseMove(e: MouseEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
-        const mouseCoords = new Vec2(x, y);
+        this.lastMouseCoord = new Vec2(x, y);
+
+    }
+
+    private mouseOut(e: MouseEvent) {
+        this.mouseDownCoord = null;
+        this.lastMouseCoord = null;
+    }
+
+    private mouseHeldHandler() {
         switch (this.toolsPane.currentTool) {
             case Tool.Spatter:
                 if (this.mouseDownCoord != null) {
                     const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter).dropRadius;
                     const scatterRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter).scatterRadius;
                     const currentColor = this.colorPane.currentColor;
-                    if (Math.random() < 0.1) {
-                        const newOrigin = mouseCoords.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
+                    if (Math.random() < 0.5) {
+                        const newOrigin = this.lastMouseCoord.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
                         const newRadius = Math.random() * 6 + dropRadius - 3;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);
                     }
                 }
         }
-    }
-
-    private mouseOut(e: MouseEvent) {
-        this.mouseDownCoord = null;
-        this.lastMouseCoord = null;
     }
 
 

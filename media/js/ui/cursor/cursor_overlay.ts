@@ -37,6 +37,9 @@ class CursorOverlay {
 
         const circle = new CircleRenderer();
         const tine = new TineRenderer();
+        const wavy = new TineRenderer(function (t) {
+            return 100 * Math.sin(.013 * t)
+        });
         const dynamicRadius = new DynamicRadiusRenderer();
         this.defaultRenderer = new CrossRenderer();
 
@@ -44,7 +47,7 @@ class CursorOverlay {
         this.rendererForTool[Tool.Drop] = circle;
         this.rendererForTool[Tool.Spatter] = circle;
         this.rendererForTool[Tool.TineLine] = tine;
-        this.rendererForTool[Tool.WavyLine] = tine;
+        this.rendererForTool[Tool.WavyLine] = wavy;
         this.rendererForTool[Tool.CircularTine] = dynamicRadius;
         this.rendererForTool[Tool.Vortex] = dynamicRadius;
         this.currentCursorRenderer = this.rendererForTool[this.currentTool];

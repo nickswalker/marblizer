@@ -5,8 +5,6 @@ Math.fmod = function (a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 };
 class WavyLineTine implements Operation, VectorField {
-    // N in the paper
-    readonly normal: Vec2;
     // L in the paper
     readonly line: Vec2;
     // A in the paper
@@ -22,8 +20,7 @@ class WavyLineTine implements Operation, VectorField {
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
         const strength = direction.length();
-        this.line = direction.norm();
-        this.normal = this.line.perp().norm();
+        this.line = direction.norm().perp();
         this.origin = origin;
         this.numTines = numTines;
         this.spacing = spacing;

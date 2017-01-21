@@ -24,7 +24,7 @@ class KeyboardShortcutOverlay extends Modal {
     private fetchContent() {
         const request = new XMLHttpRequest();
         request.onreadystatechange = this.handleResponse.bind(this);
-        request.open("POST", "views/keyboard_shortcuts.html", true);
+        request.open("GET", "views/keyboard_shortcuts.html", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         request.send(null);
     };

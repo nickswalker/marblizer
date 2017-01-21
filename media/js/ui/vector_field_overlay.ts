@@ -16,6 +16,7 @@ class VectorFieldOverlay {
         this.renderer = new VectorFieldRenderer(container);
         container.addEventListener("mousedown", this.mouseDown.bind(this));
         container.addEventListener("mouseup", this.mouseUp.bind(this));
+        container.addEventListener("mouseout", this.mouseOut.bind(this));
         container.addEventListener("mousemove", this.mouseMove.bind(this));
         document.addEventListener("toolchange", this.toolChange.bind(this));
     }
@@ -43,6 +44,12 @@ class VectorFieldOverlay {
         const y = e.offsetY;
         this.lastMouseCoord = null;
         this.mouseDownCoord = null;
+    }
+
+    private mouseOut(e: MouseEvent) {
+        this.lastMouseCoord = null;
+        this.mouseDownCoord = null;
+        this.previewOperation = null;
     }
 
     private mouseMove(e: MouseEvent) {

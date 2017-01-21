@@ -2,6 +2,7 @@
 ///<reference path="panes/scriptingpane.ts"/>
 ///<reference path="./parsing.ts"/>
 
+import set = Reflect.set;
 enum KeyboardShortcut {
     Plus = 0,
     Minus = 1,
@@ -15,7 +16,11 @@ enum KeyboardShortcut {
     F = 9,
     B = 10,
     Q = 11,
-    QuestionMark = 12
+    QuestionMark = 12,
+    Up = 13,
+    Right = 14,
+    Down = 15,
+    Left = 16
 }
 
 const keyMapping = {
@@ -31,8 +36,16 @@ const keyMapping = {
     "v": KeyboardShortcut.V,
     "f": KeyboardShortcut.F,
     "b": KeyboardShortcut.B,
-    "?": KeyboardShortcut.QuestionMark
+    "?": KeyboardShortcut.QuestionMark,
+    "ArrowRight": KeyboardShortcut.Right,
+    "ArrowLeft": KeyboardShortcut.Left,
+    "ArrowDown": KeyboardShortcut.Down,
+    "ArrowUp": KeyboardShortcut.Up,
 };
+
+const keyDownOnly = new Set([
+    "ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"
+]);
 
 interface MarblingKeyboardUIDelegate {
     didPressShortcut(shortcut: KeyboardShortcut)
@@ -59,12 +72,15 @@ class MarblingKeyboardUI {
         this.altDown = e.altKey;
         this.metaDown = e.metaKey;
 
-        const shortcut = keyMapping[e.key];
         if (this.controlDown && e.keyCode == 83) {
             event.preventDefault();
             this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
 
             return false;
+        } else if (keyDownOnly.has(e.key)) {
+            event.preventDefault();
+            const shortcut = keyMapping[e.key];
+            this.keyboardDelegate.didPressShortcut(shortcut);
         }
     }
 

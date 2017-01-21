@@ -1,5 +1,10 @@
 ///<reference path="cursor_renderer.ts"/>
 ///<reference path="function_renderer.ts"/>
+
+function line(t: number) {
+    return 0;
+}
+
 class TineRenderer implements CursorRenderer {
     private _spacing: number;
     private _numTines: number;
@@ -9,14 +14,12 @@ class TineRenderer implements CursorRenderer {
     private functionRenderer: FunctionRenderer;
     private r = 4;
 
-    constructor() {
+    constructor(func: Function = line) {
         this.canvas = document.createElement("canvas");
         this.crossRenderer = new CrossRenderer();
 
         this.functionRenderer = new FunctionRenderer(-1000, 1000);
-        this.functionRenderer.functionToRender = function (t: number) {
-            return 0;
-        }
+        this.functionRenderer.functionToRender = func;
     }
 
     set numTines(value: number) {
