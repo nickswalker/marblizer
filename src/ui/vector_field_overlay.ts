@@ -24,7 +24,7 @@ class VectorFieldOverlay {
 
     set previewOperation(value: Operation) {
         this._previewOperation = value;
-        this.renderer.vectorField = this._previewOperation;
+        this.renderer.vectorField = this._previewOperation as any;
     }
 
     setSize(width: number, height: number) {
@@ -36,11 +36,11 @@ class VectorFieldOverlay {
     }
 
     increaseResolution() {
-        this.renderer.spacing = Math.min(80, this.renderer.spacing + 2);
+        this.renderer['spacing'] = Math.min(80, this.renderer['spacing'] + 2);
     }
 
     decreaseResolution() {
-        this.renderer.spacing = Math.max(5, this.renderer.spacing - 2);
+        this.renderer['spacing'] = Math.max(5, this.renderer['spacing'] - 2);
     }
 
     private toolChange(e: CustomEvent) {
@@ -84,14 +84,14 @@ class VectorFieldOverlay {
     private generatePreviewOperation() {
         switch (this.currentTool) {
             case Tool.Drop: {
-                const radius = this.currentToolParameter.radius;
+                const radius = this.currentToolParameter['radius'];
                 this.previewOperation = new InkDropOperation(this.lastMouseCoord, radius, null);
                 break;
             }
             case Tool.TineLine: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const spacing = this.currentToolParameter.spacing;
-                    const numTines = this.currentToolParameter.numTines;
+                    const spacing = this.currentToolParameter['spacing'];
+                    const numTines = this.currentToolParameter['numTines'];
                     const dir = this.lastMouseCoord.sub(this.mouseDownCoord);
                     if (dir.length() > 0.03) {
                         this.previewOperation = new LineTine(this.mouseDownCoord, dir, numTines, spacing);
@@ -103,8 +103,8 @@ class VectorFieldOverlay {
             }
             case Tool.WavyLine: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const spacing = this.currentToolParameter.spacing;
-                    const numTines = this.currentToolParameter.numTines;
+                    const spacing = this.currentToolParameter['spacing'];
+                    const numTines = this.currentToolParameter['numTines'];
                     const dir = this.lastMouseCoord.sub(this.mouseDownCoord);
                     if (dir.length() > 0.03) {
                         this.previewOperation = new WavyLineTine(this.mouseDownCoord, dir, numTines, spacing);
@@ -117,8 +117,8 @@ class VectorFieldOverlay {
             }
             case Tool.CircularTine: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const spacing = this.currentToolParameter.spacing;
-                    const numTines = this.currentToolParameter.numTines;
+                    const spacing = this.currentToolParameter['spacing'];
+                    const numTines = this.currentToolParameter['numTines'];
                     const radius = this.lastMouseCoord.sub(this.mouseDownCoord).length();
                     if (radius > 0.03) {
                         this.previewOperation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);

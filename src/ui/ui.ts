@@ -30,7 +30,7 @@ class MarblingUI implements MarblingUIDelegate {
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
     private mouseInterval: number;
-    private keyboardShortcutOverlay: MarblingRendererDelegate;
+    private keyboardShortcutOverlay: Modal;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
@@ -176,15 +176,15 @@ class MarblingUI implements MarblingUIDelegate {
         const currentCoord = new Vec2(x, y);
         switch (this.toolsPane.currentTool) {
             case Tool.Drop:
-                const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop).radius;
+                const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop)['radius'];
                 operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor, !this.keyboardManager.shiftDown);
                 this._delegate.applyOperations([operation]);
                 break;
             case Tool.TineLine: {
                 const direction = currentCoord.sub(this.mouseDownCoord);
                 if (direction.length() > 0.03) {
-                    const numTines = this.toolsPane.toolParameters.forTool(Tool.TineLine).numTines;
-                    const spacing = this.toolsPane.toolParameters.forTool(Tool.TineLine).spacing;
+                    const numTines = this.toolsPane.toolParameters.forTool(Tool.TineLine)['numTines'];
+                    const spacing = this.toolsPane.toolParameters.forTool(Tool.TineLine)['spacing'];
                     operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
                 }
@@ -193,8 +193,8 @@ class MarblingUI implements MarblingUIDelegate {
             case Tool.WavyLine: {
                 const direction = currentCoord.sub(this.mouseDownCoord);
                 if (direction.length() > 0.03) {
-                    const numTines = this.toolsPane.toolParameters.forTool(Tool.WavyLine).numTines;
-                    const spacing = this.toolsPane.toolParameters.forTool(Tool.WavyLine).spacing;
+                    const numTines = this.toolsPane.toolParameters.forTool(Tool.WavyLine)['numTines'];
+                    const spacing = this.toolsPane.toolParameters.forTool(Tool.WavyLine)['spacing'];
                     operation = new WavyLineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
                 }
@@ -202,8 +202,8 @@ class MarblingUI implements MarblingUIDelegate {
             }
             case Tool.CircularTine: {
                 const radius = currentCoord.sub(this.mouseDownCoord).length();
-                const numTines = this.toolsPane.toolParameters.forTool(Tool.CircularTine).numTines;
-                const spacing = this.toolsPane.toolParameters.forTool(Tool.CircularTine).spacing;
+                const numTines = this.toolsPane.toolParameters.forTool(Tool.CircularTine)['numTines'];
+                const spacing = this.toolsPane.toolParameters.forTool(Tool.CircularTine)['spacing'];
                 if (radius > 0.03) {
                     operation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
                     this._delegate.applyOperations([operation]);
@@ -242,8 +242,8 @@ class MarblingUI implements MarblingUIDelegate {
         switch (this.toolsPane.currentTool) {
             case Tool.Spatter:
                 if (this.mouseDownCoord != null) {
-                    const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter).dropRadius;
-                    const scatterRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter).scatterRadius;
+                    const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter)['dropRadius'];
+                    const scatterRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter)['scatterRadius'];
                     const currentColor = this.colorPane.currentColor;
                     if (Math.random() < 0.5) {
                         const newOrigin = this.lastMouseCoord.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));

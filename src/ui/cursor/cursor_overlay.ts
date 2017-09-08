@@ -69,15 +69,15 @@ class CursorOverlay {
         }
         switch (this.currentTool) {
             case Tool.Drop:
-                this.currentCursorRenderer.radius = this.currentToolParameters["radius"];
+                this.currentCursorRenderer['radius'] = this.currentToolParameters["radius"];
                 break;
             case Tool.Spatter:
-                this.currentCursorRenderer.radius = this.currentToolParameters["scatterRadius"];
+                this.currentCursorRenderer['radius'] = this.currentToolParameters["scatterRadius"];
                 break;
             case Tool.TineLine:
             case Tool.WavyLine:
-                this.currentCursorRenderer.numTines = this.currentToolParameters["numTines"];
-                this.currentCursorRenderer.spacing = this.currentToolParameters["spacing"];
+                this.currentCursorRenderer['numTines'] = this.currentToolParameters["numTines"];
+                this.currentCursorRenderer['spacing'] = this.currentToolParameters["spacing"];
                 break;
         }
 

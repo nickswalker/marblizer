@@ -1,6 +1,5 @@
 ///<reference path="ui.ts"/>
 ///<reference path="panes/scriptingpane.ts"/>
-///<reference path="./parsing.ts"/>
 
 import set = Reflect.set;
 

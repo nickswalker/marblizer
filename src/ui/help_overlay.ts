@@ -11,19 +11,18 @@ class KeyboardShortcutOverlay extends Modal {
         // Nothing to do here
     }
 
-    private handleResponse(e: Event) {
-        const response: XMLHttpRequest = e.currentTarget;
-        if (response.readyState === 4) {
-            if (response.status === 200 || response.status === 304) {
-                this.modal.innerHTML += response.responseText;
-                this.modal.querySelector(".close-button").addEventListener("click", this.hide.bind(this));
-            }
-        }
-    };
+
 
     private fetchContent() {
         const request = new XMLHttpRequest();
-        request.onreadystatechange = this.handleResponse.bind(this);
+        request.onreadystatechange = () => {
+            if (request.readyState === 4) {
+                if (request.status === 200 || request.status === 304) {
+                    this.modal.innerHTML += request.responseText;
+                    this.modal.querySelector(".close-button").addEventListener("click", this.hide.bind(this));
+                }
+            }
+        };
         request.open("GET", "views/keyboard_shortcuts.html", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         request.send(null);

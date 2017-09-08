@@ -10,7 +10,7 @@ enum Tool {
 
 const allTools = [Tool.Drop, Tool.Spatter, Tool.TineLine, Tool.WavyLine, Tool.CircularTine, Tool.Vortex];
 
-function toolInitializedObject(): { [key: number]: Object } {
+function toolInitializedObject<T>(): { [key: number]: T } {
     const object = {};
     for (const tool in allTools) {
         object[tool] = {};
@@ -18,19 +18,19 @@ function toolInitializedObject(): { [key: number]: Object } {
     return object;
 }
 
-const primaryKeys = toolInitializedObject();
+const primaryKeys: { [key: number]: string } = toolInitializedObject();
 primaryKeys[Tool.Drop] = "radius";
 primaryKeys[Tool.Spatter] = "scatterRadius";
 primaryKeys[Tool.TineLine] = "spacing";
 primaryKeys[Tool.WavyLine] = "spacing";
 primaryKeys[Tool.CircularTine] = "spacing";
 
-const secondaryKeys = toolInitializedObject();
+const secondaryKeys: { [key: number]: string } = toolInitializedObject();
 secondaryKeys[Tool.Spatter] = "dropRadius";
 secondaryKeys[Tool.TineLine] = "numTines";
 secondaryKeys[Tool.CircularTine] = "numTines";
 
-const guides = toolInitializedObject();
+const guides: { [key: number]: string } = toolInitializedObject();
 guides[Tool.Drop]["radius"] = [5, 300, 5];
 guides[Tool.Spatter]["scatterRadius"] = [20, 300, 5];
 guides[Tool.Spatter]["dropRadius"] = [5, 40, 5];
@@ -43,7 +43,7 @@ guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
 
 class ToolParameters {
-    parameters: { [key: number]: Object };
+    parameters: { [key: number]: string };
     onchange: Function;
 
     constructor(onchange: Function) {

@@ -1,9 +1,9 @@
 ///<reference path="../models/vector.ts"/>
 ///<reference path="color_operations.ts"/>
 ///<reference path="../ui/vector_field_overlay.ts"/>
-Math.fmod = function (a, b) {
+function fmod(a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
-};
+}
 
 class LineTine implements Operation, VectorField {
     // N in the paper
@@ -46,7 +46,7 @@ class LineTine implements Operation, VectorField {
         const halfSpace = this.spacing / 2.0;
 
         if (d / this.spacing < this.numTines) {
-            const test = Math.fmod(d, this.spacing);
+            const test = fmod(d, this.spacing);
             d = halfSpace - Math.abs(test - halfSpace);
         } else {
             d = d - this.spacing * this.numTines;

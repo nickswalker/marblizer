@@ -2,7 +2,7 @@
 ///<reference path="../../.d.ts"/>
 ///<reference path="modal.ts"/>
 
-class Notification extends Modal {
+class UINotification extends Modal {
     callback: Function;
 
     constructor(content: string, callback: Function) {

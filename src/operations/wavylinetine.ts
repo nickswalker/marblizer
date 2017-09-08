@@ -1,9 +1,6 @@
 ///<reference path="../models/vector.ts"/>
 ///<reference path="color_operations.ts"/>
 ///<reference path="../ui/vector_field_overlay.ts"/>
-Math.fmod = function (a, b) {
-    return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
-};
 
 class WavyLineTine implements Operation, VectorField {
     // L in the paper

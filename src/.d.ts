@@ -20,6 +20,9 @@ interface Path2D {
     rect(x: number, y: number, w: number, h: number): void;
 }
 
+declare var $: any;
+declare var LZString: any;
+
 // Extend CanvasRenderingContext2D
 interface CanvasRenderingContext2D {
     fill(path: Path2D): void;

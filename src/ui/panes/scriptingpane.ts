@@ -79,7 +79,7 @@ class ScriptingPane {
         const base = window.location;
         const baseUrl = base.protocol + "//" + base.host + "/" + base.pathname.split('/')[1];
 
-        const notification = new Notification(baseUrl + "?p=" + program, null);
+        const notification = new UINotification(baseUrl + "?p=" + program, null);
         notification.show();
     }
 }
