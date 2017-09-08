@@ -12,7 +12,9 @@
 
 interface MarblingRendererDelegate {
     reset();
+
     applyOperations(operations: [Operation]);
+
     save();
 }
 
@@ -25,15 +27,11 @@ class MarblingUI implements MarblingUIDelegate {
     colorPane: ColorPane;
     controlsPane: ControlsPane;
     private scriptingPane: ScriptingPane;
-    _delegate: MarblingRendererDelegate;
-    private _size: Vec2;
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
     private mouseInterval: number;
-
     private keyboardShortcutOverlay: MarblingRendererDelegate;
     private keyboardManager: MarblingKeyboardUI;
-
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
 
@@ -55,23 +53,7 @@ class MarblingUI implements MarblingUIDelegate {
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
 
-    private didEnterInput(input: string) {
-        this.keyboardManager.acceptingNewKeys = true;
-        if (input == null) {
-            return;
-        }
-        let result: [Operation];
-        try {
-            const userProgram = new UserProgram(input);
-            result = userProgram.execute(this._size);
-        } catch (e) {
-            alert(e);
-        }
-        if (result != null && result.length > 0) {
-            this._delegate.applyOperations(result);
-        }
-
-    }
+    _delegate: MarblingRendererDelegate;
 
     set delegate(delegate: MarblingRendererDelegate) {
         this._delegate = delegate;
@@ -79,6 +61,8 @@ class MarblingUI implements MarblingUIDelegate {
         this.controlsPane.delegate = delegate;
         this.colorPane.delegate = delegate;
     }
+
+    private _size: Vec2;
 
     set size(size: Vec2) {
         this.cursorOverlay.setSize(size.x, size.y);
@@ -158,6 +142,24 @@ class MarblingUI implements MarblingUIDelegate {
                 this.scriptingPane.getInput(this.didEnterInput.bind(this));
             }
         }
+    }
+
+    private didEnterInput(input: string) {
+        this.keyboardManager.acceptingNewKeys = true;
+        if (input == null) {
+            return;
+        }
+        let result: [Operation];
+        try {
+            const userProgram = new UserProgram(input);
+            result = userProgram.execute(this._size);
+        } catch (e) {
+            alert(e);
+        }
+        if (result != null && result.length > 0) {
+            this._delegate.applyOperations(result);
+        }
+
     }
 
     private mouseDown(e: MouseEvent) {

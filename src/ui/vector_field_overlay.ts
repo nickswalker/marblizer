@@ -10,7 +10,6 @@ class VectorFieldOverlay {
     private currentToolParameter: Object = {"radius": 50};
     private mouseDownCoord: Vec2;
     private lastMouseCoord: Vec2;
-    private _previewOperation: Operation = null;
 
     constructor(container: HTMLElement) {
         this.renderer = new VectorFieldRenderer(container);
@@ -19,6 +18,29 @@ class VectorFieldOverlay {
         container.addEventListener("mouseout", this.mouseOut.bind(this));
         container.addEventListener("mousemove", this.mouseMove.bind(this));
         document.addEventListener("toolchange", this.toolChange.bind(this));
+    }
+
+    private _previewOperation: Operation = null;
+
+    set previewOperation(value: Operation) {
+        this._previewOperation = value;
+        this.renderer.vectorField = this._previewOperation;
+    }
+
+    setSize(width: number, height: number) {
+        this.renderer.setSize(width, height);
+    }
+
+    toggleVisibility() {
+        this.renderer.toggleVisibility();
+    }
+
+    increaseResolution() {
+        this.renderer.spacing = Math.min(80, this.renderer.spacing + 2);
+    }
+
+    decreaseResolution() {
+        this.renderer.spacing = Math.max(5, this.renderer.spacing - 2);
     }
 
     private toolChange(e: CustomEvent) {
@@ -121,35 +143,12 @@ class VectorFieldOverlay {
             }
         }
     }
-
-    set previewOperation(value: Operation) {
-        this._previewOperation = value;
-        this.renderer.vectorField = this._previewOperation;
-    }
-
-    setSize(width: number, height: number) {
-        this.renderer.setSize(width, height);
-    }
-
-    toggleVisibility() {
-        this.renderer.toggleVisibility();
-    }
-
-    increaseResolution() {
-        this.renderer.spacing = Math.min(80, this.renderer.spacing + 2);
-    }
-
-    decreaseResolution() {
-        this.renderer.spacing = Math.max(5, this.renderer.spacing - 2);
-    }
 }
 
 class VectorFieldRenderer {
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
-    private _spacing: number = 40;
     private visible: boolean = false;
-    private _vectorField: VectorField = null;
     private dirty: boolean = true;
     private arrowWidth = 20;
     private arrowHeight = 12;
@@ -164,10 +163,10 @@ class VectorFieldRenderer {
 
     }
 
-    set vectorField(value: VectorField) {
-        this._vectorField = value;
-        this.dirty = true;
-        //  if the vectorfield is already rendering, it'll switch out automatically
+    private _spacing: number = 40;
+
+    get spacing(): number {
+        return this._spacing;
     }
 
     set spacing(value: number) {
@@ -175,8 +174,43 @@ class VectorFieldRenderer {
         this.dirty = true;
     }
 
-    get spacing(): number {
-        return this._spacing;
+    private _vectorField: VectorField = null;
+
+    set vectorField(value: VectorField) {
+        this._vectorField = value;
+        this.dirty = true;
+        //  if the vectorfield is already rendering, it'll switch out automatically
+    }
+
+    generateArrowPath() {
+        const path = new Path2D();
+        path.moveTo(0, 2);
+        path.lineTo(2, 2);
+        path.lineTo(12, 2);
+        path.lineTo(12, 6);
+        path.lineTo(20, 3);
+        path.lineTo(12, 0);
+        path.lineTo(12, 4);
+        path.lineTo(0, 4);
+        path.closePath();
+        return path;
+    }
+
+    setSize(width: number, height: number) {
+        this.overlayCanvas.width = width;
+        this.overlayCanvas.height = height;
+        this.dirty = true;
+    }
+
+    toggleVisibility() {
+        if (this.visible) {
+            this.visible = false;
+            this.overlayCanvas.style.visibility = "hidden";
+        } else {
+            this.visible = true;
+            this.overlayCanvas.style.visibility = "visible";
+            this.drawOverlay();
+        }
     }
 
     private drawOverlay() {
@@ -226,38 +260,5 @@ class VectorFieldRenderer {
         this.dirty = false;
         requestAnimationFrame(this.drawOverlay.bind(this));
 
-    }
-
-
-    generateArrowPath() {
-        const path = new Path2D();
-        path.moveTo(0, 2);
-        path.lineTo(2, 2);
-        path.lineTo(12, 2);
-        path.lineTo(12, 6);
-        path.lineTo(20, 3);
-        path.lineTo(12, 0);
-        path.lineTo(12, 4);
-        path.lineTo(0, 4);
-        path.closePath();
-        return path;
-    }
-
-
-    setSize(width: number, height: number) {
-        this.overlayCanvas.width = width;
-        this.overlayCanvas.height = height;
-        this.dirty = true;
-    }
-
-    toggleVisibility() {
-        if (this.visible) {
-            this.visible = false;
-            this.overlayCanvas.style.visibility = "hidden";
-        } else {
-            this.visible = true;
-            this.overlayCanvas.style.visibility = "visible";
-            this.drawOverlay();
-        }
     }
 }

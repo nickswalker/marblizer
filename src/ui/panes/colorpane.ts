@@ -35,6 +35,10 @@ class ColorPane {
 
     }
 
+    get currentColor() {
+        return Color.withHex(this.foregroundPicker.value);
+    }
+
     private foregroundChanged(event: Event, color) {
         let swatchColors = [];
         for (let i = 0; i < this.swatches.length; i++) {
@@ -58,9 +62,5 @@ class ColorPane {
         const target = <HTMLElement>event.target;
         const newColor = Color.withRGB(target.style.backgroundColor);
         $(this.foregroundPicker).spectrum("set", newColor.toHexString());
-    }
-
-    get currentColor() {
-        return Color.withHex(this.foregroundPicker.value);
     }
 }

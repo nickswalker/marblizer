@@ -6,8 +6,6 @@ function line(t: number) {
 }
 
 class TineRenderer implements CursorRenderer {
-    private _spacing: number;
-    private _numTines: number;
     private dirty: boolean = true;
     private canvas: HTMLCanvasElement;
     private crossRenderer: CrossRenderer;
@@ -22,46 +20,18 @@ class TineRenderer implements CursorRenderer {
         this.functionRenderer.functionToRender = func;
     }
 
-    set numTines(value: number) {
-        this._numTines = value;
-        this.dirty = true;
-    }
+    private _spacing: number;
 
     set spacing(value: number) {
         this._spacing = value;
         this.dirty = true;
     }
 
-    private updateCursor() {
-        const width = 2 * (this._numTines + 1) * this.r + (2 * this._numTines) * this._spacing;
-        const height = 11;
-        this.canvas.width = width;
-        this.canvas.height = height;
-        const ctx = this.canvas.getContext("2d");
+    private _numTines: number;
 
-
-        const mid = new Vec2(width, height).scale(0.5);
-        for (let i = 0; i <= this._numTines; i++) {
-            ctx.fillStyle = "rgba(0,0,0, 0.8)";
-            const tineOrigin = mid.add(new Vec2(i * this._spacing, 0));
-            circle(ctx, tineOrigin, this.r);
-            ctx.fill();
-
-            ctx.fillStyle = "rgba(255,255,255,0.8)";
-            circle(ctx, tineOrigin, this.r - 1);
-            ctx.fill();
-            if (i == 0) {
-                continue;
-            }
-            const secondOrigin = mid.add(new Vec2(-i * this._spacing, 0));
-            ctx.fillStyle = "rgba(0,0,0, 0.8)";
-            circle(ctx, secondOrigin, this.r);
-            ctx.fill();
-
-            ctx.fillStyle = "rgba(255,255,255,0.8)";
-            circle(ctx, secondOrigin, this.r - 1);
-            ctx.fill();
-        }
+    set numTines(value: number) {
+        this._numTines = value;
+        this.dirty = true;
     }
 
     drawActive(ctx: CanvasRenderingContext2D, mouseDown: Vec2, cursor: Vec2): [Vec2, Vec2] {
@@ -130,5 +100,37 @@ class TineRenderer implements CursorRenderer {
         ctx.drawImage(this.canvas, minExtent.x, minExtent.y);
 
         return [minExtent, new Vec2(this.canvas.width, this.canvas.height)];
+    }
+
+    private updateCursor() {
+        const width = 2 * (this._numTines + 1) * this.r + (2 * this._numTines) * this._spacing;
+        const height = 11;
+        this.canvas.width = width;
+        this.canvas.height = height;
+        const ctx = this.canvas.getContext("2d");
+
+
+        const mid = new Vec2(width, height).scale(0.5);
+        for (let i = 0; i <= this._numTines; i++) {
+            ctx.fillStyle = "rgba(0,0,0, 0.8)";
+            const tineOrigin = mid.add(new Vec2(i * this._spacing, 0));
+            circle(ctx, tineOrigin, this.r);
+            ctx.fill();
+
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            circle(ctx, tineOrigin, this.r - 1);
+            ctx.fill();
+            if (i == 0) {
+                continue;
+            }
+            const secondOrigin = mid.add(new Vec2(-i * this._spacing, 0));
+            ctx.fillStyle = "rgba(0,0,0, 0.8)";
+            circle(ctx, secondOrigin, this.r);
+            ctx.fill();
+
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            circle(ctx, secondOrigin, this.r - 1);
+            ctx.fill();
+        }
     }
 }

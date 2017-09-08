@@ -3,9 +3,8 @@
 
 class ToolsPane {
     container: HTMLElement;
-    toolToButtonMapping: {[key: number]: HTMLElement};
+    toolToButtonMapping: { [key: number]: HTMLElement };
     delegate: MarblingRendererDelegate;
-    private _currentTool: Tool;
     toolParameters: ToolParameters;
     private shiftDown: boolean = false;
 
@@ -38,6 +37,17 @@ class ToolsPane {
         document.addEventListener("keyup", this.shiftChange.bind(this));
     }
 
+    private _currentTool: Tool;
+
+    get currentTool(): Tool {
+        return this._currentTool;
+    }
+
+    set currentTool(value: Tool) {
+        this._currentTool = value;
+        this.fireEvent()
+    }
+
     private shiftChange(e: KeyboardEvent) {
         this.shiftDown = e.shiftKey;
     }
@@ -56,15 +66,6 @@ class ToolsPane {
 
         this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
         this.fireEvent();
-    }
-
-    get currentTool(): Tool {
-        return this._currentTool;
-    }
-
-    set currentTool(value: Tool) {
-        this._currentTool = value;
-        this.fireEvent()
     }
 
     private fireEvent() {

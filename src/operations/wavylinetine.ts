@@ -4,27 +4,29 @@
 Math.fmod = function (a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 };
-class LineTine implements Operation, VectorField {
-    // N in the paper
-    readonly normal: Vec2;
+
+class WavyLineTine implements Operation, VectorField {
     // L in the paper
     readonly line: Vec2;
     // A in the paper
     readonly origin: Vec2;
     readonly numTines: number;
     readonly spacing: number;
-    readonly alpha = 30.0;
-    readonly lambda = 32;
+    readonly alpha: number = 30.0;
+    readonly lambda: number = 32;
+    readonly amplitude: number = 10;
+    readonly phase: number = 0.0;
+    readonly angle: number;
+    readonly wavelength: number = 400.0;
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
         const strength = direction.length();
-        this.line = direction.norm();
-        this.normal = this.line.perp().norm();
+        this.line = direction.norm().perp();
         this.origin = origin;
         this.numTines = numTines;
         this.spacing = spacing;
-
-        this.alpha += strength / 10.0;
+        this.angle = this.line.angle();
+        this.amplitude += strength / 10.0;
     }
 
     apply(renderer: InteractiveCurveRenderer) {
@@ -41,18 +43,13 @@ class LineTine implements Operation, VectorField {
     }
 
     atPoint(point: Vec2): Vec2 {
-        let d = Math.abs(point.sub(this.origin).dot(this.normal));
-        const halfSpace = this.spacing / 2.0;
+        const sinT = Math.sin(this.angle);
+        const cosT = Math.cos(this.angle);
 
-        if (d / this.spacing < this.numTines) {
-            const test = Math.fmod(d, this.spacing);
-            d = halfSpace - Math.abs(test - halfSpace);
-        } else {
-            d = d - this.spacing * this.numTines;
-        }
+        const v = point.dot(new Vec2(sinT, -cosT));
+        const factor = this.amplitude * Math.sin(2 * Math.PI / this.wavelength * v + this.phase);
 
-        const factor = this.alpha * this.lambda / (d + this.lambda);
-        return this.line.copy().scale(factor);
+        return new Vec2(cosT, sinT).scale(factor);
     }
 
 }

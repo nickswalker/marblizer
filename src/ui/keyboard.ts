@@ -3,6 +3,7 @@
 ///<reference path="./parsing.ts"/>
 
 import set = Reflect.set;
+
 enum KeyboardShortcut {
     Plus = 0,
     Minus = 1,
@@ -66,6 +67,15 @@ class MarblingKeyboardUI {
 
     }
 
+    keyWasPressed(event: KeyboardEvent) {
+        if (!this.acceptingNewKeys) {
+            return;
+        }
+        const shortcut = keyMapping[event.key];
+        this.keyboardDelegate.didPressShortcut(shortcut);
+
+    }
+
     private keyDown(e: KeyboardEvent) {
         this.shiftDown = e.shiftKey;
         this.controlDown = e.ctrlKey;
@@ -89,15 +99,6 @@ class MarblingKeyboardUI {
         this.controlDown = e.ctrlKey;
         this.altDown = e.altKey;
         this.metaDown = e.metaKey;
-    }
-
-    keyWasPressed(event: KeyboardEvent) {
-        if (!this.acceptingNewKeys) {
-            return;
-        }
-        const shortcut = keyMapping[event.key];
-        this.keyboardDelegate.didPressShortcut(shortcut);
-
     }
 
 

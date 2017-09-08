@@ -1,14 +1,10 @@
 ///<reference path="../../models/vector.ts"/>
 ///<reference path="../../models/color.ts"/>
 class FunctionRenderer {
+    color: Color = new Color(30, 30, 30, 0.1);
     private canvas: HTMLCanvasElement;
-    private _functionToRender: Function;
     private xAxis: number = null;
     private dirty: boolean = true;
-    private _minX: number;
-    private _maxX: number;
-    private _resolution: number;
-    color: Color = new Color(30, 30, 30, 0.1);
 
     constructor(minX: number, maxX: number, resolution: number = 2) {
         this.canvas = document.createElement("canvas");
@@ -17,24 +13,39 @@ class FunctionRenderer {
         this._resolution = resolution;
     }
 
-    set resolution(value: number) {
-        this._resolution = value;
+    private _functionToRender: Function;
+
+    set functionToRender(value: Function) {
+        this._functionToRender = value;
         this.dirty = true;
     }
 
-    set maxX(value: number) {
-        this._maxX = value;
-        this.dirty = true;
-    }
+    private _minX: number;
 
     set minX(value: number) {
         this._minX = value;
         this.dirty = true;
     }
 
-    set functionToRender(value: Function) {
-        this._functionToRender = value;
+    private _maxX: number;
+
+    set maxX(value: number) {
+        this._maxX = value;
         this.dirty = true;
+    }
+
+    private _resolution: number;
+
+    set resolution(value: number) {
+        this._resolution = value;
+        this.dirty = true;
+    }
+
+    draw(ctx: CanvasRenderingContext2D, position: Vec2) {
+        if (this.dirty) {
+            this.render()
+        }
+        ctx.drawImage(this.canvas, position.x + this._minX, position.y - this.xAxis);
     }
 
     private render() {
@@ -63,12 +74,5 @@ class FunctionRenderer {
         ctx.strokeStyle = this.color.toRGBAString();
         ctx.stroke();
 
-    }
-
-    draw(ctx: CanvasRenderingContext2D, position: Vec2) {
-        if (this.dirty) {
-            this.render()
-        }
-        ctx.drawImage(this.canvas, position.x + this._minX, position.y - this.xAxis);
     }
 }

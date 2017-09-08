@@ -19,7 +19,7 @@ class CursorOverlay {
     private currentTool: Tool = Tool.Drop;
     private currentToolParameters: Object = {"radius": 50};
 
-    private rendererForTool: {[key: number]: CursorRenderer};
+    private rendererForTool: { [key: number]: CursorRenderer };
     private defaultRenderer: CrossRenderer;
 
     constructor(container: HTMLElement) {
@@ -53,6 +53,11 @@ class CursorOverlay {
         this.currentCursorRenderer = this.rendererForTool[this.currentTool];
         this.drawOverlay();
 
+    }
+
+    setSize(width: number, height: number) {
+        this.overlayCanvas.width = width;
+        this.overlayCanvas.height = height;
     }
 
     private toolChange(e: CustomEvent) {
@@ -119,13 +124,6 @@ class CursorOverlay {
         //ctx.fillRect(this.prevDrawOrigin.x, this.prevDrawOrigin.y, this.prevDrawSize.x, this.prevDrawSize.y);
 
         requestAnimationFrame(this.drawOverlay.bind(this));
-    }
-
-
-
-    setSize(width: number, height: number) {
-        this.overlayCanvas.width = width;
-        this.overlayCanvas.height = height;
     }
 
 

@@ -13,6 +13,7 @@ class ScriptingPane {
     private dismissButton: HTMLElement;
     private getURL: HTMLElement;
     private downOnContainer: boolean = false;
+
     constructor(element: HTMLElement) {
         this.container = element.parentElement;
         this.modal = element;
@@ -36,6 +37,18 @@ class ScriptingPane {
     getInput(callback: Function) {
         this.callback = callback;
         this.show();
+    }
+
+    hide() {
+        this.active = false;
+        this.container.style.visibility = "hidden";
+        this.container.style.display = "none";
+    }
+
+    show() {
+        this.active = true;
+        this.container.removeAttribute("style");
+        this.codeMirror.refresh();
     }
 
     private downContainer(event: MouseEvent) {
@@ -68,17 +81,5 @@ class ScriptingPane {
 
         const notification = new Notification(baseUrl + "?p=" + program, null);
         notification.show();
-    }
-
-    hide() {
-        this.active = false;
-        this.container.style.visibility = "hidden";
-        this.container.style.display = "none";
-    }
-
-    show() {
-        this.active = true;
-        this.container.removeAttribute("style");
-        this.codeMirror.refresh();
     }
 }

@@ -10,7 +10,7 @@ enum Tool {
 
 const allTools = [Tool.Drop, Tool.Spatter, Tool.TineLine, Tool.WavyLine, Tool.CircularTine, Tool.Vortex];
 
-function toolInitializedObject(): {[key: number]: Object} {
+function toolInitializedObject(): { [key: number]: Object } {
     const object = {};
     for (const tool in allTools) {
         object[tool] = {};
@@ -42,10 +42,8 @@ guides[Tool.CircularTine]["spacing"] = [5, 300, 5];
 guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
 
-
-
 class ToolParameters {
-    parameters: {[key: number]: Object};
+    parameters: { [key: number]: Object };
     onchange: Function;
 
     constructor(onchange: Function) {

@@ -1,6 +1,5 @@
 ///<reference path="cursor_renderer.ts"/>
 class DynamicRadiusRenderer implements CursorRenderer {
-    private _radius: number = 50;
     private dirty: boolean = true;
     private canvas: HTMLCanvasElement;
     private crossRenderer: CrossRenderer;
@@ -12,19 +11,11 @@ class DynamicRadiusRenderer implements CursorRenderer {
         this.circleRenderer = new CircleRenderer();
     }
 
+    private _radius: number = 50;
+
     set radius(value: number) {
         this._radius = value;
         this.dirty = true;
-    }
-
-    private updateCursor() {
-        this.canvas.width = this._radius * 2 + 3;
-        this.canvas.height = this._radius * 2 + 3;
-        const ctx = this.canvas.getContext("2d");
-        ctx.strokeStyle = "rgba(100,100,100,0.3)";
-        const origin = new Vec2(this.canvas.width / 2, this.canvas.height / 2);
-        circle(ctx, origin, this._radius);
-        ctx.stroke();
     }
 
     drawAtRest(ctx: CanvasRenderingContext2D, position: Vec2): [Vec2, Vec2] {
@@ -72,5 +63,15 @@ class DynamicRadiusRenderer implements CursorRenderer {
         const min = vecMin(crossMin, circleMin);
         const max = vecMax(crossMin.add(crossSize), circleMin.add(circleSize));
         return [min, max.sub(min)];
+    }
+
+    private updateCursor() {
+        this.canvas.width = this._radius * 2 + 3;
+        this.canvas.height = this._radius * 2 + 3;
+        const ctx = this.canvas.getContext("2d");
+        ctx.strokeStyle = "rgba(100,100,100,0.3)";
+        const origin = new Vec2(this.canvas.width / 2, this.canvas.height / 2);
+        circle(ctx, origin, this._radius);
+        ctx.stroke();
     }
 }

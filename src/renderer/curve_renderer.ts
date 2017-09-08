@@ -6,32 +6,14 @@
 
 class Drop {
     points: Array<Vec2>;
-    private dirty: boolean = true;
     readonly color: Color;
-
     _cached_path: Path2D;
+    private dirty: boolean = true;
+
     constructor(color: Color, radius: number, centerX: number, centerY: number) {
         this.color = color;
         this.points = Drop.initialCirclePoints(radius, centerX, centerY);
 
-    }
-    getPath() {
-        if (!this.dirty) {
-            return this._cached_path;
-        }
-        let newPath = new Path2D();
-        const firstPoint = this.points[0];
-        newPath.moveTo(firstPoint.x, firstPoint.y);
-        for(let i = 1; i < this.points.length; i++) {
-            const nextPoint = this.points[i];
-            newPath.lineTo(nextPoint.x, nextPoint.y);
-        }
-        newPath.closePath();
-        this._cached_path = newPath;
-        this.dirty = false;
-    }
-    makeDirty() {
-        this.dirty = true;
     }
 
     private static initialCirclePoints(radius: number, centerX: number, centerY: number) {
@@ -44,11 +26,32 @@ class Drop {
         }
         return points;
     }
+
+    getPath() {
+        if (!this.dirty) {
+            return this._cached_path;
+        }
+        let newPath = new Path2D();
+        const firstPoint = this.points[0];
+        newPath.moveTo(firstPoint.x, firstPoint.y);
+        for (let i = 1; i < this.points.length; i++) {
+            const nextPoint = this.points[i];
+            newPath.lineTo(nextPoint.x, nextPoint.y);
+        }
+        newPath.closePath();
+        this._cached_path = newPath;
+        this.dirty = false;
+    }
+
+    makeDirty() {
+        this.dirty = true;
+    }
 }
 
 
 interface MarblingRenderer {
     applyOperations(operations: [Operation]);
+
     save();
 }
 
@@ -56,7 +59,7 @@ class InteractiveCurveRenderer implements MarblingRenderer {
     renderCanvas: HTMLCanvasElement;
     displayCanvas: HTMLCanvasElement;
     drops: Drop[] = [];
-    baseColor: Color = new Color(220,210,210);
+    baseColor: Color = new Color(220, 210, 210);
     private dirty: boolean = true;
     private history: [Operation];
 

@@ -16,6 +16,17 @@ abstract class Modal {
 
     }
 
+    abstract willDismiss();
+
+    show() {
+        this.container.removeAttribute("style");
+    }
+
+    hide() {
+        this.container.style.visibility = "hidden";
+        this.container.style.display = "none";
+    }
+
     private downContainer(event: MouseEvent) {
         this.downOnContainer = event.target == this.container;
     }
@@ -27,17 +38,6 @@ abstract class Modal {
         }
         this.downOnContainer = false;
 
-    }
-
-    abstract willDismiss();
-
-    show() {
-        this.container.removeAttribute("style");
-    }
-
-    hide() {
-        this.container.style.visibility = "hidden";
-        this.container.style.display = "none";
     }
 
 }
