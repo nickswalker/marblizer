@@ -1,12 +1,11 @@
-///<reference path="../ui.ts"/>
-///<reference path="../tools.ts"/>
+import {MarblingRendererDelegate, MarblingUIDelegate} from "../ui.js";
 
-enum ButtonBehavior {
+export enum ButtonBehavior {
     Toggle,
     Temporary
 }
 
-enum UICommand {
+export enum UICommand {
     Save,
     ShowField,
     ShowScriptEditor,
@@ -15,11 +14,10 @@ enum UICommand {
     ShowKeyboardShortcutOverlay
 }
 
-class ControlsPane {
+export default class ControlsPane {
     container: HTMLElement;
     optionToButtonMapping: { [key: number]: HTMLElement };
     buttonBehaviors: { [key: number]: ButtonBehavior };
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     delegate: MarblingRendererDelegate;
     uiDelegate: MarblingUIDelegate;
     private shiftDown: boolean = false;

@@ -1,7 +1,10 @@
-///<reference path="color_operations.ts"/>
-///<reference path="../models/vectorfield.ts"/>
-///<reference path="../models/matrix.ts"/>
-class Vortex implements Operation, VectorField {
+import Operation from "./color_operations.js";
+import VectorField from "../models/vectorfield.js";
+import Vec2 from "../models/vector.js";
+import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
+import Mat2x2 from "../models/matrix.js";
+
+export default class Vortex implements Operation, VectorField {
     // C in the paper
     readonly center: Vec2;
     readonly radius: number;

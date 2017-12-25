@@ -1,11 +1,11 @@
-///<reference path="../models/color.ts"/>
-///<reference path="../models/vector.ts"/>
-///<reference path="../renderer/curve_renderer.ts"/>
-interface Operation {
+import Color from "../models/color.js";
+import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
+
+export default interface Operation {
     apply(renderer: InteractiveCurveRenderer);
 }
 
-class ChangeBaseColorOperation implements Operation {
+export class ChangeBaseColorOperation implements Operation {
     readonly color: Color;
 
     constructor(color: Color) {

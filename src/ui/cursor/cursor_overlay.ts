@@ -1,10 +1,10 @@
-///<reference path="../panes/scriptingpane.ts"/>
-///<reference path="cursor_renderer.ts"/>
-///<reference path="tine_renderer.ts"/>
-///<reference path="dynamic_radius_renderer.ts"/>
+import Vec2 from "../../models/vector.js";
+import CursorRenderer, {CircleRenderer, CrossRenderer} from "./cursor_renderer.js";
+import {Tool} from "../tools.js";
+import TineRenderer from "./tine_renderer.js";
+import DynamicRadiusRenderer from "./dynamic_radius_renderer.js";
 
-
-class CursorOverlay {
+export default class CursorOverlay {
 
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;

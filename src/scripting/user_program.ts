@@ -1,5 +1,6 @@
-///<reference path="../models/vector.ts"/>
-class UserProgram {
+import Vec2 from "../models/vector.js";
+
+export default class UserProgram {
     private executable: Function;
 
     constructor(string: string,) {

@@ -1,10 +1,11 @@
-///<reference path="vector.ts"/>
-interface VectorField {
+import Vec2 from "./vector.js";
+
+export default interface VectorField {
     atPoint(point: Vec2): Vec2
 }
 
-class UniformVectorField implements VectorField {
-    s
+export class UniformVectorField implements VectorField {
+
     private vector: Vec2;
 
     constructor(vector: Vec2) {
@@ -17,7 +18,7 @@ class UniformVectorField implements VectorField {
 }
 
 
-class SinVectorField implements VectorField {
+export class SinVectorField implements VectorField {
     atPoint(point: Vec2): Vec2 {
         return new Vec2(Math.sin(0.01 * point.x), Math.sin(0.01 * point.x));
     }

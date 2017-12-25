@@ -1,7 +1,7 @@
-///<reference path="../ui.ts"/>
-///<reference path="../tools.ts"/>
+import {MarblingRendererDelegate} from "../ui.js";
+import ToolParameters, {Tool} from "../tools.js";
 
-class ToolsPane {
+export default class ToolsPane {
     container: HTMLElement;
     toolToButtonMapping: { [key: number]: HTMLElement };
     delegate: MarblingRendererDelegate;

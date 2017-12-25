@@ -1,4 +1,4 @@
-abstract class Modal {
+export default abstract class Modal {
     container: HTMLElement;
     modal: HTMLElement;
     private downOnContainer: boolean = false;

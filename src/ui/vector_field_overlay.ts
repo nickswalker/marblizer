@@ -1,10 +1,14 @@
-///<reference path="../models/vectorfield.ts"/>
-///<reference path="../operations/vortex.ts"/>
-///<reference path="../operations/circularlinetine.ts"/>
-///<reference path="../operations/inkdrop.ts"/>
-///<reference path="panes/toolspane.ts"/>
+import {Tool} from "./tools.js";
+import Vec2 from "../models/vector.js";
+import Operation from "../operations/color_operations.js";
+import InkDropOperation from "../operations/inkdrop.js";
+import LineTine from "../operations/linetine.js";
+import WavyLineTine from "../operations/wavylinetine.js";
+import CircularLineTine from "../operations/circularlinetine.js";
+import Vortex from "../operations/vortex.js";
+import VectorField from "../models/vectorfield.js";
 
-class VectorFieldOverlay {
+export default class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
     private currentTool: Tool = Tool.Drop;
     private currentToolParameter: Object = {"radius": 50};

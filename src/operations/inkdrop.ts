@@ -1,8 +1,10 @@
-///<reference path="color_operations.ts"/>
-///<reference path="../models/vectorfield.ts"/>
-///<reference path="../renderer/curve_renderer.ts"/>
+import Operation from "./color_operations.js";
+import VectorField from "../models/vectorfield.js";
+import Vec2 from "../models/vector.js";
+import Color from "../models/color.js";
+import {Drop, InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
 
-class InkDropOperation implements Operation, VectorField {
+export default class InkDropOperation implements Operation, VectorField {
     readonly position: Vec2;
     readonly radius: number;
     readonly color: Color;

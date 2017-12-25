@@ -1,11 +1,13 @@
-///<reference path="../models/vector.ts"/>
-///<reference path="color_operations.ts"/>
-///<reference path="../ui/vector_field_overlay.ts"/>
-function fmod(a, b) {
+import Operation from "./color_operations.js";
+import VectorField from "../models/vectorfield.js";
+import Vec2 from "../models/vector.js";
+import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
+
+export function fmod(a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 }
 
-class LineTine implements Operation, VectorField {
+export default class LineTine implements Operation, VectorField {
     // N in the paper
     readonly normal: Vec2;
     // L in the paper

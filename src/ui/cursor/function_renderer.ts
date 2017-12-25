@@ -1,6 +1,7 @@
-///<reference path="../../models/vector.ts"/>
-///<reference path="../../models/color.ts"/>
-class FunctionRenderer {
+import Color from "../../models/color.js";
+import Vec2 from "../../models/vector.js";
+
+export default class FunctionRenderer {
     color: Color = new Color(30, 30, 30, 0.1);
     private canvas: HTMLCanvasElement;
     private xAxis: number = null;

@@ -1,8 +1,6 @@
-///<reference path="../../scripting/example_scripts.ts"/>
-///<reference path="../../.d.ts"/>
-///<reference path="modal.ts"/>
+import Modal from "./modal.js";
 
-class UINotification extends Modal {
+export default class UINotification extends Modal {
     callback: Function;
 
     constructor(content: string, callback: Function) {

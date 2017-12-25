@@ -1,5 +1,6 @@
-///<reference path="panes/modal.ts"/>
-class KeyboardShortcutOverlay extends Modal {
+import Modal from "./panes/modal.js";
+
+export default class KeyboardShortcutOverlay extends Modal {
 
     constructor() {
         super();
@@ -10,8 +11,6 @@ class KeyboardShortcutOverlay extends Modal {
     willDismiss() {
         // Nothing to do here
     }
-
-
 
     private fetchContent() {
         const request = new XMLHttpRequest();

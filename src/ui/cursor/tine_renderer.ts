@@ -1,11 +1,13 @@
-///<reference path="cursor_renderer.ts"/>
-///<reference path="function_renderer.ts"/>
+import CursorRenderer, {CrossRenderer} from "./cursor_renderer.js";
+import FunctionRenderer from "./function_renderer.js";
+import Vec2 from "../../models/vector.js";
+import {circle} from "../../drawing_utilities.js";
 
 function line(t: number) {
     return 0;
 }
 
-class TineRenderer implements CursorRenderer {
+export default class TineRenderer implements CursorRenderer {
     private dirty: boolean = true;
     private canvas: HTMLCanvasElement;
     private crossRenderer: CrossRenderer;

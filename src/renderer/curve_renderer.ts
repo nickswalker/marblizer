@@ -1,10 +1,8 @@
-///<reference path="../models/vector.ts"/>
-///<reference path="../models/color.ts"/>
-///<reference path="../.d.ts"/>
-///<reference path="../ui/panes/scriptingpane.ts"/>
-///<reference path="../operations/color_operations.ts"/>
+import Vec2 from "../models/vector.js";
+import Color from "../models/color.js";
+import Operation from "../operations/color_operations.js";
 
-class Drop {
+export class Drop {
     points: Array<Vec2>;
     readonly color: Color;
     _cached_path: Path2D;
@@ -49,13 +47,13 @@ class Drop {
 }
 
 
-interface MarblingRenderer {
+export default interface MarblingRenderer {
     applyOperations(operations: [Operation]);
 
     save();
 }
 
-class InteractiveCurveRenderer implements MarblingRenderer {
+export class InteractiveCurveRenderer implements MarblingRenderer {
     renderCanvas: HTMLCanvasElement;
     displayCanvas: HTMLCanvasElement;
     drops: Drop[] = [];

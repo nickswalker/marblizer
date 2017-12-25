@@ -1,5 +1,4 @@
-///<reference path="panes/toolspane.ts"/>
-enum Tool {
+export enum Tool {
     Drop = 0,
     Spatter = 1,
     TineLine = 2,
@@ -42,7 +41,7 @@ guides[Tool.CircularTine]["spacing"] = [5, 300, 5];
 guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
 
-class ToolParameters {
+export default class ToolParameters {
     parameters: { [key: number]: string };
     onchange: Function;
 

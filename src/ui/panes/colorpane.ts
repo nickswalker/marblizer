@@ -1,5 +1,8 @@
-///<reference path="../ui.ts"/>
-class ColorPane {
+import {MarblingRendererDelegate} from "../ui.js";
+import {default as Color, colorSets} from "../../models/color.js";
+import {ChangeBaseColorOperation} from "../../operations/color_operations.js";
+
+export default class ColorPane {
     container: HTMLElement;
     foregroundPicker: HTMLInputElement;
     backgroundPicker: HTMLInputElement;

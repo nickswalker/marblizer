@@ -1,5 +1,6 @@
-///<reference path="vector.ts"/>
-class Mat2x2 {
+import Vec2 from "./vector.js";
+
+export default class Mat2x2 {
     readonly m11: number;
     readonly m12: number;
     readonly m21: number;

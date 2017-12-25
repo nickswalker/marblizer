@@ -1,16 +1,24 @@
-///<reference path="../renderer/curve_renderer.ts"/>
-///<reference path="cursor/cursor_overlay.ts"/>
-///<reference path="keyboard.ts"/>
-///<reference path="vector_field_overlay.ts"/>
-///<reference path="../operations/linetine.ts"/>
-///<reference path="../operations/circularlinetine.ts"/>
-///<reference path="panes/toolspane.ts"/>
-///<reference path="panes/colorpane.ts"/>
-///<reference path="help_overlay.ts"/>
-///<reference path="../operations/wavylinetine.ts"/>
-///<reference path="../scripting/user_program.ts"/>
+import {default as ControlsPane, UICommand} from "./panes/controlspane.js";
+import Operation from "../operations/color_operations.js";
+import ToolsPane from "./panes/toolspane.js";
+import ColorPane from "./panes/colorpane.js";
+import ScriptingPane from "./panes/scriptingpane.js";
+import Vec2 from "../models/vector.js";
+import Modal from "./panes/modal.js";
+import MarblingKeyboardUI, {KeyboardShortcut} from "./keyboard.js";
+import CursorOverlay from "./cursor/cursor_overlay.js";
+import VectorFieldOverlay from "./vector_field_overlay.js";
+import InkDropOperation from "../operations/inkdrop.js";
+import {Tool} from "./tools.js";
+import Vortex from "../operations/vortex.js";
+import CircularLineTine from "../operations/circularlinetine.js";
+import WavyLineTine from "../operations/wavylinetine.js";
+import LineTine from "../operations/linetine.js";
+import KeyboardShortcutOverlay from "./help_overlay.js";
+import UserProgram from "../scripting/user_program.js";
 
-interface MarblingRendererDelegate {
+
+export interface MarblingRendererDelegate {
     reset();
 
     applyOperations(operations: [Operation]);
@@ -18,11 +26,11 @@ interface MarblingRendererDelegate {
     save();
 }
 
-interface MarblingUIDelegate {
+export interface MarblingUIDelegate {
     applyCommand(command: UICommand)
 }
 
-class MarblingUI implements MarblingUIDelegate {
+export default class MarblingUI implements MarblingUIDelegate {
     toolsPane: ToolsPane;
     colorPane: ColorPane;
     controlsPane: ControlsPane;

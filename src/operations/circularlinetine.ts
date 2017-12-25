@@ -1,9 +1,10 @@
-///<reference path="../models/vector.ts"/>
-///<reference path="color_operations.ts"/>
-///<reference path="../ui/vector_field_overlay.ts"/>
-///<reference path="../renderer/curve_renderer.ts"/>
-///<reference path="../models/matrix.ts"/>
-class CircularLineTine implements Operation, VectorField {
+import Vec2 from "../models/vector.js";
+import Operation from "./color_operations.js";
+import VectorField from "../models/vectorfield.js";
+import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
+import Mat2x2 from "../models/matrix.js";
+
+export default class CircularLineTine implements Operation, VectorField {
     // C in the paper
     readonly center: Vec2;
     readonly radius: number;

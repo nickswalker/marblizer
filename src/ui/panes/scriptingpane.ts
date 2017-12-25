@@ -1,9 +1,8 @@
-///<reference path="../../scripting/example_scripts.ts"/>
 ///<reference path="../../.d.ts"/>
-///<reference path="../../scripting/user_program.ts"/>
-///<reference path="notification.ts"/>
+import {tutorialProgram} from "../../scripting/example_scripts.js";
+import UINotification from "./notification.js";
 
-class ScriptingPane {
+export default class ScriptingPane {
     container: HTMLElement;
     modal: HTMLElement;
     callback: Function;

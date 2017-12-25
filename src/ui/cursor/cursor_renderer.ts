@@ -1,14 +1,14 @@
-///<reference path="../../models/vector.ts"/>
-///<reference path="../../drawing_utilities.ts"/>
+import Vec2 from "../../models/vector.js";
+import {circle, cross} from "../../drawing_utilities.js";
 
-interface CursorRenderer {
+export default interface CursorRenderer {
     drawAtRest(ctx: CanvasRenderingContext2D, position: Vec2): [Vec2, Vec2]
 
     drawActive(ctx: CanvasRenderingContext2D, mouseDown: Vec2, cursor: Vec2): [Vec2, Vec2]
 }
 
 
-class CircleRenderer implements CursorRenderer {
+export class CircleRenderer implements CursorRenderer {
     private dirty: boolean = true;
     private canvas: HTMLCanvasElement;
 
@@ -60,7 +60,7 @@ class CircleRenderer implements CursorRenderer {
 }
 
 
-class CrossRenderer implements CursorRenderer {
+export class CrossRenderer implements CursorRenderer {
     size: number = 20;
     private dirty: boolean = true;
     private canvas: HTMLCanvasElement;

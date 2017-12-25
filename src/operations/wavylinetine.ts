@@ -1,8 +1,9 @@
-///<reference path="../models/vector.ts"/>
-///<reference path="color_operations.ts"/>
-///<reference path="../ui/vector_field_overlay.ts"/>
+import Operation from "./color_operations.js";
+import VectorField from "../models/vectorfield.js";
+import Vec2 from "../models/vector.js";
+import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
 
-class WavyLineTine implements Operation, VectorField {
+export default class WavyLineTine implements Operation, VectorField {
     // L in the paper
     readonly line: Vec2;
     // A in the paper

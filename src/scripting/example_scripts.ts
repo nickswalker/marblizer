@@ -1,4 +1,4 @@
-const tutorialProgram = `\
+export const tutorialProgram = `\
 let operations = [];
 const colorSet = colorSets[0];
 const center = new Vec2(this.canvasWidth, this.canvasHeight).scale(0.5);
@@ -27,7 +27,7 @@ for (let i = 0; i <= 3; i +=1) {
 return operations;\
 `;
 
-const concentricCircles = `\
+export const concentricCircles = `\
 let operations = [];
 const colorSet = colorSets[0];
 const center = new Vec2(this.canvasWidth, this.canvasHeight).scale(0.5);
