@@ -4,7 +4,7 @@ import VectorField from "../models/vectorfield.js";
 import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
 import Mat2x2 from "../models/matrix.js";
 
-export default class CircularLineTine implements Operation, VectorField {
+export default class CircularLineTine implements Operation {
     // C in the paper
     readonly center: Vec2;
     readonly radius: number;
@@ -20,33 +20,6 @@ export default class CircularLineTine implements Operation, VectorField {
         this.numTines = numTines;
         this.interval = interval;
         this.counterClockwise = counterClockwise;
-    }
-
-
-    apply(renderer: InteractiveCurveRenderer) {
-        for (let d = 0; d < renderer.drops.length; d++) {
-            let drop = renderer.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const offset = this.atPoint(oldPoint);
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
-    }
-
-    atPoint(point: Vec2): Vec2 {
-        const pLessC = point.sub(this.center);
-        const pLessCLen = pLessC.length();
-        const d = Math.abs(pLessCLen - this.radius);
-        const l = this.alpha * this.lambda / (d + this.lambda);
-        const theta = this.counterClockwise ? -l / pLessCLen : l / pLessCLen;
-        const sinT = Math.sin(theta);
-        const cosT = Math.cos(theta);
-        const mat = new Mat2x2(cosT, sinT, -sinT, cosT);
-        const addend = pLessC.mult(mat);
-        const trans = this.center.add(addend);
-        return trans.sub(point);
     }
 
 }

@@ -2,7 +2,6 @@ import Color from "../models/color.js";
 import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
 
 export default interface Operation {
-    apply(renderer: InteractiveCurveRenderer);
 }
 
 export class ChangeBaseColorOperation implements Operation {

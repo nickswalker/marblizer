@@ -7,7 +7,7 @@ export function fmod(a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 }
 
-export default class LineTine implements Operation, VectorField {
+export default class LineTine implements Operation {
     // N in the paper
     readonly normal: Vec2;
     // L in the paper
@@ -30,32 +30,6 @@ export default class LineTine implements Operation, VectorField {
         this.alpha += strength / 10.0;
     }
 
-    apply(renderer: InteractiveCurveRenderer) {
 
-        for (let d = 0; d < renderer.drops.length; d++) {
-            let drop = renderer.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const offset = this.atPoint(oldPoint);
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
-    }
-
-    atPoint(point: Vec2): Vec2 {
-        let d = Math.abs(point.sub(this.origin).dot(this.normal));
-        const halfSpace = this.spacing / 2.0;
-
-        if (d / this.spacing < this.numTines) {
-            const test = fmod(d, this.spacing);
-            d = halfSpace - Math.abs(test - halfSpace);
-        } else {
-            d = d - this.spacing * this.numTines;
-        }
-
-        const factor = this.alpha * this.lambda / (d + this.lambda);
-        return this.line.copy().scale(factor);
-    }
 
 }

@@ -1,6 +1,7 @@
 import Vec2 from "../models/vector.js";
 import Color from "../models/color.js";
 import Operation from "../operations/color_operations.js";
+import AtPointApplicator from "../operations/at_point_applicator.js";
 
 export class Drop {
     points: Array<Vec2>;
@@ -49,8 +50,9 @@ export class Drop {
 
 export default interface MarblingRenderer {
     applyOperations(operations: [Operation]);
-
     save();
+
+    reset();
 }
 
 export class InteractiveCurveRenderer implements MarblingRenderer {
@@ -58,14 +60,16 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     displayCanvas: HTMLCanvasElement;
     drops: Drop[] = [];
     baseColor: Color = new Color(220, 210, 210);
+    private applicator: AtPointApplicator;
     private dirty: boolean = true;
-    private history: [Operation];
+    private history: Operation[] = [];
 
     constructor(container: HTMLElement) {
         this.displayCanvas = document.createElement("canvas");
         this.displayCanvas.className = "marbling-render-layer";
         container.insertBefore(this.displayCanvas, container.firstChild);
         this.renderCanvas = document.createElement("canvas");
+        this.applicator = new AtPointApplicator();
         this.render();
         window.requestAnimationFrame(this.draw.bind(this));
     }
@@ -104,21 +108,23 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
         this.dirty = true;
     }
 
-    applyOperations(operations: [Operation]) {
+    applyOperations(operations: Operation[]) {
         for (let i = 0; i < operations.length; i++) {
             const operation = operations[i];
-            operation.apply(this);
+            this.applicator.apply(operation, this);
         }
         for (let i = 0; i < this.drops.length; i++) {
             const drop = this.drops[i];
             drop.getPath();
         }
         this.dirty = true;
+        this.history.concat(operations);
     }
 
     save() {
         const newWindow = window.open('about:new', 'Ink Marbling Image');
         newWindow.document.write("<img src='" + this.renderCanvas.toDataURL("image/png") + "' alt='from canvas'/>");
+        newWindow.close();
     }
 
 }

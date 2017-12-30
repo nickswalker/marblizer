@@ -1,7 +1,7 @@
 import Vec2 from "./vector.js";
 
 export default interface VectorField {
-    atPoint(point: Vec2): Vec2
+
 }
 
 export class UniformVectorField implements VectorField {

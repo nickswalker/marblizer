@@ -3,7 +3,7 @@ import VectorField from "../models/vectorfield.js";
 import Vec2 from "../models/vector.js";
 import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
 
-export default class WavyLineTine implements Operation, VectorField {
+export default class WavyLineTine implements Operation {
     // L in the paper
     readonly line: Vec2;
     // A in the paper
@@ -25,29 +25,6 @@ export default class WavyLineTine implements Operation, VectorField {
         this.spacing = spacing;
         this.angle = this.line.angle();
         this.amplitude += strength / 10.0;
-    }
-
-    apply(renderer: InteractiveCurveRenderer) {
-
-        for (let d = 0; d < renderer.drops.length; d++) {
-            let drop = renderer.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const offset = this.atPoint(oldPoint);
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
-    }
-
-    atPoint(point: Vec2): Vec2 {
-        const sinT = Math.sin(this.angle);
-        const cosT = Math.cos(this.angle);
-
-        const v = point.dot(new Vec2(sinT, -cosT));
-        const factor = this.amplitude * Math.sin(2 * Math.PI / this.wavelength * v + this.phase);
-
-        return new Vec2(cosT, sinT).scale(factor);
     }
 
 }
