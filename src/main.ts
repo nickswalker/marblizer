@@ -5,6 +5,7 @@ import UserProgram from "./scripting/user_program.js";
 import {colorSets} from "./models/color.js";
 import {InteractiveCurveRenderer} from "./renderer/curve_renderer.js";
 import MarblingUI from "./ui/ui.js";
+import WebGL2Renderer from "./renderer/webgl2_renderer.js";
 
 let renderer = null;
 addEventListener('DOMContentLoaded', function () {
@@ -14,7 +15,8 @@ addEventListener('DOMContentLoaded', function () {
     let colorsPane = document.getElementById("colors");
     let operationsInput = document.getElementById("operations-input");
     let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput);
-    renderer = new InteractiveCurveRenderer(marblingWorkspace);
+    //renderer = new InteractiveCurveRenderer(marblingWorkspace);
+    renderer = new WebGL2Renderer(marblingWorkspace);
     ui.delegate = renderer;
     renderer.setSize(window.innerWidth, window.innerHeight);
     ui.size = new Vec2(window.innerWidth, window.innerHeight);

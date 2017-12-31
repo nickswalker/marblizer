@@ -49,10 +49,11 @@ export class Drop {
 
 
 export default interface MarblingRenderer {
-    applyOperations(operations: [Operation]);
+    applyOperations(operations: Operation[]);
     save();
-
     reset();
+
+    setSize(width: number, height: number);
 }
 
 export class InteractiveCurveRenderer implements MarblingRenderer {

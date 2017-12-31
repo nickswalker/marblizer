@@ -18,15 +18,12 @@ export default class ColorPane {
             this.swatches.push(element);
         }
 
-        window.addEventListener("change", function () {
-            alert("test");
-        });
-
         function installed() {
             this.foregroundPicker = <HTMLInputElement>container.querySelector(".foreground");
             this.backgroundPicker = <HTMLInputElement>container.querySelector(".background");
             this.foregroundPicker.onchange = this.foregroundChanged.bind(this);
             this.backgroundPicker.onchange = this.backgroundChanged.bind(this);
+            console.log("Installed color pickers")
         }
 
         document.addEventListener("colorPickersInstalled", installed.bind(this));
