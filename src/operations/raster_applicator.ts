@@ -1,14 +1,7 @@
 import Operation from "./color_operations.js";
 import InkDropOperation from "./inkdrop.js";
-import LineTine, {fmod} from "./linetine.js";
-import WavyLineTine from "./wavylinetine.js";
-import Vec2 from "../models/vector.js";
-import CircularLineTine from "./circularlinetine.js";
-import Vortex from "./vortex.js";
 import WebGL2Renderer from "../renderer/webgl2_renderer.js";
 import {createProgramFromSources} from "../webgl_utils.js";
-import apply = Reflect.apply;
-import Color, {black} from "../models/color.js";
 
 const vertex = `#version 300 es
 
@@ -63,94 +56,157 @@ void main() {
 }
 `;
 
-export default class RasterApplicator {
 
-    applicators: { [key: string]: (op: Operation, gl: any, program: any) => void } = {
-        InkDropOperation: inkDrop,
-        CircularLineTine: circularTine,
-        WavyLineTine: wavyLineTine,
-        Vortex: vortex,
-        LineTine: lineTine
-    };
-    private programs: WebGLProgram[] = [];
-    private imageLocation: WebGLUniformLocation;
-    private flipYLocation: WebGLUniformLocation;
-    private resolutionLocation: WebGLUniformLocation;
-    private positionAttributeLocation: number;
-    private texCoordAttributeLocation: number;
+const checkerFragment = `#version 300 es
 
-    constructor(gl: any, renderer: WebGL2Renderer) {
-        // TODO: Compile programs
-        const program = createProgramFromSources(gl, [vertex, dotFragment]);
-        this.programs[InkDropOperation.name.toString()] = program;
-        // By convention this is the first uniform for every fragment shader
-        this.imageLocation = gl.getUniformLocation(program, "u_image");
+precision mediump float;
 
+uniform sampler2D u_image;
+in vec2 v_texCoord;
+out vec4 outColor;
+
+uniform vec2 u_center;
+uniform float u_r;
+uniform vec4 u_dotColor;
+
+void main() {
+
+  outColor = vec4(1, 1, 1, 1);
+
+  if (v_texCoord.x < u_center.x || v_texCoord.y < u_center.y) {
+    outColor = vec4(0,0,0,1);
+  }
+    if (int(v_texCoord.x * 10.0) % 2 == 0 && int(v_texCoord.y * 10.0) % 2 == 0) {
+      outColor = texture(u_image, v_texCoord);
+  }
+  
+}
+`;
+
+const nopFragment = `#version 300 es
+
+precision mediump float;
+
+uniform sampler2D u_image;
+in vec2 v_texCoord;
+out vec4 outColor;
+
+void main() {
+
+    outColor = texture(u_image, v_texCoord);
+    //outColor = vec4(1,0,1,1);
+  
+}
+`;
+
+export class ShaderProgram {
+
+    imageLocation: WebGLUniformLocation;
+    flipYLocation: WebGLUniformLocation;
+    resolutionLocation: WebGLUniformLocation;
+    positionAttributeLocation: number;
+    texCoordAttributeLocation: number;
+    flipDirty: boolean = false;
+    protected rawProgram: WebGLProgram;
+    protected gl: WebGL2RenderingContext;
+
+    constructor(gl: WebGL2RenderingContext, components: string[]) {
+        this.gl = gl;
+        const attribs = ["a_position", "a_texCoord"];
+        const locations = [0, 1];
+        const program = createProgramFromSources(gl, components, attribs, locations);
         // The vertex shader is fixed for all operations
+        this.imageLocation = gl.getUniformLocation(program, "u_image");
         this.positionAttributeLocation = gl.getAttribLocation(program, "a_position");
         this.texCoordAttributeLocation = gl.getAttribLocation(program, "a_texCoord");
         this.flipYLocation = gl.getUniformLocation(program, "u_flipY");
         this.resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-        renderer.provideInfo(this.positionAttributeLocation, this.texCoordAttributeLocation, this.resolutionLocation);
+        this.rawProgram = program;
+        gl.useProgram(this.rawProgram);
+        this.flip = false;
+    }
 
-        // HACK: Load a program up by sending a noop through
-        this.apply(new InkDropOperation(new Vec2(0, 0), 0, black, false), renderer);
+    private _flip: boolean = false;
+
+    set flip(value: boolean) {
+        if (value != this._flip) {
+            this.flipDirty = true;
+            this._flip = value;
+        }
+    }
+
+    instantiate(operation: Operation) {
+        //Program must be loaded before this is called
+        if (this.flipDirty) {
+            this.gl.uniform1f(this.flipYLocation, this._flip ? -1 : 1);
+        }
+    }
+
+    load() {
+        const gl = this.gl;
+        gl.useProgram(this.rawProgram);
+        // Put the current image on unit 0
+        gl.activeTexture(gl.TEXTURE0);
+
+        // Tell the shader to get the texture from texture unit 0
+        gl.uniform1i(this.imageLocation, 0);
+    }
+}
+
+class InkDropProgram extends ShaderProgram {
+    private rLocation: WebGLUniformLocation;
+    private centerLocation: WebGLUniformLocation;
+    private dotColorLocation: WebGLUniformLocation;
+
+    constructor(gl: WebGL2RenderingContext, components: string[]) {
+        super(gl, components);
+        this.dotColorLocation = gl.getUniformLocation(this.rawProgram, "u_dotColor");
+        this.centerLocation = gl.getUniformLocation(this.rawProgram, "u_center");
+        this.rLocation = gl.getUniformLocation(this.rawProgram, "u_r");
+    }
+
+    instantiate(operation: InkDropOperation) {
+        super.instantiate(operation);
+        const gl = this.gl;
+        gl.uniform4f(this.dotColorLocation, operation.color.r, operation.color.g, operation.color.b, operation.color.a);
+        gl.uniform2f(this.centerLocation, operation.position.x / gl.canvas.width, operation.position.y / gl.canvas.height);
+        gl.uniform1f(this.rLocation, operation.radius);
+    }
+}
+
+export default class RasterApplicator {
+
+    public renderProgram: ShaderProgram;
+    private programs: { [key: string]: ShaderProgram } = {};
+
+    constructor(gl: any, renderer: WebGL2Renderer) {
+
+        this.programs[InkDropOperation.name.toString()] = new InkDropProgram(gl, [vertex, checkerFragment]);
+        this.renderProgram = new ShaderProgram(gl, [vertex, nopFragment]);
+
+        this.renderProgram = this.programs[InkDropOperation.name.toString()];
+        this.renderProgram.flip = true;
+        renderer.setupVertexInfo(this.renderProgram.positionAttributeLocation, this.renderProgram.texCoordAttributeLocation);
     }
 
     apply(operation: Operation, renderer: WebGL2Renderer) {
         const gl = renderer.gl;
-        const program = this.prepareProgram(operation, renderer);
+        const program = this.programs[operation.constructor.name];
+        program.load();
+        program.instantiate(operation);
         const [current, target] = renderer.getTexturesForDrawing();
-        console.log(current, target);
+        //console.log(current, target);
 
-        // Put the current image on unit 0
-        gl.activeTexture(gl.TEXTURE0 + 0);
         gl.bindTexture(gl.TEXTURE_2D, renderer.textures[current]);
 
-        // Tell the shader to get the texture from texture unit 0
-        gl.uniform1i(this.imageLocation, 0);
-        gl.uniform1f(this.flipYLocation, 1);
-
-        // Setup to draw into the target buffer.
-        renderer.swapToBuffer(target);
+        // Setup to draw into the target buffer. Here we use the texture size
+        renderer.swapToBuffer(target, program.resolutionLocation, 4096, 4096);
 
         renderer.renderTexture();
     }
 
-    prepareProgram(operation: Operation, renderer: WebGL2Renderer) {
-        const program = this.programs[operation.constructor.name];
-        renderer.gl.useProgram(program);
-        this.applicators[operation.constructor.name](operation, renderer.gl, program);
-        return program
-    }
-}
-
-function circularTine(operation: CircularLineTine, gl: any) {
 
 }
 
-function lineTine(operation: LineTine, point: Vec2) {
-
-}
-
-function vortex(operation: Vortex, point: Vec2) {
-
-}
-
-
-function inkDrop(operation: InkDropOperation, gl: any, program: any) {
-    // lookup uniforms
-    const dotColorLocation = gl.getUniformLocation(program, "u_dotColor");
-    const centerLocation = gl.getUniformLocation(program, "u_center");
-    const rLocation = gl.getUniformLocation(program, "u_r");
-    gl.uniform4f(dotColorLocation, operation.color.r, operation.color.g, operation.color.b, operation.color.a);
-    gl.uniform2f(centerLocation, operation.position.x, operation.position.y);
-    gl.uniform1f(rLocation, operation.radius);
-
-}
-
-function wavyLineTine(operation: WavyLineTine, point: Vec2) {
-
-}
 
 
