@@ -14,4 +14,8 @@ Implements the approach from [Lu et. al.](https://www.computer.org/csdl/mags/cg/
 
 ## Development
 
-You'll need TypeScript 2.1 and a recent version of Chrome.
+You'll need TypeScript >5 and a recent version of Chrome.
+
+    npm install
+    npx tsc --watch
+    

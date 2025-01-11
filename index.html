@@ -25,6 +25,19 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/codemirror.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.21.0/theme/solarized.min.css">
 
+    <script>
+        window.goatcounter = {
+            path: function (p) {
+                return "/marblizer" + p;
+            },
+        }
+        // Only run stats on live site
+        if (window.location.hostname !== "marblizer.nickwalker.us") {
+            window.goatcounter = undefined
+        }
+    </script>
+    <script async
+            data-goatcounter="https://nickwalker.us/stats/count" data-proofer-ignore src="https://nickwalker.us/stats/count.js"></script>
 
 </head>
 <body>

@@ -7,11 +7,12 @@
     "preserveConstEnums": true,
     "sourceRoot": "./src/",
     "rootDir": "./src/",
-    "outDir": "build",
+    "outDir": "./build",
     "declaration": true,
     "sourceMap": true
   },
   "exclude": [
+    "build",
     "node_modules"
   ]
 }

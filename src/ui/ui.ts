@@ -264,8 +264,8 @@ export default class MarblingUI implements MarblingUIDelegate {
     }
 
 
-    private scroll(e: MouseWheelEvent) {
-        const delta = e.wheelDelta;
+    private scroll(e: WheelEvent) {
+        const delta = e.deltaY;
         if (delta > 0) {
             if (!this.keyboardManager.shiftDown) {
                 this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);

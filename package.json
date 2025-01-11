@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "http-server": "^14.1.1",
+    "typescript": "^5.7.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "serve": "http-server ./",
+    "dev": "concurrently \"npm run watch\" \"npm run serve\""
+  }
+}

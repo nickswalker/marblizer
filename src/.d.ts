@@ -23,15 +23,6 @@ interface Path2D {
 declare var $: any;
 declare var LZString: any;
 
-// Extend CanvasRenderingContext2D
-interface CanvasRenderingContext2D {
-    fill(path: Path2D): void;
-
-    stroke(path: Path2D): void;
-
-    clip(path: Path2D, fillRule?: string): void;
-}
-
 // Type definitions for CodeMirror
 // Project: https://github.com/marijnh/CodeMirror
 // Definitions by: mihailik <https://github.com/mihailik>
