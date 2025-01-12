@@ -117,8 +117,17 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     }
 
     save() {
-        const newWindow = window.open('about:new', 'Ink Marbling Image');
-        newWindow.document.write("<img src='" + this.renderCanvas.toDataURL("image/png") + "' alt='from canvas'/>");
+        const dataURL = this.renderCanvas.toDataURL("image/png");
+
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = 'ink-marbling-image.png'; // Filename for the downloaded image
+
+        // Programmatically click the link to trigger the download
+        document.body.appendChild(link); // Append to DOM to work in some browsers
+        link.click();
+        document.body.removeChild(link); // Clean up
     }
 
 }

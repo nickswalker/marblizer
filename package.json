@@ -1,13 +1,24 @@
 {
+  "type": "module",
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "esbuild": "^0.24.2",
     "http-server": "^14.1.1",
     "typescript": "^5.7.3"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "build": "esbuild src/index.ts --bundle --outdir=dist --minify --sourcemap",
+    "watch": "esbuild src/index.ts --bundle --outdir=dist --minify --sourcemap --watch",
     "serve": "http-server ./",
     "dev": "concurrently \"npm run watch\" \"npm run serve\""
+  },
+  "dependencies": {
+    "@codemirror/basic-setup": "^0.20.0",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/state": "^6.5.1",
+    "@codemirror/view": "^6.36.2",
+    "cm6-theme-solarized-dark": "^0.2.0",
+    "codemirror": "^6.0.1"
   }
 }
