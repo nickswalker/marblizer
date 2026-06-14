@@ -4,7 +4,7 @@ import Vec2 from "../../models/vector.js";
 export default class FunctionRenderer {
     color: Color = new Color(30, 30, 30, 0.1);
     private canvas: HTMLCanvasElement;
-    private xAxis: number = null;
+    private xAxis: number = 0;
     private dirty: boolean = true;
 
     constructor(minX: number, maxX: number, resolution: number = 2) {
@@ -14,9 +14,9 @@ export default class FunctionRenderer {
         this._resolution = resolution;
     }
 
-    private _functionToRender: Function;
+    private _functionToRender: (t: number) => number = () => 0;
 
-    set functionToRender(value: Function) {
+    set functionToRender(value: (t: number) => number) {
         this._functionToRender = value;
         this.dirty = true;
     }
@@ -50,7 +50,7 @@ export default class FunctionRenderer {
     }
 
     private render() {
-        let points = [];
+        let points: [number, number][] = [];
         let min = Infinity;
         let max = -Infinity;
         for (let t = this._minX; t < this._maxX; t += 1 / this._resolution) {
@@ -64,9 +64,9 @@ export default class FunctionRenderer {
         this.xAxis = -min;
         this.canvas.width = this._maxX - this._minX;
         this.canvas.height = max - min;
-        const ctx = this.canvas.getContext("2d");
+        const ctx = this.canvas.getContext("2d")!;
         ctx.beginPath();
-        ctx.moveTo(0, points[0]);
+        ctx.moveTo(0, points[0][1] + this.xAxis);
         for (let i = 1; i < points.length; i++) {
             const point = points[i];
             ctx.lineTo(point[0] - this._minX, point[1] + this.xAxis);

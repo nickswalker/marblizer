@@ -7,7 +7,6 @@ export default class Vortex implements Operation, Displacement {
     // C in the paper
     readonly center: Vec2;
     readonly radius: number;
-    readonly strength: number;
     readonly alpha = 80.0;
     readonly lambda = 32;
     readonly counterclockwise: boolean;

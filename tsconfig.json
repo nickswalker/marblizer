@@ -9,7 +9,8 @@
     "rootDir": "./src/",
     "outDir": "./build",
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "strict": true
   },
   "exclude": [
     "build",

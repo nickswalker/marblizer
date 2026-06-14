@@ -1,6 +1,6 @@
 import Vec2 from "../../models/vector.js";
 import CursorRenderer, {CircleRenderer, CrossRenderer} from "./cursor_renderer.js";
-import {Tool} from "../tools.js";
+import {Tool, ToolParameterMap} from "../tools.js";
 import TineRenderer from "./tine_renderer.js";
 import DynamicRadiusRenderer from "./dynamic_radius_renderer.js";
 
@@ -10,21 +10,21 @@ export default class CursorOverlay {
     private overlayContext: CanvasRenderingContext2D;
     private currentCursorRenderer: CursorRenderer;
 
-    private lastMoveCoord: Vec2 = null;
-    private mouseDownCoord: Vec2 = null;
+    private lastMoveCoord: Vec2 | null = null;
+    private mouseDownCoord: Vec2 | null = null;
 
     private prevDrawOrigin: Vec2 = new Vec2(-1, -1);
     private prevDrawSize: Vec2 = new Vec2(-1, -1);
 
     private currentTool: Tool = Tool.Drop;
-    private currentToolParameters: Object = {"radius": 50};
+    private currentToolParameters: ToolParameterMap = {"radius": 50};
 
     private rendererForTool: { [key: number]: CursorRenderer };
     private defaultRenderer: CrossRenderer;
 
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
-        this.overlayContext = this.overlayCanvas.getContext("2d");
+        this.overlayContext = this.overlayCanvas.getContext("2d")!;
         this.overlayCanvas.className = "marbling-cursor-overlay";
         container.appendChild(this.overlayCanvas);
 
@@ -33,11 +33,11 @@ export default class CursorOverlay {
         container.addEventListener("mousedown", this.mouseDown.bind(this));
         container.addEventListener("mouseup", this.mouseUp.bind(this));
         document.addEventListener("mouseout", this.mouseOut.bind(this));
-        document.addEventListener("toolchange", this.toolChange.bind(this));
+        document.addEventListener("toolchange", this.toolChange.bind(this) as EventListener);
 
         const circle = new CircleRenderer();
         const tine = new TineRenderer();
-        const wavy = new TineRenderer(function (t) {
+        const wavy = new TineRenderer(function (t: number) {
             return 100 * Math.sin(.013 * t)
         });
         const dynamicRadius = new DynamicRadiusRenderer();
@@ -69,15 +69,15 @@ export default class CursorOverlay {
         }
         switch (this.currentTool) {
             case Tool.Drop:
-                this.currentCursorRenderer['radius'] = this.currentToolParameters["radius"];
+                this.currentCursorRenderer.radius = this.currentToolParameters["radius"];
                 break;
             case Tool.Spatter:
-                this.currentCursorRenderer['radius'] = this.currentToolParameters["scatterRadius"];
+                this.currentCursorRenderer.radius = this.currentToolParameters["scatterRadius"];
                 break;
             case Tool.TineLine:
             case Tool.WavyLine:
-                this.currentCursorRenderer['numTines'] = this.currentToolParameters["numTines"];
-                this.currentCursorRenderer['spacing'] = this.currentToolParameters["spacing"];
+                this.currentCursorRenderer.numTines = this.currentToolParameters["numTines"];
+                this.currentCursorRenderer.spacing = this.currentToolParameters["spacing"];
                 break;
         }
 

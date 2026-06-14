@@ -28,11 +28,11 @@ function trackEvent(path: string) {
 // The UI talks to whichever rendering backend (vector or, later, GPU) is
 // active purely through the shared renderer interface.
 export interface MarblingRendererDelegate extends MarblingRenderer {
-    undo();
+    undo(): void;
 
-    redo();
+    redo(): void;
 
-    saveSVG();
+    saveSVG(): void;
 
     canUndo(): boolean;
 
@@ -40,7 +40,7 @@ export interface MarblingRendererDelegate extends MarblingRenderer {
 }
 
 export interface MarblingUIDelegate {
-    applyCommand(command: UICommand)
+    applyCommand(command: UICommand): void
 }
 
 export default class MarblingUI implements MarblingUIDelegate {
@@ -48,9 +48,9 @@ export default class MarblingUI implements MarblingUIDelegate {
     colorPane: ColorPane;
     controlsPane: ControlsPane;
     private scriptingPane: ScriptingPane;
-    private lastMouseCoord: Vec2;
-    private mouseDownCoord: Vec2;
-    private mouseInterval: number;
+    private lastMouseCoord: Vec2 | null = null;
+    private mouseDownCoord: Vec2 | null = null;
+    private mouseInterval: number = 0;
     private helpDialog: HelpDialog;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
@@ -75,7 +75,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
 
-    _delegate: MarblingRendererDelegate;
+    _delegate!: MarblingRendererDelegate;
 
     set delegate(delegate: MarblingRendererDelegate) {
         this._delegate = delegate;
@@ -85,7 +85,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.syncHistoryControls();
     }
 
-    private _size: Vec2;
+    private _size!: Vec2;
 
     set size(size: Vec2) {
         this.cursorOverlay.setSize(size.x, size.y);
@@ -93,7 +93,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this._size = size;
     }
 
-    didPressShortcut(shortcut: KeyboardShortcut) {
+    didPressShortcut(shortcut: KeyboardShortcut): void {
         switch (shortcut) {
             case KeyboardShortcut.S:
                 if (this.keyboardManager.controlDown) {
@@ -168,7 +168,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         }
     }
 
-    applyCommand(command: UICommand) {
+    applyCommand(command: UICommand): void {
         switch (command) {
             case UICommand.Reset: {
                 if (confirm("Clear the composition?")) {
@@ -216,12 +216,12 @@ export default class MarblingUI implements MarblingUIDelegate {
         }
     }
 
-    private didEnterInput(input: string) {
+    private didEnterInput(input: string | null) {
         this.keyboardManager.acceptingNewKeys = true;
         if (input == null) {
             return;
         }
-        let result: [Operation];
+        let result: Operation[] | null = null;
         try {
             const userProgram = new UserProgram(input);
             result = userProgram.execute(this._size);
@@ -244,6 +244,9 @@ export default class MarblingUI implements MarblingUIDelegate {
     }
 
     private mouseUp(e: MouseEvent) {
+        if (this.mouseDownCoord == null) {
+            return;
+        }
         const x = e.offsetX;
         const y = e.offsetY;
         let operation: Operation;
@@ -325,7 +328,8 @@ export default class MarblingUI implements MarblingUIDelegate {
                     const scatterRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter)['scatterRadius'];
                     const currentColor = this.colorPane.currentColor;
                     if (Math.random() < 0.5) {
-                        const newOrigin = this.lastMouseCoord.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
+                        const origin = this.lastMouseCoord ?? this.mouseDownCoord;
+                        const newOrigin = origin.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
                         const newRadius = Math.random() * 6 + dropRadius - 3;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);

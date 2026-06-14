@@ -2,7 +2,7 @@ import Operation, {Displacement, InkDeposit} from "./color_operations.js";
 import Vec2 from "../models/vector.js";
 import Color from "../models/color.js";
 
-export function fmod(a, b) {
+export function fmod(a: number, b: number): number {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 }
 

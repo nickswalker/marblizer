@@ -68,7 +68,7 @@ export default class Vec2 {
             case 1:
                 return this.y;
         }
-        console.assert(false, "Invalid vector index")
+        throw new RangeError("Invalid vector index");
     }
 
     eq(other: Vec2): boolean {

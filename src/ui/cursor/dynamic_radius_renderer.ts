@@ -71,7 +71,7 @@ export default class DynamicRadiusRenderer implements CursorRenderer {
     private updateCursor() {
         this.canvas.width = this._radius * 2 + 3;
         this.canvas.height = this._radius * 2 + 3;
-        const ctx = this.canvas.getContext("2d");
+        const ctx = this.canvas.getContext("2d")!;
         ctx.strokeStyle = "rgba(100,100,100,0.3)";
         const origin = new Vec2(this.canvas.width / 2, this.canvas.height / 2);
         circle(ctx, origin, this._radius);

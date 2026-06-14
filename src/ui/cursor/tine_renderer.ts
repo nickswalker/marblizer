@@ -3,7 +3,7 @@ import FunctionRenderer from "./function_renderer.js";
 import Vec2 from "../../models/vector.js";
 import {circle} from "../../drawing_utilities.js";
 
-function line(t: number) {
+function line(t: number): number {
     return 0;
 }
 
@@ -14,7 +14,7 @@ export default class TineRenderer implements CursorRenderer {
     private functionRenderer: FunctionRenderer;
     private r = 4;
 
-    constructor(func: Function = line) {
+    constructor(func: (t: number) => number = line) {
         this.canvas = document.createElement("canvas");
         this.crossRenderer = new CrossRenderer();
 
@@ -22,14 +22,14 @@ export default class TineRenderer implements CursorRenderer {
         this.functionRenderer.functionToRender = func;
     }
 
-    private _spacing: number;
+    private _spacing: number = 200;
 
     set spacing(value: number) {
         this._spacing = value;
         this.dirty = true;
     }
 
-    private _numTines: number;
+    private _numTines: number = 1;
 
     set numTines(value: number) {
         this._numTines = value;
@@ -109,7 +109,7 @@ export default class TineRenderer implements CursorRenderer {
         const height = 11;
         this.canvas.width = width;
         this.canvas.height = height;
-        const ctx = this.canvas.getContext("2d");
+        const ctx = this.canvas.getContext("2d")!;
 
 
         const mid = new Vec2(width, height).scale(0.5);

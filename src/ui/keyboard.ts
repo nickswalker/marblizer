@@ -26,7 +26,7 @@ export enum KeyboardShortcut {
     ToggleFullscreen = 22
 }
 
-export const keyMapping = {
+export const keyMapping: { [key: string]: KeyboardShortcut } = {
     "=": KeyboardShortcut.Plus,
     "-": KeyboardShortcut.Minus,
     "s": KeyboardShortcut.S,
@@ -65,11 +65,11 @@ export const keyDownOnly = new Set([
 ]);
 
 export interface MarblingKeyboardUIDelegate {
-    didPressShortcut(shortcut: KeyboardShortcut)
+    didPressShortcut(shortcut: KeyboardShortcut): void
 }
 
 export default class MarblingKeyboardUI {
-    keyboardDelegate: MarblingKeyboardUIDelegate;
+    keyboardDelegate!: MarblingKeyboardUIDelegate;
     acceptingNewKeys: boolean = true;
     shiftDown: boolean = false;
     controlDown: boolean = false;

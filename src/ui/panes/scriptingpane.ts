@@ -9,8 +9,8 @@ import { solarizedDark } from 'cm6-theme-solarized-dark'
 export default class ScriptingPane {
     container: HTMLElement;
     modal: HTMLElement;
-    callback: Function;
-    active: boolean;
+    callback!: (input: string | null) => void;
+    active: boolean = false;
     private codeMirror: EditorView;
     private runButton: HTMLElement;
     private dismissButton: HTMLElement;
@@ -18,13 +18,13 @@ export default class ScriptingPane {
     private downOnContainer: boolean = false;
 
     constructor(element: HTMLElement) {
-        this.container = element.parentElement;
+        this.container = element.parentElement!;
         this.modal = element;
-        this.dismissButton = <HTMLElement>element.querySelector(".close-button");
-        this.runButton = <HTMLElement>element.querySelector(".run-button");
-        this.getURL = <HTMLElement>element.querySelector(".get-url-button");
+        this.dismissButton = <HTMLElement>element.querySelector(".close-button")!;
+        this.runButton = <HTMLElement>element.querySelector(".run-button")!;
+        this.getURL = <HTMLElement>element.querySelector(".get-url-button")!;
         this.codeMirror = new EditorView({
-            parent: <HTMLElement>element.querySelector(".input-container"),
+            parent: <HTMLElement>element.querySelector(".input-container")!,
             state: EditorState.create({ doc: tutorialProgram,             extensions: [basicSetup, solarizedDark, javascript()]}),
 
         });
@@ -36,7 +36,7 @@ export default class ScriptingPane {
         this.container.onmousedown = this.downContainer.bind(this);
     }
 
-    getInput(callback: Function) {
+    getInput(callback: (input: string | null) => void) {
         this.callback = callback;
         this.show();
     }

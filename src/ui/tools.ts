@@ -9,27 +9,30 @@ export enum Tool {
 
 const allTools = [Tool.Drop, Tool.Spatter, Tool.TineLine, Tool.WavyLine, Tool.CircularTine, Tool.Vortex];
 
+export type ToolParameterMap = { [key: string]: number };
+type Guide = [number, number, number];
+
 function toolInitializedObject<T>(): { [key: number]: T } {
-    const object = {};
-    for (const tool in allTools) {
-        object[tool] = {};
+    const object: { [key: number]: T } = {};
+    for (const tool of allTools) {
+        object[tool] = {} as T;
     }
     return object;
 }
 
-const primaryKeys: { [key: number]: string } = toolInitializedObject();
+const primaryKeys: { [key: number]: string } = {};
 primaryKeys[Tool.Drop] = "radius";
 primaryKeys[Tool.Spatter] = "scatterRadius";
 primaryKeys[Tool.TineLine] = "spacing";
 primaryKeys[Tool.WavyLine] = "spacing";
 primaryKeys[Tool.CircularTine] = "spacing";
 
-const secondaryKeys: { [key: number]: string } = toolInitializedObject();
+const secondaryKeys: { [key: number]: string } = {};
 secondaryKeys[Tool.Spatter] = "dropRadius";
 secondaryKeys[Tool.TineLine] = "numTines";
 secondaryKeys[Tool.CircularTine] = "numTines";
 
-const guides: { [key: number]: string } = toolInitializedObject();
+const guides: { [key: number]: { [key: string]: Guide } } = toolInitializedObject();
 guides[Tool.Drop]["radius"] = [5, 300, 5];
 guides[Tool.Spatter]["scatterRadius"] = [20, 300, 5];
 guides[Tool.Spatter]["dropRadius"] = [5, 40, 5];
@@ -42,10 +45,10 @@ guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
 
 export default class ToolParameters {
-    parameters: { [key: number]: string };
-    onchange: Function;
+    parameters: { [key: number]: ToolParameterMap };
+    onchange: () => void;
 
-    constructor(onchange: Function) {
+    constructor(onchange: () => void) {
         this.onchange = onchange;
         this.parameters = toolInitializedObject();
         this.parameters[Tool.Drop]["radius"] = 50;
@@ -61,35 +64,51 @@ export default class ToolParameters {
         this.parameters[Tool.CircularTine]["spacing"] = 200;
     }
 
-    forTool(tool: Tool) {
+    forTool(tool: Tool): ToolParameterMap {
         return this.parameters[tool];
     }
 
     increasePrimary(tool: Tool) {
-        const currentValue = this.parameters[tool][primaryKeys[tool]];
-        const [min, max, step] = guides[tool][primaryKeys[tool]];
-        this.parameters[tool][primaryKeys[tool]] = Math.min(max, currentValue + step);
+        const key = primaryKeys[tool];
+        if (key == null) {
+            return;
+        }
+        const currentValue = this.parameters[tool][key];
+        const [, max, step] = guides[tool][key];
+        this.parameters[tool][key] = Math.min(max, currentValue + step);
         this.onchange();
     }
 
     decreasePrimary(tool: Tool) {
-        const currentValue = this.parameters[tool][primaryKeys[tool]];
-        const [min, max, step] = guides[tool][primaryKeys[tool]];
-        this.parameters[tool][primaryKeys[tool]] = Math.max(min, currentValue - step);
+        const key = primaryKeys[tool];
+        if (key == null) {
+            return;
+        }
+        const currentValue = this.parameters[tool][key];
+        const [min, , step] = guides[tool][key];
+        this.parameters[tool][key] = Math.max(min, currentValue - step);
         this.onchange();
     }
 
     increaseSecondary(tool: Tool) {
-        const currentValue = this.parameters[tool][secondaryKeys[tool]];
-        const [min, max, step] = guides[tool][secondaryKeys[tool]];
-        this.parameters[tool][secondaryKeys[tool]] = Math.min(max, currentValue + step);
+        const key = secondaryKeys[tool];
+        if (key == null) {
+            return;
+        }
+        const currentValue = this.parameters[tool][key];
+        const [, max, step] = guides[tool][key];
+        this.parameters[tool][key] = Math.min(max, currentValue + step);
         this.onchange();
     }
 
     decreaseSecondary(tool: Tool) {
-        const currentValue = this.parameters[tool][secondaryKeys[tool]];
-        const [min, max, step] = guides[tool][secondaryKeys[tool]];
-        this.parameters[tool][secondaryKeys[tool]] = Math.max(min, currentValue - step);
+        const key = secondaryKeys[tool];
+        if (key == null) {
+            return;
+        }
+        const currentValue = this.parameters[tool][key];
+        const [min, , step] = guides[tool][key];
+        this.parameters[tool][key] = Math.max(min, currentValue - step);
         this.onchange();
     }
 

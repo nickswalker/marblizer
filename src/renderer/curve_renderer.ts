@@ -5,7 +5,7 @@ import Operation from "../operations/color_operations.js";
 export class Drop {
     points: Array<Vec2>;
     readonly color: Color;
-    _cached_path: Path2D;
+    _cached_path: Path2D | null = null;
     private dirty: boolean = true;
 
     constructor(color: Color, radius: number, centerX: number, centerY: number) {
@@ -25,9 +25,9 @@ export class Drop {
         return points;
     }
 
-    getPath() {
+    getPath(): Path2D {
         if (!this.dirty) {
-            return this._cached_path;
+            return this._cached_path!;
         }
         let newPath = new Path2D();
         const firstPoint = this.points[0];
@@ -39,6 +39,7 @@ export class Drop {
         newPath.closePath();
         this._cached_path = newPath;
         this.dirty = false;
+        return newPath;
     }
 
     makeDirty() {
@@ -48,18 +49,18 @@ export class Drop {
 
 
 export default interface MarblingRenderer {
-    applyOperations(operations: Operation[]);
+    applyOperations(operations: Operation[]): void;
 
-    reset();
+    reset(): void;
 
-    setSize(width: number, height: number);
+    setSize(width: number, height: number): void;
 
     // The ordered list of operations applied since the last reset. A backend
     // can be swapped at runtime by constructing the other renderer and
     // replaying this history to reproduce the same image.
     getHistory(): Operation[];
 
-    save();
+    save(): void;
 }
 
 export class InteractiveCurveRenderer implements MarblingRenderer {
@@ -93,7 +94,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     }
 
     render() {
-        const ctx = this.renderCanvas.getContext("2d");
+        const ctx = this.renderCanvas.getContext("2d")!;
         ctx.fillStyle = this.baseColor.toRGBString();
         ctx.fillRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
         for (let i = 0; i < this.drops.length; i++) {
@@ -108,7 +109,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
             this.render();
             this.dirty = false;
         }
-        const ctx = this.displayCanvas.getContext("2d");
+        const ctx = this.displayCanvas.getContext("2d")!;
         ctx.drawImage(this.renderCanvas, 0, 0);
         window.requestAnimationFrame(this.draw.bind(this));
     }

@@ -1,4 +1,4 @@
-import {Tool} from "./tools.js";
+import {Tool, ToolParameterMap} from "./tools.js";
 import Vec2 from "../models/vector.js";
 import Operation from "../operations/color_operations.js";
 import InkDropOperation from "../operations/inkdrop.js";
@@ -7,13 +7,14 @@ import WavyLineTine from "../operations/wavylinetine.js";
 import CircularLineTine from "../operations/circularlinetine.js";
 import Vortex from "../operations/vortex.js";
 import VectorField from "../models/vectorfield.js";
+import {black} from "../models/color.js";
 
 export default class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
     private currentTool: Tool = Tool.Drop;
-    private currentToolParameter: Object = {"radius": 50};
-    private mouseDownCoord: Vec2;
-    private lastMouseCoord: Vec2;
+    private currentToolParameter: ToolParameterMap = {"radius": 50};
+    private mouseDownCoord: Vec2 | null = null;
+    private lastMouseCoord: Vec2 | null = null;
 
     constructor(container: HTMLElement) {
         this.renderer = new VectorFieldRenderer(container);
@@ -21,14 +22,14 @@ export default class VectorFieldOverlay {
         container.addEventListener("mouseup", this.mouseUp.bind(this));
         container.addEventListener("mouseout", this.mouseOut.bind(this));
         container.addEventListener("mousemove", this.mouseMove.bind(this));
-        document.addEventListener("toolchange", this.toolChange.bind(this));
+        document.addEventListener("toolchange", this.toolChange.bind(this) as EventListener);
     }
 
-    private _previewOperation: Operation = null;
+    private _previewOperation: Operation | null = null;
 
-    set previewOperation(value: Operation) {
+    set previewOperation(value: Operation | null) {
         this._previewOperation = value;
-        this.renderer.vectorField = this._previewOperation as any;
+        this.renderer.vectorField = this._previewOperation?.displacement ?? null;
     }
 
     setSize(width: number, height: number) {
@@ -40,11 +41,11 @@ export default class VectorFieldOverlay {
     }
 
     increaseResolution() {
-        this.renderer['spacing'] = Math.min(80, this.renderer['spacing'] + 2);
+        this.renderer.spacing = Math.min(80, this.renderer.spacing + 2);
     }
 
     decreaseResolution() {
-        this.renderer['spacing'] = Math.max(5, this.renderer['spacing'] - 2);
+        this.renderer.spacing = Math.max(5, this.renderer.spacing - 2);
     }
 
     private toolChange(e: CustomEvent) {
@@ -88,8 +89,12 @@ export default class VectorFieldOverlay {
     private generatePreviewOperation() {
         switch (this.currentTool) {
             case Tool.Drop: {
-                const radius = this.currentToolParameter['radius'];
-                this.previewOperation = new InkDropOperation(this.lastMouseCoord, radius, null);
+                if (this.lastMouseCoord != null) {
+                    const radius = this.currentToolParameter['radius'];
+                    this.previewOperation = new InkDropOperation(this.lastMouseCoord, radius, black);
+                } else {
+                    this.previewOperation = null;
+                }
                 break;
             }
             case Tool.TineLine: {
@@ -161,7 +166,7 @@ class VectorFieldRenderer {
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
         this.overlayCanvas.className = "marbling-vector-field-overlay";
-        this.overlayContext = this.overlayCanvas.getContext("2d");
+        this.overlayContext = this.overlayCanvas.getContext("2d")!;
         container.appendChild(this.overlayCanvas);
         this.drawOverlay();
 
@@ -178,9 +183,9 @@ class VectorFieldRenderer {
         this.dirty = true;
     }
 
-    private _vectorField: VectorField = null;
+    private _vectorField: VectorField | null = null;
 
-    set vectorField(value: VectorField) {
+    set vectorField(value: VectorField | null) {
         this._vectorField = value;
         this.dirty = true;
         //  if the vectorfield is already rendering, it'll switch out automatically
