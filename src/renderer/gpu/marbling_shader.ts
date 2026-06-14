@@ -29,6 +29,7 @@ struct Uniforms {
 @group(0) @binding(1) var<storage, read> ops: array<Op>;
 
 const PI: f32 = 3.14159265358979;
+const AA_EDGE_DELTA: f32 = 1.0 / 512.0;
 
 // Inverse of the rotation field (Vortex / CircularLineTine). Rotation preserves
 // distance to the centre, so the inverse is a rotation by the negated angle.
@@ -97,9 +98,8 @@ fn vs(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4<f32> {
   return vec4<f32>(corners[vi], 0.0, 1.0);
 }
 
-@fragment
-fn fs(@builtin(position) fragPos: vec4<f32>) -> @location(0) vec4<f32> {
-  var p = fragPos.xy;
+fn colorAt(samplePoint: vec2<f32>) -> vec4<f32> {
+  var p = samplePoint;
   let n = i32(u.count);
   for (var i = n - 1; i >= 0; i = i - 1) {
     let op = ops[i];
@@ -128,5 +128,35 @@ fn fs(@builtin(position) fragPos: vec4<f32>) -> @location(0) vec4<f32> {
     }
   }
   return vec4<f32>(u.baseColor.rgb, 1.0);
+}
+
+fn colorDelta(a: vec4<f32>, b: vec4<f32>) -> f32 {
+  return max(max(abs(a.r - b.r), abs(a.g - b.g)), abs(a.b - b.b));
+}
+
+fn adaptiveSupersample(p: vec2<f32>) -> vec4<f32> {
+  let center = colorAt(p);
+  let x0 = colorAt(p + vec2<f32>(-0.5, 0.0));
+  let x1 = colorAt(p + vec2<f32>( 0.5, 0.0));
+  let y0 = colorAt(p + vec2<f32>(0.0, -0.5));
+  let y1 = colorAt(p + vec2<f32>(0.0,  0.5));
+  let edge = max(
+    max(colorDelta(center, x0), colorDelta(center, x1)),
+    max(colorDelta(center, y0), colorDelta(center, y1))
+  );
+  if (edge < AA_EDGE_DELTA) {
+    return center;
+  }
+
+  let d0 = colorAt(p + vec2<f32>(-0.5, -0.5));
+  let d1 = colorAt(p + vec2<f32>( 0.5, -0.5));
+  let d2 = colorAt(p + vec2<f32>(-0.5,  0.5));
+  let d3 = colorAt(p + vec2<f32>( 0.5,  0.5));
+  return (center + x0 + x1 + y0 + y1 + d0 + d1 + d2 + d3) / 9.0;
+}
+
+@fragment
+fn fs(@builtin(position) fragPos: vec4<f32>) -> @location(0) vec4<f32> {
+  return adaptiveSupersample(fragPos.xy);
 }
 `;
