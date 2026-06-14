@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es6",
+    "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "es2016",
     "removeComments": true,
