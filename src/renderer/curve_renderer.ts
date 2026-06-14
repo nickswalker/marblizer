@@ -71,13 +71,17 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     private dirty: boolean = true;
     private history: Operation[] = [];
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, drawContinuously: boolean = true) {
         this.displayCanvas = document.createElement("canvas");
         this.displayCanvas.className = "marbling-render-layer";
-        container.insertBefore(this.displayCanvas, container.firstChild);
+        if (drawContinuously) {
+            container.insertBefore(this.displayCanvas, container.firstChild);
+        }
         this.renderCanvas = document.createElement("canvas");
         this.render();
-        window.requestAnimationFrame(this.draw.bind(this));
+        if (drawContinuously) {
+            window.requestAnimationFrame(this.draw.bind(this));
+        }
     }
 
     setSize(width: number, height: number) {

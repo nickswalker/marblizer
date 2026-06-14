@@ -81,5 +81,7 @@ export default class ScriptingPane {
         const baseUrl = base.protocol + "//" + base.host + "/" + base.pathname.split('/')[1];
 
         showNotification(baseUrl + "?p=" + program);
+        const gc = (window as any).goatcounter;
+        if (gc?.count) gc.count({ path: "marblizer.share-script", event: true });
     }
 }

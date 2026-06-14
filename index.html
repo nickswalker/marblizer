@@ -20,7 +20,7 @@
     <script>
         window.goatcounter = {
             path: function (p) {
-                return ".marblizer" + p;
+                return "marblizer." + p;
             },
         }
         // Only run stats on live site
@@ -66,7 +66,8 @@
         <li class="fullscreen tool" title="Toggle fullscreen"><ion-icon name="expand-outline" aria-hidden="true"></ion-icon></li>
         <li class="toggle-renderer tool" title="Rendering backend" style="display:none;">GPU</li>
         <li class="reset tool" title="Reset canvas"><ion-icon name="refresh-outline" aria-hidden="true"></ion-icon></li>
-        <li class="save-image tool" title="Save image"><ion-icon name="download-outline" aria-hidden="true"></ion-icon></li>
+        <li class="save-image tool" title="Save PNG"><ion-icon name="download-outline" aria-hidden="true"></ion-icon></li>
+        <li class="save-svg tool" title="Save SVG"><ion-icon name="document-outline" aria-hidden="true"></ion-icon></li>
         <li class="show-script-editor tool" title="Script editor"><ion-icon name="code-slash-outline" aria-hidden="true"></ion-icon></li>
         <li class="help tool" title="Help"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></li>
     </ul>

@@ -18,12 +18,21 @@ import UserProgram from "../scripting/user_program.js";
 import MarblingRenderer from "../renderer/curve_renderer.js";
 
 
+function trackEvent(path: string) {
+    const gc = (window as any).goatcounter;
+    if (gc?.count) {
+        gc.count({ path: `marblizer.${path}`, event: true });
+    }
+}
+
 // The UI talks to whichever rendering backend (vector or, later, GPU) is
 // active purely through the shared renderer interface.
 export interface MarblingRendererDelegate extends MarblingRenderer {
     undo();
 
     redo();
+
+    saveSVG();
 
     canUndo(): boolean;
 
@@ -170,6 +179,12 @@ export default class MarblingUI implements MarblingUIDelegate {
             }
             case UICommand.Save: {
                 this._delegate.save();
+                trackEvent("download-png");
+                return;
+            }
+            case UICommand.SaveSVG: {
+                this._delegate.saveSVG();
+                trackEvent("download-svg");
                 return;
             }
             case UICommand.Undo: {
@@ -188,6 +203,7 @@ export default class MarblingUI implements MarblingUIDelegate {
             }
             case UICommand.ShowHelp: {
                 this.helpDialog.show();
+                trackEvent("help-open");
                 return;
             }
             case UICommand.ToggleFullscreen: {
@@ -215,6 +231,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         if (result != null && result.length > 0) {
             this._delegate.applyOperations(result);
             this.syncHistoryControls();
+            trackEvent("run-script");
         }
 
     }
