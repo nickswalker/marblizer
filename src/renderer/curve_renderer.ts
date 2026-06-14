@@ -48,7 +48,16 @@ export class Drop {
 
 
 export default interface MarblingRenderer {
-    applyOperations(operations: [Operation]);
+    applyOperations(operations: Operation[]);
+
+    reset();
+
+    setSize(width: number, height: number);
+
+    // The ordered list of operations applied since the last reset. A backend
+    // can be swapped at runtime by constructing the other renderer and
+    // replaying this history to reproduce the same image.
+    getHistory(): Operation[];
 
     save();
 }
@@ -59,7 +68,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     drops: Drop[] = [];
     baseColor: Color = new Color(220, 210, 210);
     private dirty: boolean = true;
-    private history: [Operation];
+    private history: Operation[] = [];
 
     constructor(container: HTMLElement) {
         this.displayCanvas = document.createElement("canvas");
@@ -101,19 +110,52 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
 
     reset() {
         this.drops = [];
+        this.history = [];
         this.dirty = true;
     }
 
-    applyOperations(operations: [Operation]) {
+    getHistory(): Operation[] {
+        return this.history;
+    }
+
+    applyOperations(operations: Operation[]) {
         for (let i = 0; i < operations.length; i++) {
             const operation = operations[i];
-            operation.apply(this);
+            this.applyOperation(operation);
+            this.history.push(operation);
         }
         for (let i = 0; i < this.drops.length; i++) {
             const drop = this.drops[i];
             drop.getPath();
         }
         this.dirty = true;
+    }
+
+    // Realizes a single operation against the polyline field: spread existing
+    // ink by the operation's forward displacement, then deposit any new ink on
+    // top, then apply any base-colour change. This is the one place that knows
+    // how operations affect the vector representation.
+    private applyOperation(operation: Operation) {
+        const displacement = operation.displacement;
+        if (displacement != null) {
+            for (let d = 0; d < this.drops.length; d++) {
+                const drop = this.drops[d];
+                for (let p = 0; p < drop.points.length; p++) {
+                    const oldPoint = drop.points[p];
+                    drop.points[p] = oldPoint.add(displacement.atPoint(oldPoint));
+                }
+                drop.makeDirty();
+            }
+        }
+
+        const deposit = operation.deposit;
+        if (deposit != null) {
+            this.drops.push(new Drop(deposit.color, deposit.radius, deposit.center.x, deposit.center.y));
+        }
+
+        if (operation.newBaseColor != null) {
+            this.baseColor = operation.newBaseColor;
+        }
     }
 
     save() {

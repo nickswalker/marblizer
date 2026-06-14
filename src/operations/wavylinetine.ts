@@ -1,9 +1,8 @@
-import Operation from "./color_operations.js";
-import VectorField from "../models/vectorfield.js";
+import Operation, {Displacement, InkDeposit} from "./color_operations.js";
 import Vec2 from "../models/vector.js";
-import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
+import Color from "../models/color.js";
 
-export default class WavyLineTine implements Operation, VectorField {
+export default class WavyLineTine implements Operation, Displacement {
     // L in the paper
     readonly line: Vec2;
     // A in the paper
@@ -16,6 +15,8 @@ export default class WavyLineTine implements Operation, VectorField {
     readonly phase: number = 0.0;
     readonly angle: number;
     readonly wavelength: number = 400.0;
+    readonly deposit: InkDeposit | null = null;
+    readonly newBaseColor: Color | null = null;
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
         const strength = direction.length();
@@ -27,17 +28,8 @@ export default class WavyLineTine implements Operation, VectorField {
         this.amplitude += strength / 10.0;
     }
 
-    apply(renderer: InteractiveCurveRenderer) {
-
-        for (let d = 0; d < renderer.drops.length; d++) {
-            let drop = renderer.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const offset = this.atPoint(oldPoint);
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
+    get displacement(): Displacement {
+        return this;
     }
 
     atPoint(point: Vec2): Vec2 {
@@ -50,4 +42,10 @@ export default class WavyLineTine implements Operation, VectorField {
         return new Vec2(cosT, sinT).scale(factor);
     }
 
+    // The displacement is along (cosθ, sinθ), which is perpendicular to the
+    // axis (sinθ, −cosθ) that the wave is sampled on, so that sample value
+    // (and the displacement magnitude) is preserved. The inverse negates it.
+    inverseAtPoint(point: Vec2): Vec2 {
+        return this.atPoint(point).scale(-1);
+    }
 }

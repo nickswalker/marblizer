@@ -16,15 +16,12 @@ import WavyLineTine from "../operations/wavylinetine.js";
 import LineTine from "../operations/linetine.js";
 import KeyboardShortcutOverlay from "./help_overlay.js";
 import UserProgram from "../scripting/user_program.js";
+import MarblingRenderer from "../renderer/curve_renderer.js";
 
 
-export interface MarblingRendererDelegate {
-    reset();
-
-    applyOperations(operations: [Operation]);
-
-    save();
-}
+// The UI talks to whichever rendering backend (vector or, later, GPU) is
+// active purely through the shared renderer interface.
+export type MarblingRendererDelegate = MarblingRenderer;
 
 export interface MarblingUIDelegate {
     applyCommand(command: UICommand)

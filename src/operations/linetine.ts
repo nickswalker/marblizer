@@ -1,13 +1,12 @@
-import Operation from "./color_operations.js";
-import VectorField from "../models/vectorfield.js";
+import Operation, {Displacement, InkDeposit} from "./color_operations.js";
 import Vec2 from "../models/vector.js";
-import {InteractiveCurveRenderer} from "../renderer/curve_renderer.js";
+import Color from "../models/color.js";
 
 export function fmod(a, b) {
     return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
 }
 
-export default class LineTine implements Operation, VectorField {
+export default class LineTine implements Operation, Displacement {
     // N in the paper
     readonly normal: Vec2;
     // L in the paper
@@ -18,6 +17,8 @@ export default class LineTine implements Operation, VectorField {
     readonly spacing: number;
     readonly alpha = 30.0;
     readonly lambda = 32;
+    readonly deposit: InkDeposit | null = null;
+    readonly newBaseColor: Color | null = null;
 
     constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
         const strength = direction.length();
@@ -30,17 +31,8 @@ export default class LineTine implements Operation, VectorField {
         this.alpha += strength / 10.0;
     }
 
-    apply(renderer: InteractiveCurveRenderer) {
-
-        for (let d = 0; d < renderer.drops.length; d++) {
-            let drop = renderer.drops[d];
-            for (let p = 0; p < drop.points.length; p++) {
-                const oldPoint = drop.points[p];
-                const offset = this.atPoint(oldPoint);
-                drop.points[p] = oldPoint.add(offset);
-            }
-            drop.makeDirty();
-        }
+    get displacement(): Displacement {
+        return this;
     }
 
     atPoint(point: Vec2): Vec2 {
@@ -58,4 +50,10 @@ export default class LineTine implements Operation, VectorField {
         return this.line.copy().scale(factor);
     }
 
+    // The displacement is parallel to `line`, so the perpendicular distance d
+    // (and therefore the displacement magnitude) is unchanged by the move.
+    // The inverse is simply the negated displacement.
+    inverseAtPoint(point: Vec2): Vec2 {
+        return this.atPoint(point).scale(-1);
+    }
 }
