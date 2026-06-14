@@ -6,13 +6,13 @@
 //
 // Keep this in lock-step with backmap.ts (validated against the vector renderer)
 // and the buffer layout in op_buffer.ts. An Op is four vec4<f32> = 64 bytes:
-//   meta  = [kind, flag, _, _]
+//   info  = [kind, flag, _, _]
 //   p0    = [aX, aY, radius/lineX, alpha/lineY]
 //   p1    = [lambda/numTines, spacing/amplitude, alpha/wavelength, phase]
 //   color = [r, g, b, a]
 export const MARBLING_WGSL = /* wgsl */ `
 struct Op {
-  meta:  vec4<f32>,
+  info:  vec4<f32>,
   p0:    vec4<f32>,
   p1:    vec4<f32>,
   color: vec4<f32>,
@@ -37,7 +37,7 @@ fn rotateInverse(p: vec2<f32>, op: Op, isCircular: bool) -> vec2<f32> {
   let radius = op.p0.z;
   let alpha = op.p0.w;
   let lambda = op.p1.x;
-  let cc = op.meta.y > 0.5;
+  let cc = op.info.y > 0.5;
   let pl = p - c;
   let len = length(pl);
   // The centre is a fixed point; this also avoids the l/len singularity.
@@ -103,7 +103,7 @@ fn fs(@builtin(position) fragPos: vec4<f32>) -> @location(0) vec4<f32> {
   let n = i32(u.count);
   for (var i = n - 1; i >= 0; i = i - 1) {
     let op = ops[i];
-    let kind = op.meta.x;
+    let kind = op.info.x;
     if (kind < 0.5) {                 // InkDrop
       let c = op.p0.xy;
       let radius = op.p0.z;
@@ -112,7 +112,7 @@ fn fs(@builtin(position) fragPos: vec4<f32>) -> @location(0) vec4<f32> {
       if (dist2 <= radius * radius) {
         return vec4<f32>(op.color.rgb, 1.0);
       }
-      if (op.meta.y > 0.5) {          // displacing: inverse radial spread
+      if (op.info.y > 0.5) {          // displacing: inverse radial spread
         let rPrime = sqrt(dist2);
         let r = sqrt(max(0.0, dist2 - radius * radius));
         p = c + dd * (r / rPrime);
