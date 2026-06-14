@@ -4,31 +4,91 @@ import {getParameterByName} from "./parse_query_string.js";
 import UserProgram from "./scripting/user_program.js";
 import {colorSets} from "./models/color.js";
 import {InteractiveCurveRenderer} from "./renderer/curve_renderer.js";
+import WebGPURenderer from "./renderer/gpu/webgpu_renderer.js";
 import MarblingUI from "./ui/ui.js";
 
-let renderer = null;
-addEventListener('DOMContentLoaded', function () {
+type Renderer = InteractiveCurveRenderer | WebGPURenderer;
+
+addEventListener('DOMContentLoaded', async function () {
     let marblingWorkspace = document.getElementById("workspace");
     let toolsPane = document.getElementById("tools");
     let optionsPane = document.getElementById("options");
     let colorsPane = document.getElementById("colors");
     let operationsInput = document.getElementById("operations-input");
     let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput);
-    renderer = new InteractiveCurveRenderer(marblingWorkspace);
-    ui.delegate = renderer;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    ui.size = new Vec2(window.innerWidth, window.innerHeight);
 
-    window.onresize = function (event) {
-        renderer.setSize(window.innerWidth, window.innerHeight);
+    // The vector renderer is always available and acts as the fallback. The
+    // WebGPU renderer is used when the browser supports it; both implement the
+    // same MarblingRenderer interface so the UI is agnostic to which is active.
+    const vector = new InteractiveCurveRenderer(marblingWorkspace);
+    let gpu: WebGPURenderer | null = null;
+    try {
+        gpu = await WebGPURenderer.create(marblingWorkspace);
+    } catch (e) {
+        console.info("WebGPU unavailable, using the vector renderer.", e instanceof Error ? e.message : e);
+    }
+
+    let active: Renderer = gpu != null ? gpu : vector;
+    // Hide whichever backend is not active (both canvases overlay the workspace).
+    vector.displayCanvas.style.display = active === vector ? "" : "none";
+    if (gpu != null) {
+        gpu.displayCanvas.style.display = active === gpu ? "" : "none";
+    }
+
+    ui.delegate = active;
+
+    function sizeAll() {
+        vector.setSize(window.innerWidth, window.innerHeight);
+        if (gpu != null) {
+            gpu.setSize(window.innerWidth, window.innerHeight);
+        }
         ui.size = new Vec2(window.innerWidth, window.innerHeight);
-    };
+    }
+
+    sizeAll();
+    window.onresize = sizeAll;
+
+    // Backend toggle button (in the options pane). Shown only when WebGPU is
+    // available; switching replays the operation history into the target so
+    // both renderers show the same image.
+    const backendButton = document.querySelector(".toggle-renderer") as HTMLElement | null;
+
+    function updateBackendButton() {
+        if (backendButton == null || gpu == null) {
+            return;
+        }
+        const onGpu = active === gpu;
+        backendButton.textContent = onGpu ? "GPU" : "Vec";
+        backendButton.title = onGpu
+            ? "Rendering on the GPU (WebGPU) — click to use the vector renderer"
+            : "Rendering with vectors — click to use the GPU (WebGPU)";
+    }
+
+    function switchTo(target: Renderer) {
+        if (target === active) {
+            return;
+        }
+        target.reset();
+        target.setSize(window.innerWidth, window.innerHeight);
+        target.applyOperations(active.getHistory());
+        active.displayCanvas.style.display = "none";
+        target.displayCanvas.style.display = "";
+        active = target;
+        ui.delegate = active;
+        updateBackendButton();
+    }
+
+    if (backendButton != null && gpu != null) {
+        backendButton.style.display = "";
+        backendButton.onclick = () => switchTo(active === gpu ? vector : gpu!);
+        updateBackendButton();
+    }
 
     const parameter = getParameterByName("p");
     if (parameter != null && confirm("Execute passed in program?")) {
         const decompressed = LZString.decompressFromEncodedURIComponent(parameter);
         const program = new UserProgram(decompressed);
-        renderer.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+        active.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
     }
 
     const palette = [];
