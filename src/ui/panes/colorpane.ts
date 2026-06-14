@@ -8,9 +8,15 @@ export default class ColorPane {
     backgroundPicker: HTMLInputElement;
     swatches: Array<HTMLElement> = [];
     delegate: MarblingRendererDelegate;
+    private recentColors: Color[] = [];
 
     constructor(container: HTMLElement) {
         this.container = container;
+        this.foregroundPicker = <HTMLInputElement>container.querySelector(".foreground");
+        this.backgroundPicker = <HTMLInputElement>container.querySelector(".background");
+        this.foregroundPicker.addEventListener("change", this.foregroundChanged.bind(this));
+        this.backgroundPicker.addEventListener("change", this.backgroundChanged.bind(this));
+
         for (let i = 0; i < 5; i++) {
             const selector = ".swatch-" + i;
             const element = <HTMLElement>container.querySelector(selector);
@@ -18,22 +24,8 @@ export default class ColorPane {
             this.swatches.push(element);
         }
 
-        window.addEventListener("change", function () {
-            alert("test");
-        });
-
-        function installed() {
-            this.foregroundPicker = <HTMLInputElement>container.querySelector(".foreground");
-            this.backgroundPicker = <HTMLInputElement>container.querySelector(".background");
-            this.foregroundPicker.onchange = this.foregroundChanged.bind(this);
-            this.backgroundPicker.onchange = this.backgroundChanged.bind(this);
-        }
-
-        document.addEventListener("colorPickersInstalled", installed.bind(this));
-
-        for (let i = 0; i < this.swatches.length; i++) {
-            this.swatches[i].style.backgroundColor = colorSets[0][i].toRGBString();
-        }
+        this.recentColors = colorSets[0].slice(0, this.swatches.length);
+        this.renderRecentColors();
 
 
     }
@@ -42,28 +34,47 @@ export default class ColorPane {
         return Color.withHex(this.foregroundPicker.value);
     }
 
-    private foregroundChanged(event: Event, color) {
-        let swatchColors = [];
-        for (let i = 0; i < this.swatches.length; i++) {
-            const current = Color.withRGB(this.swatches[i].style.backgroundColor);
-            swatchColors.push(current);
+    private foregroundChanged(event: Event) {
+        const picker = <HTMLInputElement>event.target;
+        this.pushRecentColor(picker.value);
+    }
+
+    private pushRecentColor(hex: string) {
+        const color = Color.withHex(hex);
+        if (color == null) {
+            return;
         }
-        this.swatches[0].style.backgroundColor = color.toRgbString();
-        for (let i = 1; i < this.swatches.length; i++) {
-            const current = swatchColors[i - 1];
-            this.swatches[i].style.backgroundColor = current.toRGBString();
-            swatchColors.push(current);
+        const hexColor = color.toHexString();
+        this.recentColors = [
+            color,
+            ...this.recentColors.filter((recent) => recent.toHexString() !== hexColor),
+        ].slice(0, this.swatches.length);
+        this.renderRecentColors();
+    }
+
+    private renderRecentColors() {
+        for (let i = 0; i < this.swatches.length; i++) {
+            const color = this.recentColors[i];
+            if (color != null) {
+                this.swatches[i].style.backgroundColor = color.toRGBString();
+            }
         }
     }
 
-    private backgroundChanged(event: Event, color) {
-        const parsed = Color.withRGB(color.toRgbString());
-        this.delegate.applyOperations([new ChangeBaseColorOperation(parsed)]);
+    private backgroundChanged(event: Event) {
+        const picker = <HTMLInputElement>event.target;
+        const parsed = Color.withHex(picker.value);
+        if (parsed != null) {
+            this.delegate.applyOperations([new ChangeBaseColorOperation(parsed)]);
+        }
     }
 
     private swatchClicked(event: MouseEvent) {
         const target = <HTMLElement>event.target;
-        const newColor = Color.withRGB(target.style.backgroundColor);
-        $(this.foregroundPicker).spectrum("set", newColor.toHexString());
+        const hexColor = this.recentColors[this.swatches.indexOf(target)]?.toHexString();
+        if (hexColor != null) {
+            this.foregroundPicker.value = hexColor;
+            this.pushRecentColor(hexColor);
+        }
     }
 }

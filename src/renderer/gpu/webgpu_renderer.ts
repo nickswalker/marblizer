@@ -23,6 +23,7 @@ const USAGE_STORAGE = 0x0080;
 export default class WebGPURenderer implements MarblingRenderer {
     readonly displayCanvas: HTMLCanvasElement;
     baseColor: Color = new Color(220, 210, 210);
+    private readonly defaultBaseColor: Color = new Color(220, 210, 210);
 
     private history: Operation[] = [];
     private readonly device: any;
@@ -83,6 +84,7 @@ export default class WebGPURenderer implements MarblingRenderer {
 
     reset() {
         this.history = [];
+        this.baseColor = this.defaultBaseColor;
         this.render();
     }
 

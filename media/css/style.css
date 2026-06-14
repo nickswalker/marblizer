@@ -9,6 +9,8 @@
     --color-pane-text: #eeeeee;
     --color-divider: #777777;
     --color-overlay-scrim: rgba(0, 0, 0, 0.4);
+    --pane-backdrop-filter: blur(14px) saturate(135%);
+    --overlay-backdrop-filter: blur(6px);
 
     /* Interactive states */
     --color-button-hover-border: gray;
@@ -59,6 +61,8 @@ canvas {
     background-color: var(--color-pane-bg);
     color: var(--color-pane-text);
     position: relative;
+    backdrop-filter: var(--pane-backdrop-filter);
+    -webkit-backdrop-filter: var(--pane-backdrop-filter);
 }
 
 /*
@@ -128,6 +132,16 @@ ul.button-section {
     background-color: var(--color-button-hover-bg);
 }
 
+.button-section li.disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.button-section li.disabled:hover {
+    border-color: transparent;
+    background-color: transparent;
+}
+
 .button-section .active {
     border: 2px solid var(--color-accent);
     background-color: var(--color-accent-translucent);
@@ -139,6 +153,15 @@ ul.button-section {
     min-width: 30px;
     min-height: 30px;
     object-fit: contain;
+}
+
+.button-section li ion-icon {
+    width: 100%;
+    height: 100%;
+    min-width: 30px;
+    min-height: 30px;
+    color: currentColor;
+    --ionicon-stroke-width: 32px;
 }
 
 /*
@@ -161,39 +184,41 @@ COLORS
     box-sizing: border-box;
 }
 
-#color-inputs input,
-.sp-replacer {
+#color-inputs input {
     width: 35px;
     height: 35px;
     box-sizing: border-box;
     display: inline-block;
-    margin: 3px !important;
+    margin: 3px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: none;
+    cursor: pointer;
 }
 
-input.foreground,
-.foreground-spectrum {
+input.foreground {
     position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
 }
 
-input.background,
-.background-spectrum {
+input.background {
     position: absolute;
     bottom: 0;
     right: 0;
 }
 
-.sp-preview {
-    margin: 0 !important;
-    width: 100% !important;
-    box-sizing: border-box;
-    height: 100% !important;
+#color-inputs input::-webkit-color-swatch-wrapper {
+    padding: 0;
 }
 
-.sp-dd {
-    display: none;
+#color-inputs input::-webkit-color-swatch {
+    border: 0;
+}
+
+#color-inputs input::-moz-color-swatch {
+    border: 0;
 }
 
 ul#recent-colors {
@@ -221,6 +246,8 @@ MODAL
     height: 100%;
     top: 0;
     background-color: var(--color-overlay-scrim);
+    backdrop-filter: var(--overlay-backdrop-filter);
+    -webkit-backdrop-filter: var(--overlay-backdrop-filter);
     z-index: 2;
     display: flex;
     flex-flow: row;

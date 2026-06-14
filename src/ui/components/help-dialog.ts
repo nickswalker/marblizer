@@ -2,6 +2,7 @@ import {css, html, TemplateResult} from "lit";
 import Overlay from "./overlay.js";
 import {Tool} from "../tools.js";
 import {toolKeys} from "../keyboard.js";
+import {Shortcut, shortcutSections} from "../shortcuts.js";
 
 interface ToolHelp {
     tool: Tool;
@@ -22,9 +23,6 @@ function keyFor(tool: Tool): string | undefined {
     return toolKeys[tool];
 }
 
-// The "Help" overlay: a short orientation to what marbling is and how to drive
-// the app. Dispatches an "open-shortcuts" event when the user asks for the full
-// keyboard reference, which the UI wires up to the shortcuts overlay.
 export default class HelpDialog extends Overlay {
     static styles = [
         Overlay.styles,
@@ -75,18 +73,26 @@ export default class HelpDialog extends Overlay {
                 opacity: 0.9;
             }
 
-            .footer {
-                margin-top: var(--space-lg, 24px);
+            .shortcut-grid {
+                columns: 2;
+                column-gap: var(--space-lg, 24px);
             }
 
-            button.link {
-                font: inherit;
-                color: var(--color-accent, rgb(72, 151, 170));
-                background: none;
-                border: none;
-                padding: 0;
-                cursor: pointer;
-                text-decoration: underline;
+            section {
+                break-inside: avoid;
+                margin-bottom: var(--space-md, 12px);
+            }
+
+            .shortcut {
+                display: flex;
+                align-items: baseline;
+                gap: var(--space-md, 12px);
+                padding: 3px 0;
+            }
+
+            .keys {
+                flex: none;
+                white-space: nowrap;
             }
         `,
     ];
@@ -95,9 +101,9 @@ export default class HelpDialog extends Overlay {
         return "Marblizer";
     }
 
-    private openShortcuts() {
-        this.hide();
-        this.dispatchEvent(new CustomEvent("open-shortcuts", {bubbles: true, composed: true}));
+    private renderKeys(shortcut: Shortcut): TemplateResult {
+        const sep = shortcut.sep ?? " + ";
+        return html`<span class="keys">${shortcut.keys.map((key, i) => html`${i > 0 ? sep : ""}<kbd>${key}</kbd>`)}</span>`;
     }
 
     protected content(): TemplateResult {
@@ -144,8 +150,21 @@ export default class HelpDialog extends Overlay {
                 the editor.
             </p>
 
-            <div class="footer">
-                <button class="link" @click=${() => this.openShortcuts()}>View all keyboard shortcuts</button>
+            <h2>Keyboard shortcuts</h2>
+            <div class="shortcut-grid">
+                ${shortcutSections.map((section) => html`
+                    <section>
+                        <h2>${section.title}</h2>
+                        <ul>
+                            ${section.shortcuts.map((shortcut) => html`
+                                <li class="shortcut">
+                                    ${this.renderKeys(shortcut)}
+                                    <span class="desc">${shortcut.def}</span>
+                                </li>
+                            `)}
+                        </ul>
+                    </section>
+                `)}
             </div>
         `;
     }
