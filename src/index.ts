@@ -6,6 +6,7 @@ import {colorSets} from "./models/color.js";
 import {InteractiveCurveRenderer} from "./renderer/curve_renderer.js";
 import WebGPURenderer from "./renderer/gpu/webgpu_renderer.js";
 import MarblingUI from "./ui/ui.js";
+import {clearCompositionDraft, loadCompositionDraft, saveCompositionDraft} from "./composition_storage.js";
 
 type Renderer = InteractiveCurveRenderer | WebGPURenderer;
 
@@ -29,6 +30,41 @@ addEventListener('DOMContentLoaded', async function () {
     }
 
     let active: Renderer = gpu != null ? gpu : vector;
+    let suppressDraftPersistence = false;
+
+    function persistDraft(renderer: Renderer) {
+        const operations = renderer.getHistory();
+        if (operations.length === 0) {
+            clearCompositionDraft();
+            return;
+        }
+        saveCompositionDraft(operations, new Vec2(window.innerWidth, window.innerHeight));
+    }
+
+    function attachDraftPersistence(renderer: Renderer) {
+        const applyOperations = renderer.applyOperations.bind(renderer);
+        const reset = renderer.reset.bind(renderer);
+
+        renderer.applyOperations = (operations) => {
+            applyOperations(operations);
+            if (!suppressDraftPersistence) {
+                persistDraft(renderer);
+            }
+        };
+
+        renderer.reset = () => {
+            reset();
+            if (!suppressDraftPersistence) {
+                clearCompositionDraft();
+            }
+        };
+    }
+
+    attachDraftPersistence(vector);
+    if (gpu != null) {
+        attachDraftPersistence(gpu);
+    }
+
     // Hide whichever backend is not active (both canvases overlay the workspace).
     vector.displayCanvas.style.display = active === vector ? "" : "none";
     if (gpu != null) {
@@ -68,9 +104,14 @@ addEventListener('DOMContentLoaded', async function () {
         if (target === active) {
             return;
         }
-        target.reset();
-        target.setSize(window.innerWidth, window.innerHeight);
-        target.applyOperations(active.getHistory());
+        suppressDraftPersistence = true;
+        try {
+            target.reset();
+            target.setSize(window.innerWidth, window.innerHeight);
+            target.applyOperations(active.getHistory());
+        } finally {
+            suppressDraftPersistence = false;
+        }
         active.displayCanvas.style.display = "none";
         target.displayCanvas.style.display = "";
         active = target;
@@ -89,6 +130,11 @@ addEventListener('DOMContentLoaded', async function () {
         const decompressed = LZString.decompressFromEncodedURIComponent(parameter);
         const program = new UserProgram(decompressed);
         active.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+    } else if (parameter == null) {
+        const draft = loadCompositionDraft();
+        if (draft != null && draft.length > 0) {
+            active.applyOperations(draft);
+        }
     }
 
     const palette = [];
