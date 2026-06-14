@@ -1,6 +1,7 @@
 import Vec2 from "./models/vector.js";
 import Operation from "./operations/color_operations.js";
 import MarblingRenderer from "./renderer/curve_renderer.js";
+import {downloadSVG} from "./renderer/svg_exporter.js";
 import {clearCompositionDraft, saveCompositionDraft} from "./composition_storage.js";
 
 export default class CompositionController implements MarblingRenderer {
@@ -52,6 +53,10 @@ export default class CompositionController implements MarblingRenderer {
 
     save() {
         this.renderer.save();
+    }
+
+    saveSVG() {
+        downloadSVG(this.history, new Vec2(window.innerWidth, window.innerHeight));
     }
 
     undo() {

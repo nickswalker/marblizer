@@ -94,6 +94,18 @@ export default class HelpDialog extends Overlay {
                 flex: none;
                 white-space: nowrap;
             }
+
+            .about {
+                margin-top: var(--space-lg, 24px);
+                padding-top: var(--space-md, 12px);
+                border-top: 1px solid rgba(255, 255, 255, 0.12);
+                font-size: 0.92em;
+                opacity: 0.82;
+            }
+
+            a {
+                color: var(--color-accent, rgb(72, 151, 170));
+            }
         `,
     ];
 
@@ -150,6 +162,12 @@ export default class HelpDialog extends Overlay {
                 the editor.
             </p>
 
+            <h2>Saving</h2>
+            <p>
+                Save a PNG for a raster image, or save an SVG for editable vector
+                paths generated from the current marbling operations.
+            </p>
+
             <h2>Keyboard shortcuts</h2>
             <div class="shortcut-grid">
                 ${shortcutSections.map((section) => html`
@@ -166,6 +184,13 @@ export default class HelpDialog extends Overlay {
                     </section>
                 `)}
             </div>
+
+            <h2>About</h2>
+            <p class="about">
+                Marblizer was made by
+                <a href="https://nickwalker.us/" target="_blank" rel="noopener">Nick Walker</a>.
+                It is used thousands of times each year by visitors from across the world.
+            </p>
         `;
     }
 }

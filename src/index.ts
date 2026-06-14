@@ -91,6 +91,8 @@ addEventListener('DOMContentLoaded', async function () {
         const decompressed = LZString.decompressFromEncodedURIComponent(parameter);
         const program = new UserProgram(decompressed);
         composition.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+        const gc = (window as any).goatcounter;
+        if (gc?.count) gc.count({ path: "marblizer.shared-script-load", event: true });
     } else if (parameter == null) {
         const draft = loadCompositionDraft();
         if (draft != null && draft.length > 0) {

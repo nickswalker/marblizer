@@ -7,6 +7,7 @@ export enum ButtonBehavior {
 
 export enum UICommand {
     Save,
+    SaveSVG,
     ShowField,
     ShowScriptEditor,
     ShowHelp,
@@ -27,6 +28,7 @@ export default class ControlsPane {
     constructor(container: HTMLElement) {
         this.container = container;
         const saveButton = <HTMLElement>container.querySelector(".save-image");
+        const saveSVGButton = <HTMLElement>container.querySelector(".save-svg");
         const showFieldButton = <HTMLElement>container.querySelector(".show-field");
         const showScriptEditor = <HTMLElement>container.querySelector(".show-script-editor");
         const undoButton = <HTMLElement>container.querySelector(".undo");
@@ -38,6 +40,8 @@ export default class ControlsPane {
         this.buttonBehaviors = {};
         this.optionToButtonMapping[UICommand.Save] = saveButton;
         this.buttonBehaviors[UICommand.Save] = ButtonBehavior.Temporary;
+        this.optionToButtonMapping[UICommand.SaveSVG] = saveSVGButton;
+        this.buttonBehaviors[UICommand.SaveSVG] = ButtonBehavior.Temporary;
         this.optionToButtonMapping[UICommand.ShowField] = showFieldButton;
         this.buttonBehaviors[UICommand.ShowField] = ButtonBehavior.Toggle;
         this.optionToButtonMapping[UICommand.ShowScriptEditor] = showScriptEditor;
