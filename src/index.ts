@@ -12,11 +12,11 @@ import CompositionController from "./composition_controller.js";
 type Renderer = InteractiveCurveRenderer | WebGPURenderer;
 
 addEventListener('DOMContentLoaded', async function () {
-    let marblingWorkspace = document.getElementById("workspace");
-    let toolsPane = document.getElementById("tools");
-    let optionsPane = document.getElementById("options");
-    let colorsPane = document.getElementById("colors");
-    let operationsInput = document.getElementById("operations-input");
+    let marblingWorkspace = document.getElementById("workspace")!;
+    let toolsPane = document.getElementById("tools")!;
+    let optionsPane = document.getElementById("options")!;
+    let colorsPane = document.getElementById("colors")!;
+    let operationsInput = document.getElementById("operations-input")!;
     let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput);
 
     // The vector renderer is always available and acts as the fallback. The
@@ -89,8 +89,10 @@ addEventListener('DOMContentLoaded', async function () {
     const parameter = getParameterByName("p");
     if (parameter != null && confirm("Execute passed in program?")) {
         const decompressed = LZString.decompressFromEncodedURIComponent(parameter);
-        const program = new UserProgram(decompressed);
-        composition.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+        if (decompressed != null) {
+            const program = new UserProgram(decompressed);
+            composition.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+        }
         const gc = (window as any).goatcounter;
         if (gc?.count) gc.count({ path: "marblizer.shared-script-load", event: true });
     } else if (parameter == null) {

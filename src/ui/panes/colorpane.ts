@@ -7,19 +7,19 @@ export default class ColorPane {
     foregroundPicker: HTMLInputElement;
     backgroundPicker: HTMLInputElement;
     swatches: Array<HTMLElement> = [];
-    delegate: MarblingRendererDelegate;
+    delegate!: MarblingRendererDelegate;
     private recentColors: Color[] = [];
 
     constructor(container: HTMLElement) {
         this.container = container;
-        this.foregroundPicker = <HTMLInputElement>container.querySelector(".foreground");
-        this.backgroundPicker = <HTMLInputElement>container.querySelector(".background");
+        this.foregroundPicker = <HTMLInputElement>container.querySelector(".foreground")!;
+        this.backgroundPicker = <HTMLInputElement>container.querySelector(".background")!;
         this.foregroundPicker.addEventListener("change", this.foregroundChanged.bind(this));
         this.backgroundPicker.addEventListener("change", this.backgroundChanged.bind(this));
 
         for (let i = 0; i < 5; i++) {
             const selector = ".swatch-" + i;
-            const element = <HTMLElement>container.querySelector(selector);
+            const element = <HTMLElement>container.querySelector(selector)!;
             element.onclick = this.swatchClicked.bind(this);
             this.swatches.push(element);
         }
@@ -30,8 +30,8 @@ export default class ColorPane {
 
     }
 
-    get currentColor() {
-        return Color.withHex(this.foregroundPicker.value);
+    get currentColor(): Color {
+        return Color.withHex(this.foregroundPicker.value)!;
     }
 
     private foregroundChanged(event: Event) {

@@ -21,21 +21,21 @@ export default class ControlsPane {
     container: HTMLElement;
     optionToButtonMapping: { [key: number]: HTMLElement };
     buttonBehaviors: { [key: number]: ButtonBehavior };
-    delegate: MarblingRendererDelegate;
-    uiDelegate: MarblingUIDelegate;
+    delegate!: MarblingRendererDelegate;
+    uiDelegate!: MarblingUIDelegate;
     private shiftDown: boolean = false;
 
     constructor(container: HTMLElement) {
         this.container = container;
-        const saveButton = <HTMLElement>container.querySelector(".save-image");
-        const saveSVGButton = <HTMLElement>container.querySelector(".save-svg");
-        const showFieldButton = <HTMLElement>container.querySelector(".show-field");
-        const showScriptEditor = <HTMLElement>container.querySelector(".show-script-editor");
-        const undoButton = <HTMLElement>container.querySelector(".undo");
-        const redoButton = <HTMLElement>container.querySelector(".redo");
-        const fullscreenButton = <HTMLElement>container.querySelector(".fullscreen");
-        const helpButton = <HTMLElement>container.querySelector(".help");
-        const resetButton = <HTMLElement>container.querySelector(".reset");
+        const saveButton = <HTMLElement>container.querySelector(".save-image")!;
+        const saveSVGButton = <HTMLElement>container.querySelector(".save-svg")!;
+        const showFieldButton = <HTMLElement>container.querySelector(".show-field")!;
+        const showScriptEditor = <HTMLElement>container.querySelector(".show-script-editor")!;
+        const undoButton = <HTMLElement>container.querySelector(".undo")!;
+        const redoButton = <HTMLElement>container.querySelector(".redo")!;
+        const fullscreenButton = <HTMLElement>container.querySelector(".fullscreen")!;
+        const helpButton = <HTMLElement>container.querySelector(".help")!;
+        const resetButton = <HTMLElement>container.querySelector(".reset")!;
         this.optionToButtonMapping = {};
         this.buttonBehaviors = {};
         this.optionToButtonMapping[UICommand.Save] = saveButton;
@@ -80,7 +80,7 @@ export default class ControlsPane {
 
     private optionClicked(event: MouseEvent) {
         const target = event.currentTarget;
-        let option;
+        let option: UICommand | null = null;
         for (let key in this.optionToButtonMapping) {
             if (this.optionToButtonMapping[key] == target) {
                 if (this.optionToButtonMapping[key].className.match("disabled")) {
@@ -99,7 +99,9 @@ export default class ControlsPane {
 
             }
         }
-        this.uiDelegate.applyCommand(option);
+        if (option != null) {
+            this.uiDelegate.applyCommand(option);
+        }
     }
 
 

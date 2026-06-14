@@ -5,18 +5,18 @@ import {toolKeys} from "../keyboard.js";
 export default class ToolsPane {
     container: HTMLElement;
     toolToButtonMapping: { [key: number]: HTMLElement };
-    delegate: MarblingRendererDelegate;
+    delegate!: MarblingRendererDelegate;
     toolParameters: ToolParameters;
     private shiftDown: boolean = false;
 
     constructor(container: HTMLElement) {
         this.container = container;
-        const dropButton = <HTMLElement>container.querySelector(".drop-tool");
-        const spatterButton = <HTMLElement>container.querySelector(".spatter-tool");
-        const tineButton = <HTMLElement>container.querySelector(".tine-tool");
-        const wavyButton = <HTMLElement>container.querySelector(".wavy-tine-tool");
-        const circularButton = <HTMLElement>container.querySelector(".circular-tine-tool");
-        const swirlButton = <HTMLElement>container.querySelector(".vortex-tool");
+        const dropButton = <HTMLElement>container.querySelector(".drop-tool")!;
+        const spatterButton = <HTMLElement>container.querySelector(".spatter-tool")!;
+        const tineButton = <HTMLElement>container.querySelector(".tine-tool")!;
+        const wavyButton = <HTMLElement>container.querySelector(".wavy-tine-tool")!;
+        const circularButton = <HTMLElement>container.querySelector(".circular-tine-tool")!;
+        const swirlButton = <HTMLElement>container.querySelector(".vortex-tool")!;
 
         this.toolToButtonMapping = {};
         this.toolToButtonMapping[Tool.Drop] = dropButton;

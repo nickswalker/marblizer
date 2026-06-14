@@ -11,8 +11,8 @@ export default class Color {
         this.a = a;
     }
 
-    static withRGB(hex: string) {
-        const result = /^rgb?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.exec(hex);
+    static withRGB(hex: string): Color | null {
+        const result = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.exec(hex);
         if (result) {
             const r = parseInt(result[1]);
             const g = parseInt(result[2]);
@@ -24,7 +24,7 @@ export default class Color {
 
     }
 
-    static withHex(hex: string) {
+    static withHex(hex: string): Color | null {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         if (result) {
             const r = parseInt(result[1], 16);
@@ -46,7 +46,7 @@ export default class Color {
     }
 
     toHexString() {
-        function componentToHex(c) {
+        function componentToHex(c: number) {
             let hex = c.toString(16);
             return hex.length == 1 ? "0" + hex : hex;
         }
@@ -59,12 +59,12 @@ export default class Color {
     }
 
     toHexStringWithAlpha() {
-        function componentToHex(c) {
+        function componentToHex(c: number) {
             let hex = c.toString(16);
             return hex.length == 1 ? "0" + hex : hex;
         }
 
-        return "#" + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b) + componentToHex(this.a);
+        return "#" + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b) + componentToHex(Math.round(this.a * 255));
     }
 }
 
@@ -75,8 +75,8 @@ export const green = new Color(0, 255, 0);
 export const blue = new Color(0, 0, 255);
 
 export const colorSets = [
-    [Color.withHex("27372d"), Color.withHex("a98918"), Color.withHex("891920"), Color.withHex("d0b9a0"), Color.withHex("2b231b")],
-    [Color.withHex("605B73"), Color.withHex("414257"), Color.withHex("4E7F9E"), Color.withHex("AFBDD9"), Color.withHex("5A87A0")],
-    [Color.withHex("C5BDA6"), Color.withHex("CF5725"), Color.withHex("1B1C21"), Color.withHex("849C86"), Color.withHex("BDA99E")],
-    [Color.withHex("FFFFFF"), Color.withHex("00FFFF"), Color.withHex("FF00FF"), Color.withHex("FFFF00"), Color.withHex("000000")]
+    [Color.withHex("27372d")!, Color.withHex("a98918")!, Color.withHex("891920")!, Color.withHex("d0b9a0")!, Color.withHex("2b231b")!],
+    [Color.withHex("605B73")!, Color.withHex("414257")!, Color.withHex("4E7F9E")!, Color.withHex("AFBDD9")!, Color.withHex("5A87A0")!],
+    [Color.withHex("C5BDA6")!, Color.withHex("CF5725")!, Color.withHex("1B1C21")!, Color.withHex("849C86")!, Color.withHex("BDA99E")!],
+    [Color.withHex("FFFFFF")!, Color.withHex("00FFFF")!, Color.withHex("FF00FF")!, Color.withHex("FFFF00")!, Color.withHex("000000")!]
 ];
