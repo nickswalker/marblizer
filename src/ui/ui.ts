@@ -58,7 +58,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         container.addEventListener("mousedown", this.mouseDown.bind(this));
         container.addEventListener("mouseup", this.mouseUp.bind(this));
         container.addEventListener("mousemove", this.mouseMove.bind(this));
-        container.addEventListener("mousewheel", this.scroll.bind(this));
+        container.addEventListener("wheel", this.scroll.bind(this), {passive: false});
         document.addEventListener("mouseout", this.mouseOut.bind(this));
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
@@ -284,6 +284,7 @@ export default class MarblingUI implements MarblingUIDelegate {
 
 
     private scroll(e: WheelEvent) {
+        e.preventDefault();
         const delta = e.deltaY;
         if (delta > 0) {
             if (!this.keyboardManager.shiftDown) {

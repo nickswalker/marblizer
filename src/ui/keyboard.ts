@@ -1,4 +1,3 @@
-import set = Reflect.set;
 import {Tool} from "./tools.js";
 
 export enum KeyboardShortcut {
@@ -94,12 +93,12 @@ export default class MarblingKeyboardUI {
         this.metaDown = e.metaKey;
 
         if (this.controlDown && e.keyCode == 83) {
-            event.preventDefault();
+            e.preventDefault();
             this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
 
             return false;
         } else if (keyDownOnly.has(e.key)) {
-            event.preventDefault();
+            e.preventDefault();
             const shortcut = keyMapping[e.key];
             this.keyboardDelegate.didPressShortcut(shortcut);
         }
