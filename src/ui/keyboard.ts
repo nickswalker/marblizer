@@ -19,7 +19,11 @@ export enum KeyboardShortcut {
     Down = 15,
     Left = 16,
     BracketLeft = 17,
-    BracketRight = 18
+    BracketRight = 18,
+    Undo = 19,
+    Redo = 20,
+    X = 21,
+    ToggleFullscreen = 22
 }
 
 export const keyMapping = {
@@ -31,6 +35,7 @@ export const keyMapping = {
     "l": KeyboardShortcut.L,
     "c": KeyboardShortcut.C,
     "w": KeyboardShortcut.W,
+    "x": KeyboardShortcut.X,
     "v": KeyboardShortcut.V,
     "f": KeyboardShortcut.F,
     "b": KeyboardShortcut.B,
@@ -48,6 +53,7 @@ export const keyMapping = {
 // help/shortcut overlays. Tools absent from this map have no keyboard shortcut.
 export const toolKeys: { [tool: number]: string } = {
     [Tool.Drop]: "d",
+    [Tool.Spatter]: "x",
     [Tool.TineLine]: "l",
     [Tool.CircularTine]: "c",
     [Tool.WavyLine]: "w",
@@ -55,7 +61,7 @@ export const toolKeys: { [tool: number]: string } = {
 };
 
 export const keyDownOnly = new Set([
-    "ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"
+    "ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "F11"
 ]);
 
 export interface MarblingKeyboardUIDelegate {
@@ -92,15 +98,29 @@ export default class MarblingKeyboardUI {
         this.altDown = e.altKey;
         this.metaDown = e.metaKey;
 
-        if (this.controlDown && e.keyCode == 83) {
+        const commandDown = this.controlDown || this.metaDown;
+        const key = e.key.toLowerCase();
+
+        if (commandDown && key === "s") {
             e.preventDefault();
             this.keyboardDelegate.didPressShortcut(KeyboardShortcut.S);
-
+            return false;
+        } else if (commandDown && key === "z") {
+            e.preventDefault();
+            this.keyboardDelegate.didPressShortcut(this.shiftDown ? KeyboardShortcut.Redo : KeyboardShortcut.Undo);
+            return false;
+        } else if (commandDown && key === "y") {
+            e.preventDefault();
+            this.keyboardDelegate.didPressShortcut(KeyboardShortcut.Redo);
             return false;
         } else if (keyDownOnly.has(e.key)) {
             e.preventDefault();
             const shortcut = keyMapping[e.key];
-            this.keyboardDelegate.didPressShortcut(shortcut);
+            if (e.key === "F11") {
+                this.keyboardDelegate.didPressShortcut(KeyboardShortcut.ToggleFullscreen);
+            } else {
+                this.keyboardDelegate.didPressShortcut(shortcut);
+            }
         }
     }
 

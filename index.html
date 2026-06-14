@@ -14,13 +14,7 @@
 
     <link rel="stylesheet" href="media/css/style.css"/>
     <script src="/dist/index.js"></script>
-    <script
-            src="https://code.jquery.com/jquery-3.1.1.min.js"
-            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-            crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script>
@@ -66,13 +60,15 @@
     </ul>
     <hr class="tools-divider">
     <ul class="button-section options" id="options">
-        <li class="show-script-editor tool" title="Script editor"><img src="media/images/script.svg"></li>
-        <li class="save-image tool" title="Save image"><img src="media/images/save.svg"></li>
-        <li class="show-field tool" title="Show tool force field"><img src="media/images/field.svg"></li>
+        <li class="undo tool" title="Undo"><ion-icon name="arrow-undo-outline" aria-hidden="true"></ion-icon></li>
+        <li class="redo tool" title="Redo"><ion-icon name="arrow-redo-outline" aria-hidden="true"></ion-icon></li>
+        <li class="show-field tool" title="Show tool force field"><ion-icon name="search-outline" aria-hidden="true"></ion-icon></li>
+        <li class="fullscreen tool" title="Toggle fullscreen"><ion-icon name="expand-outline" aria-hidden="true"></ion-icon></li>
         <li class="toggle-renderer tool" title="Rendering backend" style="display:none;">GPU</li>
-        <li class="reset" title="Reset canvas"><img src="media/images/reset.svg"></li>
-        <li class="help" title="Help"><img src="media/images/help.svg"></li>
-        <li class="show-keyboard-shortcuts" title="Show keyboard shortcuts"><img src="media/images/shortcuts.svg"></li>
+        <li class="reset tool" title="Reset canvas"><ion-icon name="refresh-outline" aria-hidden="true"></ion-icon></li>
+        <li class="save-image tool" title="Save image"><ion-icon name="download-outline" aria-hidden="true"></ion-icon></li>
+        <li class="show-script-editor tool" title="Script editor"><ion-icon name="code-slash-outline" aria-hidden="true"></ion-icon></li>
+        <li class="help tool" title="Help"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></li>
     </ul>
     <hr class="tools-divider">
     <div id="colors">
@@ -91,7 +87,6 @@
     <div id="logo"><img src="media/images/logo.svg"/></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.3.6/svg.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
 

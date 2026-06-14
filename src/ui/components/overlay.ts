@@ -39,6 +39,8 @@ export default abstract class Overlay extends LitElement {
             align-items: center;
             justify-content: center;
             background-color: var(--color-overlay-scrim, rgba(0, 0, 0, 0.4));
+            backdrop-filter: var(--overlay-backdrop-filter, blur(6px));
+            -webkit-backdrop-filter: var(--overlay-backdrop-filter, blur(6px));
         }
 
         .pane {
@@ -51,6 +53,8 @@ export default abstract class Overlay extends LitElement {
             padding: var(--space-lg, 24px) calc(var(--space-lg, 24px) + 4px);
             background-color: var(--color-pane-bg, rgba(30, 30, 30, 0.85));
             color: var(--color-pane-text, #eeeeee);
+            backdrop-filter: var(--pane-backdrop-filter, blur(14px) saturate(135%));
+            -webkit-backdrop-filter: var(--pane-backdrop-filter, blur(14px) saturate(135%));
             border-radius: var(--radius, 4px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
             font-family: var(--font-ui, sans-serif);

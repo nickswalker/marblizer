@@ -14,14 +14,21 @@ import CircularLineTine from "../operations/circularlinetine.js";
 import WavyLineTine from "../operations/wavylinetine.js";
 import LineTine from "../operations/linetine.js";
 import HelpDialog from "./components/help-dialog.js";
-import ShortcutsDialog from "./components/shortcuts-dialog.js";
 import UserProgram from "../scripting/user_program.js";
 import MarblingRenderer from "../renderer/curve_renderer.js";
 
 
 // The UI talks to whichever rendering backend (vector or, later, GPU) is
 // active purely through the shared renderer interface.
-export type MarblingRendererDelegate = MarblingRenderer;
+export interface MarblingRendererDelegate extends MarblingRenderer {
+    undo();
+
+    redo();
+
+    canUndo(): boolean;
+
+    canRedo(): boolean;
+}
 
 export interface MarblingUIDelegate {
     applyCommand(command: UICommand)
@@ -36,7 +43,6 @@ export default class MarblingUI implements MarblingUIDelegate {
     private mouseDownCoord: Vec2;
     private mouseInterval: number;
     private helpDialog: HelpDialog;
-    private shortcutsDialog: ShortcutsDialog;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
@@ -48,11 +54,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.controlsPane = new ControlsPane(optionsContainer);
         this.controlsPane.uiDelegate = this;
         this.helpDialog = new HelpDialog();
-        this.shortcutsDialog = new ShortcutsDialog();
         document.body.appendChild(this.helpDialog);
-        document.body.appendChild(this.shortcutsDialog);
-        // The help overlay links out to the full keyboard reference.
-        this.helpDialog.addEventListener("open-shortcuts", () => this.shortcutsDialog.show());
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
         container.addEventListener("mousedown", this.mouseDown.bind(this));
@@ -71,6 +73,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.toolsPane.delegate = delegate;
         this.controlsPane.delegate = delegate;
         this.colorPane.delegate = delegate;
+        this.syncHistoryControls();
     }
 
     private _size: Vec2;
@@ -91,6 +94,17 @@ export default class MarblingUI implements MarblingUIDelegate {
                     this.scriptingPane.getInput(this.didEnterInput.bind(this));
                 }
                 return;
+            case KeyboardShortcut.Undo:
+                this._delegate.undo();
+                this.syncHistoryControls();
+                return;
+            case KeyboardShortcut.Redo:
+                this._delegate.redo();
+                this.syncHistoryControls();
+                return;
+            case KeyboardShortcut.ToggleFullscreen:
+                this.toggleFullscreen();
+                return;
             case KeyboardShortcut.Up:
                 this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
                 return;
@@ -106,6 +120,7 @@ export default class MarblingUI implements MarblingUIDelegate {
             case KeyboardShortcut.R:
                 if (confirm("Clear the composition?")) {
                     this._delegate.reset();
+                    this.syncHistoryControls();
                 }
                 return;
             case KeyboardShortcut.F:
@@ -119,6 +134,9 @@ export default class MarblingUI implements MarblingUIDelegate {
                 return;
             case KeyboardShortcut.D:
                 this.toolsPane.selectTool(Tool.Drop);
+                return;
+            case KeyboardShortcut.X:
+                this.toolsPane.selectTool(Tool.Spatter);
                 return;
             case KeyboardShortcut.L:
                 this.toolsPane.selectTool(Tool.TineLine);
@@ -134,7 +152,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                 return;
             case KeyboardShortcut.QuestionMark:
                 if (this.keyboardManager.shiftDown) {
-                    this.shortcutsDialog.show();
+                    this.helpDialog.show();
                 }
                 return;
 
@@ -146,11 +164,22 @@ export default class MarblingUI implements MarblingUIDelegate {
             case UICommand.Reset: {
                 if (confirm("Clear the composition?")) {
                     this._delegate.reset();
+                    this.syncHistoryControls();
                 }
                 return;
             }
             case UICommand.Save: {
                 this._delegate.save();
+                return;
+            }
+            case UICommand.Undo: {
+                this._delegate.undo();
+                this.syncHistoryControls();
+                return;
+            }
+            case UICommand.Redo: {
+                this._delegate.redo();
+                this.syncHistoryControls();
                 return;
             }
             case UICommand.ShowField: {
@@ -161,8 +190,8 @@ export default class MarblingUI implements MarblingUIDelegate {
                 this.helpDialog.show();
                 return;
             }
-            case UICommand.ShowKeyboardShortcutOverlay: {
-                this.shortcutsDialog.show();
+            case UICommand.ToggleFullscreen: {
+                this.toggleFullscreen();
                 return;
             }
             case UICommand.ShowScriptEditor: {
@@ -185,6 +214,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         }
         if (result != null && result.length > 0) {
             this._delegate.applyOperations(result);
+            this.syncHistoryControls();
         }
 
     }
@@ -206,6 +236,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                 const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop)['radius'];
                 operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor, !this.keyboardManager.shiftDown);
                 this._delegate.applyOperations([operation]);
+                this.syncHistoryControls();
                 break;
             case Tool.TineLine: {
                 const direction = currentCoord.sub(this.mouseDownCoord);
@@ -214,6 +245,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                     const spacing = this.toolsPane.toolParameters.forTool(Tool.TineLine)['spacing'];
                     operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
+                    this.syncHistoryControls();
                 }
                 break;
             }
@@ -224,6 +256,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                     const spacing = this.toolsPane.toolParameters.forTool(Tool.WavyLine)['spacing'];
                     operation = new WavyLineTine(this.mouseDownCoord, direction, numTines, spacing);
                     this._delegate.applyOperations([operation]);
+                    this.syncHistoryControls();
                 }
                 break;
             }
@@ -234,6 +267,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                 if (radius > 0.03) {
                     operation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
                     this._delegate.applyOperations([operation]);
+                    this.syncHistoryControls();
                 }
                 break;
             }
@@ -242,6 +276,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                 if (radius > 0.03) {
                     operation = new Vortex(this.mouseDownCoord, radius);
                     this._delegate.applyOperations([operation]);
+                    this.syncHistoryControls();
                 }
                 break;
             }
@@ -277,6 +312,7 @@ export default class MarblingUI implements MarblingUIDelegate {
                         const newRadius = Math.random() * 6 + dropRadius - 3;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);
+                        this.syncHistoryControls();
                     }
                 }
         }
@@ -298,6 +334,25 @@ export default class MarblingUI implements MarblingUIDelegate {
             } else {
                 this.toolsPane.toolParameters.decreaseSecondary(this.toolsPane.currentTool);
             }
+        }
+    }
+
+    syncHistoryControls() {
+        if (this._delegate == null) {
+            return;
+        }
+        this.controlsPane.setHistoryState(this._delegate.canUndo(), this._delegate.canRedo());
+    }
+
+    private toggleFullscreen() {
+        try {
+            if (document.fullscreenElement == null) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        } catch (e) {
+            alert(e);
         }
     }
 

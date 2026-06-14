@@ -67,6 +67,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     displayCanvas: HTMLCanvasElement;
     drops: Drop[] = [];
     baseColor: Color = new Color(220, 210, 210);
+    private readonly defaultBaseColor: Color = new Color(220, 210, 210);
     private dirty: boolean = true;
     private history: Operation[] = [];
 
@@ -110,6 +111,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
 
     reset() {
         this.drops = [];
+        this.baseColor = this.defaultBaseColor;
         this.history = [];
         this.dirty = true;
     }
@@ -173,4 +175,3 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     }
 
 }
-
