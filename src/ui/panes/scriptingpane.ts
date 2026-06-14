@@ -1,6 +1,6 @@
 ///<reference path="../../.d.ts"/>
 import {tutorialProgram} from "../../scripting/example_scripts.js";
-import UINotification from "./notification.js";
+import {showNotification} from "../components/notification.js";
 import {basicSetup, EditorView} from "codemirror";
 import {Compartment, EditorState} from "@codemirror/state";
 import {javascript} from "@codemirror/lang-javascript";
@@ -80,7 +80,6 @@ export default class ScriptingPane {
         const base = window.location;
         const baseUrl = base.protocol + "//" + base.host + "/" + base.pathname.split('/')[1];
 
-        const notification = new UINotification(baseUrl + "?p=" + program, null);
-        notification.show();
+        showNotification(baseUrl + "?p=" + program);
     }
 }

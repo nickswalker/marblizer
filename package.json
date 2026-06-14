@@ -19,6 +19,7 @@
     "@codemirror/state": "^6.5.1",
     "@codemirror/view": "^6.36.2",
     "cm6-theme-solarized-dark": "^0.2.0",
-    "codemirror": "^6.0.1"
+    "codemirror": "^6.0.1",
+    "lit": "^3.3.3"
   }
 }
