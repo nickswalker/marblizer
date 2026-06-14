@@ -1,5 +1,6 @@
 import {MarblingRendererDelegate} from "../ui.js";
 import ToolParameters, {Tool} from "../tools.js";
+import {toolKeys} from "../keyboard.js";
 
 export default class ToolsPane {
     container: HTMLElement;
@@ -31,10 +32,33 @@ export default class ToolsPane {
         this._currentTool = Tool.Drop;
         this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
         for (const key in this.toolToButtonMapping) {
-            this.toolToButtonMapping[key].onclick = this.toolClicked.bind(this);
+            const button = this.toolToButtonMapping[key];
+            button.onclick = this.toolClicked.bind(this);
+            this.annotateTooltip(button, toolKeys[key]);
         }
         document.addEventListener("keydown", this.shiftChange.bind(this));
         document.addEventListener("keyup", this.shiftChange.bind(this));
+    }
+
+    // Append the activating key to a tool button's tooltip, e.g. "Ink drop (D)".
+    private annotateTooltip(button: HTMLElement, key: string | undefined) {
+        if (key == null) {
+            return;
+        }
+        const label = button.title;
+        button.title = `${label} (${key.toUpperCase()})`;
+    }
+
+    // Select a tool and update which button is highlighted. Shared by mouse
+    // clicks and keyboard shortcuts so the two stay in sync.
+    selectTool(tool: Tool) {
+        for (const key in this.toolToButtonMapping) {
+            const newClasses = this.toolToButtonMapping[key].className.replace(/(\s|^)active(\s|$)/, ' ');
+            this.toolToButtonMapping[key].className = newClasses;
+        }
+        this._currentTool = tool;
+        this.toolToButtonMapping[tool.valueOf()].className += " active";
+        this.fireEvent();
     }
 
     private _currentTool: Tool;
@@ -53,19 +77,13 @@ export default class ToolsPane {
     }
 
     private toolClicked(event: MouseEvent) {
-        for (let key in this.toolToButtonMapping) {
-            let newClasses = this.toolToButtonMapping[key].className.replace(/(\s|^)active(\s|$)/, ' ');
-            this.toolToButtonMapping[key].className = newClasses;
-        }
         const target = event.currentTarget;
         for (let key in this.toolToButtonMapping) {
             if (this.toolToButtonMapping[key] == target) {
-                this._currentTool = <Tool>parseInt(key);
+                this.selectTool(<Tool>parseInt(key));
+                return;
             }
         }
-
-        this.toolToButtonMapping[this._currentTool.valueOf()].className += " active";
-        this.fireEvent();
     }
 
     private fireEvent() {

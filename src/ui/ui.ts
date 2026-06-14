@@ -4,7 +4,6 @@ import ToolsPane from "./panes/toolspane.js";
 import ColorPane from "./panes/colorpane.js";
 import ScriptingPane from "./panes/scriptingpane.js";
 import Vec2 from "../models/vector.js";
-import Modal from "./panes/modal.js";
 import MarblingKeyboardUI, {KeyboardShortcut} from "./keyboard.js";
 import CursorOverlay from "./cursor/cursor_overlay.js";
 import VectorFieldOverlay from "./vector_field_overlay.js";
@@ -14,7 +13,8 @@ import Vortex from "../operations/vortex.js";
 import CircularLineTine from "../operations/circularlinetine.js";
 import WavyLineTine from "../operations/wavylinetine.js";
 import LineTine from "../operations/linetine.js";
-import KeyboardShortcutOverlay from "./help_overlay.js";
+import HelpDialog from "./components/help-dialog.js";
+import ShortcutsDialog from "./components/shortcuts-dialog.js";
 import UserProgram from "../scripting/user_program.js";
 import MarblingRenderer from "../renderer/curve_renderer.js";
 
@@ -35,7 +35,8 @@ export default class MarblingUI implements MarblingUIDelegate {
     private lastMouseCoord: Vec2;
     private mouseDownCoord: Vec2;
     private mouseInterval: number;
-    private keyboardShortcutOverlay: Modal;
+    private helpDialog: HelpDialog;
+    private shortcutsDialog: ShortcutsDialog;
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
@@ -46,7 +47,12 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.scriptingPane = new ScriptingPane(textContainer);
         this.controlsPane = new ControlsPane(optionsContainer);
         this.controlsPane.uiDelegate = this;
-        this.keyboardShortcutOverlay = new KeyboardShortcutOverlay();
+        this.helpDialog = new HelpDialog();
+        this.shortcutsDialog = new ShortcutsDialog();
+        document.body.appendChild(this.helpDialog);
+        document.body.appendChild(this.shortcutsDialog);
+        // The help overlay links out to the full keyboard reference.
+        this.helpDialog.addEventListener("open-shortcuts", () => this.shortcutsDialog.show());
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
         container.addEventListener("mousedown", this.mouseDown.bind(this));
@@ -105,15 +111,30 @@ export default class MarblingUI implements MarblingUIDelegate {
             case KeyboardShortcut.F:
                 this.vectorFieldOverlay.toggleVisibility();
                 return;
-            case KeyboardShortcut.Q:
+            case KeyboardShortcut.BracketLeft:
                 this.vectorFieldOverlay.decreaseResolution();
                 return;
-            case KeyboardShortcut.W:
+            case KeyboardShortcut.BracketRight:
                 this.vectorFieldOverlay.increaseResolution();
+                return;
+            case KeyboardShortcut.D:
+                this.toolsPane.selectTool(Tool.Drop);
+                return;
+            case KeyboardShortcut.L:
+                this.toolsPane.selectTool(Tool.TineLine);
+                return;
+            case KeyboardShortcut.C:
+                this.toolsPane.selectTool(Tool.CircularTine);
+                return;
+            case KeyboardShortcut.W:
+                this.toolsPane.selectTool(Tool.WavyLine);
+                return;
+            case KeyboardShortcut.V:
+                this.toolsPane.selectTool(Tool.Vortex);
                 return;
             case KeyboardShortcut.QuestionMark:
                 if (this.keyboardManager.shiftDown) {
-                    this.keyboardShortcutOverlay.show();
+                    this.shortcutsDialog.show();
                 }
                 return;
 
@@ -137,10 +158,11 @@ export default class MarblingUI implements MarblingUIDelegate {
                 return;
             }
             case UICommand.ShowHelp: {
+                this.helpDialog.show();
                 return;
             }
             case UICommand.ShowKeyboardShortcutOverlay: {
-                this.keyboardShortcutOverlay.show();
+                this.shortcutsDialog.show();
                 return;
             }
             case UICommand.ShowScriptEditor: {

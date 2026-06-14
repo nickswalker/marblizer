@@ -1,4 +1,5 @@
 import set = Reflect.set;
+import {Tool} from "./tools.js";
 
 export enum KeyboardShortcut {
     Plus = 0,
@@ -17,7 +18,9 @@ export enum KeyboardShortcut {
     Up = 13,
     Right = 14,
     Down = 15,
-    Left = 16
+    Left = 16,
+    BracketLeft = 17,
+    BracketRight = 18
 }
 
 export const keyMapping = {
@@ -28,16 +31,28 @@ export const keyMapping = {
     "d": KeyboardShortcut.D,
     "l": KeyboardShortcut.L,
     "c": KeyboardShortcut.C,
-    "q": KeyboardShortcut.Q,
     "w": KeyboardShortcut.W,
     "v": KeyboardShortcut.V,
     "f": KeyboardShortcut.F,
     "b": KeyboardShortcut.B,
     "?": KeyboardShortcut.QuestionMark,
+    "[": KeyboardShortcut.BracketLeft,
+    "]": KeyboardShortcut.BracketRight,
     "ArrowRight": KeyboardShortcut.Right,
     "ArrowLeft": KeyboardShortcut.Left,
     "ArrowDown": KeyboardShortcut.Down,
     "ArrowUp": KeyboardShortcut.Up,
+};
+
+// Single source of truth for the key that activates each tool. Used both to
+// wire up the keyboard handler and to label the tool buttons' tooltips and the
+// help/shortcut overlays. Tools absent from this map have no keyboard shortcut.
+export const toolKeys: { [tool: number]: string } = {
+    [Tool.Drop]: "d",
+    [Tool.TineLine]: "l",
+    [Tool.CircularTine]: "c",
+    [Tool.WavyLine]: "w",
+    [Tool.Vortex]: "v",
 };
 
 export const keyDownOnly = new Set([
