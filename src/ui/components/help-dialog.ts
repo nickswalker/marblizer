@@ -217,13 +217,12 @@ export default class HelpDialog extends Overlay {
             <h2>Rendering backend</h2>
             <p>
                 Marblizer can draw the simulation two ways. The vector renderer
-                works in every browser and shows a live preview of a tool's
-                effect while you drag. The GPU (WebGPU) renderer, available on
-                supported browsers and devices, skips that live preview but
-                stays fast and sharp even with very long, complex compositions.
-                Both produce the same final image; if a GPU/Vec switch appears
-                in the options pane, use it to swap backends at any time
-                without losing your work.
+                works in every browser; the GPU (WebGPU) renderer, available on
+                supported browsers and devices, stays fast and sharp even with
+                very long, complex compositions. Both show a live preview of a
+                tool's effect while you drag and produce the same final image;
+                if a GPU/Vec switch appears in the options pane, use it to swap
+                backends at any time without losing your work.
             </p>
 
             <h2>Install as an app</h2>

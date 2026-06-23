@@ -5,21 +5,36 @@ import Vec2 from "../../models/vector.js";
 import {encodeOperations, FLOATS_PER_OP, resolveBaseColor} from "./op_buffer.js";
 import {MARBLING_WGSL} from "./marbling_shader.js";
 
-// WebGPU backend. It keeps no geometry of its own: the full operation history
-// is uploaded to a storage buffer and a single full-screen fragment shader
-// back-maps every pixel (see marbling_shader.ts). Output is sharp at any
-// resolution and needs no large intermediate buffers.
+// WebGPU backend. A single full-screen fragment shader back-maps every pixel
+// through the operation history newest-first (see marbling_shader.ts), so
+// output is sharp at any resolution with no large intermediate buffers.
+//
+// To keep that walk from growing unbounded as a composition gets longer, the
+// history is periodically baked into a "checkpoint" texture: every
+// CHECKPOINT_INTERVAL committed ops, the current image is rendered into a
+// texture and the storage buffer is reset to hold only ops since that bake.
+// The shader's fallback (a pixel that fell through the active op window
+// without resolving) samples the checkpoint texture instead of a flat colour.
+// This bounds per-frame shader cost to the window size, which is also what
+// makes a cheap live preview possible: previewOperations() renders the
+// active window plus one tentative op straight to the screen, without ever
+// touching the committed history.
 //
 // GPU-API objects are typed loosely (the project does not depend on
 // @webgpu/types); the buffer/encoding logic is fully typed.
 const BYTES_PER_OP = FLOATS_PER_OP * 4;
-const UNIFORM_BYTES = 32; // resolution(8) + count(4) + pad(4) + baseColor(16)
+const UNIFORM_BYTES = 48; // resolution(8) + count(4) + dpr(4) + baseColor(16) + checkpointInfo(16)
+const CHECKPOINT_INTERVAL = 64;
 
-// GPUBufferUsage flag values from the WebGPU spec (the enum is a runtime global
-// not present in the default TS lib, so we use the fixed bit values directly).
+// GPUBufferUsage/GPUTextureUsage flag values from the WebGPU spec (the enums
+// are runtime globals not present in the default TS lib, so we use the fixed
+// bit values directly). The two enums share some numeric values but are not
+// interchangeable; texture usages are kept separately named.
 const USAGE_COPY_DST = 0x0008;
 const USAGE_UNIFORM = 0x0040;
 const USAGE_STORAGE = 0x0080;
+const USAGE_TEXTURE_BINDING = 0x04;
+const USAGE_RENDER_ATTACHMENT = 0x10;
 
 export default class WebGPURenderer implements MarblingRenderer {
     readonly displayCanvas: HTMLCanvasElement;
@@ -35,6 +50,12 @@ export default class WebGPURenderer implements MarblingRenderer {
     private opBuffer: any = null;     // storage buffer, grown on demand
     private opCapacity = 0;            // capacity in ops
     private bindGroup: any = null;
+    private checkpointSampler: any;
+    private checkpointTexture: any;
+    private checkpointView: any;
+    // Number of leading ops from history already baked into checkpointTexture.
+    // The active window the shader walks is history.slice(checkpointOpIndex).
+    private checkpointOpIndex = 0;
     // Logical (CSS-pixel) size and device pixel ratio, used to scale
     // getColorsAt queries down to the device-pixel backing store.
     private cssWidth: number = 0;
@@ -77,7 +98,23 @@ export default class WebGPURenderer implements MarblingRenderer {
             size: UNIFORM_BYTES,
             usage: USAGE_UNIFORM | USAGE_COPY_DST,
         });
+
+        this.checkpointSampler = device.createSampler({magFilter: "linear", minFilter: "linear"});
+        // 1x1 placeholder; never sampled while checkpointOpIndex is 0 (the
+        // shader skips the checkpoint branch entirely), but a valid bound
+        // resource is still required by the API.
+        this.checkpointTexture = this.createCheckpointTexture(1, 1);
+        this.checkpointView = this.checkpointTexture.createView();
+
         this.ensureOpCapacity(1);
+    }
+
+    private createCheckpointTexture(width: number, height: number): any {
+        return this.device.createTexture({
+            size: [Math.max(1, width), Math.max(1, height)],
+            format: this.format,
+            usage: USAGE_TEXTURE_BINDING | USAGE_RENDER_ATTACHMENT,
+        });
     }
 
     setSize(width: number, height: number) {
@@ -96,6 +133,11 @@ export default class WebGPURenderer implements MarblingRenderer {
     reset() {
         this.history = [];
         this.baseColor = this.defaultBaseColor;
+        this.checkpointOpIndex = 0;
+        this.checkpointTexture.destroy();
+        this.checkpointTexture = this.createCheckpointTexture(1, 1);
+        this.checkpointView = this.checkpointTexture.createView();
+        this.rebuildBindGroup();
         this.render();
     }
 
@@ -150,19 +192,46 @@ export default class WebGPURenderer implements MarblingRenderer {
             size: needed * BYTES_PER_OP,
             usage: USAGE_STORAGE | USAGE_COPY_DST,
         });
+        this.rebuildBindGroup();
+    }
+
+    private rebuildBindGroup() {
         this.bindGroup = this.device.createBindGroup({
             layout: this.pipeline.getBindGroupLayout(0),
             entries: [
                 {binding: 0, resource: {buffer: this.uniformBuffer}},
                 {binding: 1, resource: {buffer: this.opBuffer}},
+                {binding: 2, resource: this.checkpointSampler},
+                {binding: 3, resource: this.checkpointView},
             ],
         });
     }
 
-    private render() {
-        const {data, count} = encodeOperations(this.history);
+    // Bakes everything up to (and including) uptoIndex into a fresh
+    // checkpoint texture, sampling the *existing* checkpoint (still bound at
+    // this point) as the fallback beneath the ops being baked. Cost is
+    // bounded by the window being baked (at most CHECKPOINT_INTERVAL ops),
+    // not by total history length.
+    private bakeCheckpoint(uptoIndex: number) {
+        const windowOps = this.history.slice(this.checkpointOpIndex, uptoIndex);
+        const hadCheckpoint = this.checkpointOpIndex > 0;
         const base = resolveBaseColor(this.history, this.baseColor);
 
+        const newTexture = this.createCheckpointTexture(this.displayCanvas.width, this.displayCanvas.height);
+        const newView = newTexture.createView();
+
+        this.writeOpsAndUniforms(windowOps, base, hadCheckpoint);
+        this.runRenderPass(newView, base);
+
+        this.checkpointTexture.destroy();
+        this.checkpointTexture = newTexture;
+        this.checkpointView = newView;
+        this.checkpointOpIndex = uptoIndex;
+        this.rebuildBindGroup();
+    }
+
+    private writeOpsAndUniforms(windowOps: Operation[], base: Color, hasCheckpoint: boolean) {
+        const {data, count} = encodeOperations(windowOps);
         this.ensureOpCapacity(count);
         if (count > 0) {
             this.device.queue.writeBuffer(this.opBuffer, 0, data);
@@ -179,12 +248,15 @@ export default class WebGPURenderer implements MarblingRenderer {
         f[5] = base.g / 255;
         f[6] = base.b / 255;
         f[7] = 1;
+        f[8] = hasCheckpoint ? 1 : 0;
         this.device.queue.writeBuffer(this.uniformBuffer, 0, uniforms);
+    }
 
+    private runRenderPass(colorAttachmentView: any, base: Color) {
         const encoder = this.device.createCommandEncoder();
         const pass = encoder.beginRenderPass({
             colorAttachments: [{
-                view: this.context.getCurrentTexture().createView(),
+                view: colorAttachmentView,
                 clearValue: {r: base.r / 255, g: base.g / 255, b: base.b / 255, a: 1},
                 loadOp: "clear",
                 storeOp: "store",
@@ -195,5 +267,33 @@ export default class WebGPURenderer implements MarblingRenderer {
         pass.draw(3);
         pass.end();
         this.device.queue.submit([encoder.finish()]);
+    }
+
+    private render() {
+        if (this.history.length - this.checkpointOpIndex >= CHECKPOINT_INTERVAL) {
+            this.bakeCheckpoint(this.history.length);
+        }
+        const windowOps = this.history.slice(this.checkpointOpIndex);
+        const base = resolveBaseColor(this.history, this.baseColor);
+        this.writeOpsAndUniforms(windowOps, base, this.checkpointOpIndex > 0);
+        this.runRenderPass(this.context.getCurrentTexture().createView(), base);
+    }
+
+    // Renders the committed active window plus the given tentative ops
+    // straight to the screen, without touching history or the checkpoint.
+    // Cost is bounded by the window size (<= CHECKPOINT_INTERVAL) regardless
+    // of how long the overall composition is, which is what makes calling
+    // this on every pointermove affordable.
+    previewOperations(ops: Operation[]) {
+        const windowOps = this.history.slice(this.checkpointOpIndex).concat(ops);
+        const base = resolveBaseColor(this.history, this.baseColor);
+        this.writeOpsAndUniforms(windowOps, base, this.checkpointOpIndex > 0);
+        this.runRenderPass(this.context.getCurrentTexture().createView(), base);
+    }
+
+    // Restores the display to the actual committed state, discarding any
+    // in-progress preview drawn by previewOperations().
+    clearPreview() {
+        this.render();
     }
 }

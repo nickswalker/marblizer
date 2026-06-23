@@ -23,10 +23,16 @@ struct Uniforms {
   count:      u32,
   dpr:        f32,
   baseColor:  vec4<f32>,
+  // x = 1 if a baked checkpoint texture should be sampled as the fallback
+  // beneath the active op window, else fall through to baseColor. yzw unused
+  // (kept as a vec4 so the struct's WGSL layout stays 16-byte aligned).
+  checkpoint: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> u: Uniforms;
 @group(0) @binding(1) var<storage, read> ops: array<Op>;
+@group(0) @binding(2) var checkpointSampler: sampler;
+@group(0) @binding(3) var checkpointTexture: texture_2d<f32>;
 
 const PI: f32 = 3.14159265358979;
 const AA_EDGE_DELTA: f32 = 1.0 / 512.0;
@@ -111,6 +117,13 @@ fn vs(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4<f32> {
   return vec4<f32>(corners[vi], 0.0, 1.0);
 }
 
+// Walks the active op window (everything since the last baked checkpoint)
+// newest-first, same as before. Falling through used to mean "this pixel is
+// the flat base colour"; now it means "this pixel's colour was already
+// resolved as of the checkpoint", so the back-mapped point is looked up in
+// that baked texture instead -- bounding the loop's length to the window
+// size regardless of total composition length. See checkpointing in
+// webgpu_renderer.ts.
 fn colorAt(samplePoint: vec2<f32>) -> vec4<f32> {
   var p = samplePoint;
   let n = i32(u.count);
@@ -139,6 +152,10 @@ fn colorAt(samplePoint: vec2<f32>) -> vec4<f32> {
     } else {                          // WavyLineTine
       p = p - wavyOffset(p, op);
     }
+  }
+  if (u.checkpoint.x > 0.5) {
+    let uv = (p * u.dpr) / u.resolution;
+    return textureSampleLevel(checkpointTexture, checkpointSampler, uv, 0.0);
   }
   return vec4<f32>(u.baseColor.rgb, 1.0);
 }

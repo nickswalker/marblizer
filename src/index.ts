@@ -44,6 +44,7 @@ addEventListener('DOMContentLoaded', async function () {
         ui.syncHistoryControls();
         ui.inkPreviewOverlay.resync(composition.getHistory());
     });
+    ui.inkPreviewOverlay.setGpuRenderer(gpu);
     ui.inkPreviewOverlay.setEnabled(active !== gpu);
 
     // Hide whichever backend is not active (both canvases overlay the
