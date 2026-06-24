@@ -59,8 +59,11 @@ export default class MarblingUI implements MarblingUIDelegate {
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
     readonly inkPreviewOverlay: InkPreviewOverlay;
+    private toolbarPanel: Element | null;
+    private cancelZoneActive: boolean = false;
 
     constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement, parametersContainer: HTMLElement) {
+        this.toolbarPanel = toolsContainer.closest(".marbling-pane");
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
         this.scriptingPane = new ScriptingPane(textContainer);
@@ -254,11 +257,45 @@ export default class MarblingUI implements MarblingUIDelegate {
         const x = e.offsetX;
         const y = e.offsetY;
         this.mouseDownCoord = new Vec2(x, y);
+        this.setCancelZoneActive(false);
+        if (this.toolsPane.currentTool === Tool.Spatter) {
+            this.mouseHeldHandler(true);
+        }
         this.mouseInterval = setInterval(this.mouseHeldHandler.bind(this), 50)
+    }
+
+    // Dragging into the toolbar panel cancels the in-progress operation
+    // instead of committing it where the pointer happens to end up. Plain
+    // DOM boundary events (pointerout/pointerover) can't drive this: the
+    // captured pointer (see setPointerCapture above) keeps delivering move
+    // events to the original target no matter where it travels, and
+    // capture suppresses boundary events for that pointer entirely. So we
+    // hit-test the pointer's viewport coordinates against the toolbar's
+    // bounding rect directly.
+    private isOverToolbar(clientX: number, clientY: number): boolean {
+        if (this.toolbarPanel == null) {
+            return false;
+        }
+        const rect = this.toolbarPanel.getBoundingClientRect();
+        return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+    }
+
+    private setCancelZoneActive(active: boolean) {
+        this.cancelZoneActive = active;
+        this.toolbarPanel?.classList.toggle("drag-cancel-target", active);
     }
 
     private mouseUp(e: PointerEvent) {
         if (this.mouseDownCoord == null) {
+            return;
+        }
+        const wasCancelled = this.cancelZoneActive;
+        this.setCancelZoneActive(false);
+        if (wasCancelled) {
+            this.lastMouseCoord = null;
+            this.mouseDownCoord = null;
+            clearInterval(this.mouseInterval);
+            this.mouseInterval = 0;
             return;
         }
         const x = e.offsetX;
@@ -328,24 +365,31 @@ export default class MarblingUI implements MarblingUIDelegate {
         const x = e.offsetX;
         const y = e.offsetY;
         this.lastMouseCoord = new Vec2(x, y);
-
+        if (this.mouseDownCoord != null) {
+            this.setCancelZoneActive(this.isOverToolbar(e.clientX, e.clientY));
+        }
     }
 
     private mouseOut(e: PointerEvent) {
         this.mouseDownCoord = null;
         this.lastMouseCoord = null;
+        this.setCancelZoneActive(false);
     }
 
-    private mouseHeldHandler() {
+    // force bypasses the per-tick coin flip, used to deposit a guaranteed
+    // first dot on mouseDown instead of waiting on the 50ms interval.
+    private mouseHeldHandler(force: boolean = false) {
         switch (this.toolsPane.currentTool) {
             case Tool.Spatter:
-                if (this.mouseDownCoord != null) {
+                if (this.mouseDownCoord != null && !this.cancelZoneActive) {
                     const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter)['dropRadius'];
                     const scatterRadius = this.toolsPane.toolParameters.forTool(Tool.Spatter)['scatterRadius'];
                     const currentColor = this.colorPane.currentColor;
-                    if (Math.random() < 0.5) {
+                    if (force || Math.random() < 0.5) {
                         const origin = this.lastMouseCoord ?? this.mouseDownCoord;
-                        const newOrigin = origin.add(new Vec2(Math.random() * 2 * scatterRadius - scatterRadius, Math.random() * 2 * scatterRadius - scatterRadius));
+                        const angle = Math.random() * 2 * Math.PI;
+                        const radius = Math.sqrt(Math.random()) * scatterRadius;
+                        const newOrigin = origin.add(new Vec2(Math.cos(angle) * radius, Math.sin(angle) * radius));
                         const newRadius = Math.random() * 6 + dropRadius - 3;
                         const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
                         this._delegate.applyOperations([operation]);

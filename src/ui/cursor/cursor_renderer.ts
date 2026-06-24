@@ -5,6 +5,7 @@ export default interface CursorRenderer {
     radius?: number;
     spacing?: number;
     numTines?: number;
+    dropRadius?: number;
 
     drawAtRest(ctx: CanvasRenderingContext2D, position: Vec2): [Vec2, Vec2]
 
