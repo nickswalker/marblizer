@@ -40,12 +40,21 @@ addEventListener('DOMContentLoaded', async function () {
 
     let active: Renderer = gpu != null ? gpu : vector;
     const composition = new CompositionController(active);
-    composition.onStateChanged(() => ui.syncHistoryControls());
+    composition.onStateChanged(() => {
+        ui.syncHistoryControls();
+        ui.inkPreviewOverlay.resync(composition.getHistory());
+    });
+    ui.inkPreviewOverlay.setEnabled(active !== gpu);
 
-    // Hide whichever backend is not active (both canvases overlay the workspace).
-    vector.displayCanvas.style.display = active === vector ? "" : "none";
+    // Hide whichever backend is not active (both canvases overlay the
+    // workspace). Uses visibility rather than display: the vector canvas's
+    // control is transferred to a Worker via transferControlToOffscreen(),
+    // and some browsers stop compositing a display:none canvas's
+    // off-thread-rendered frames even after it's shown again; visibility
+    // keeps the canvas's rendering layer alive while still hiding it.
+    vector.displayCanvas.style.visibility = active === vector ? "visible" : "hidden";
     if (gpu != null) {
-        gpu.displayCanvas.style.display = active === gpu ? "" : "none";
+        gpu.displayCanvas.style.visibility = active === gpu ? "visible" : "hidden";
     }
 
     ui.delegate = composition;
@@ -81,10 +90,11 @@ addEventListener('DOMContentLoaded', async function () {
         if (target === active) {
             return;
         }
-        active.displayCanvas.style.display = "none";
-        target.displayCanvas.style.display = "";
+        active.displayCanvas.style.visibility = "hidden";
+        target.displayCanvas.style.visibility = "visible";
         active = target;
         composition.setRenderer(active);
+        ui.inkPreviewOverlay.setEnabled(active !== gpu);
         updateBackendButton();
     }
 

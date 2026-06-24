@@ -35,6 +35,11 @@ export default class WebGPURenderer implements MarblingRenderer {
     private opBuffer: any = null;     // storage buffer, grown on demand
     private opCapacity = 0;            // capacity in ops
     private bindGroup: any = null;
+    // Logical (CSS-pixel) size and device pixel ratio, used to scale
+    // getColorsAt queries down to the device-pixel backing store.
+    private cssWidth: number = 0;
+    private cssHeight: number = 0;
+    private dpr: number = 1;
 
     // Constructs a renderer, or throws if WebGPU is unavailable / fails to init.
     static async create(container: HTMLElement): Promise<WebGPURenderer> {
@@ -76,10 +81,15 @@ export default class WebGPURenderer implements MarblingRenderer {
     }
 
     setSize(width: number, height: number) {
-        // Match backing store to logical pixels so fragment coords line up with
-        // the pixel-space coordinates the operations are authored in.
-        this.displayCanvas.width = width;
-        this.displayCanvas.height = height;
+        // Backing store is sized in physical pixels for sharpness on
+        // high-DPI displays; the shader maps fragment coords back down by
+        // dpr (see marbling_shader.ts) so they line up with the CSS-pixel
+        // coordinates the operations are authored in.
+        this.cssWidth = width;
+        this.cssHeight = height;
+        this.dpr = window.devicePixelRatio || 1;
+        this.displayCanvas.width = Math.round(width * this.dpr);
+        this.displayCanvas.height = Math.round(height * this.dpr);
         this.render();
     }
 
@@ -119,10 +129,10 @@ export default class WebGPURenderer implements MarblingRenderer {
         const ctx = offscreen.getContext("2d")!;
         ctx.drawImage(bitmap, 0, 0);
         return points.map((point) => {
-            if (point.x < 0 || point.y < 0 || point.x >= offscreen.width || point.y >= offscreen.height) {
+            if (point.x < 0 || point.y < 0 || point.x >= this.cssWidth || point.y >= this.cssHeight) {
                 return null;
             }
-            const [r, g, b, a] = ctx.getImageData(point.x, point.y, 1, 1).data;
+            const [r, g, b, a] = ctx.getImageData(Math.round(point.x * this.dpr), Math.round(point.y * this.dpr), 1, 1).data;
             return new Color(r, g, b, a / 255);
         });
     }
@@ -164,6 +174,7 @@ export default class WebGPURenderer implements MarblingRenderer {
         f[0] = this.displayCanvas.width;
         f[1] = this.displayCanvas.height;
         u[2] = count;
+        f[3] = this.dpr;
         f[4] = base.r / 255;
         f[5] = base.g / 255;
         f[6] = base.b / 255;

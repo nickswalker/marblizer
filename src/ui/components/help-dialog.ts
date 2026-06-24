@@ -8,15 +8,16 @@ interface ToolHelp {
     tool: Tool;
     name: string;
     description: string;
+    icon: string;
 }
 
 const tools: ToolHelp[] = [
-    {tool: Tool.Drop, name: "Ink drop", description: "Click to drop a disc of ink. It pushes the existing ink outward, the way a real drop spreads on water. Hold Shift to lay ink down without displacing what's underneath."},
-    {tool: Tool.Spatter, name: "Spatter", description: "Press and drag to fling a scatter of small droplets across the surface."},
-    {tool: Tool.TineLine, name: "Line tine", description: "Drag to rake a straight comb through the ink, dragging the pattern along with it."},
-    {tool: Tool.WavyLine, name: "Wavy tine", description: "Like the line tine, but the rake follows a wave for a rippled comb."},
-    {tool: Tool.CircularTine, name: "Circular tine", description: "Drag out from a center point to rake the ink around a circle. Drag above center to spin one way, below for the other — arrows on the cursor show which."},
-    {tool: Tool.Vortex, name: "Vortex", description: "Drag to swirl the ink around a point into a spiral. Drag above center to spin one way, below for the other — arrows on the cursor show which."},
+    {tool: Tool.Drop, name: "Ink drop", icon: "media/images/drop.svg", description: "Click to drop a disc of ink. It pushes the existing ink outward, the way a real drop spreads on water. Hold Shift to lay ink down without displacing what's underneath."},
+    {tool: Tool.Spatter, name: "Spatter", icon: "media/images/spatter.svg", description: "Press and drag to fling a scatter of small droplets across the surface."},
+    {tool: Tool.TineLine, name: "Line tine", icon: "media/images/tine-line.svg", description: "Drag to rake a straight comb through the ink, dragging the pattern along with it."},
+    {tool: Tool.WavyLine, name: "Wavy tine", icon: "media/images/wavy-tine.svg", description: "Like the line tine, but the rake follows a wave for a rippled comb."},
+    {tool: Tool.CircularTine, name: "Circular tine", icon: "media/images/circular-tine.svg", description: "Drag out from a center point to rake the ink around a circle. Drag above center to spin one way, below for the other — arrows on the cursor show which."},
+    {tool: Tool.Vortex, name: "Vortex", icon: "media/images/vortex.svg", description: "Drag to swirl the ink around a point into a spiral. Drag above center to spin one way, below for the other — arrows on the cursor show which."},
 ];
 
 function keyFor(tool: Tool): string | undefined {
@@ -51,7 +52,39 @@ export default class HelpDialog extends Overlay {
 
             .tool .name {
                 flex: 0 0 7.5em;
+                display: flex;
+                align-items: center;
+                gap: var(--space-sm, 8px);
                 font-weight: 600;
+            }
+
+            .tool .name img {
+                width: 1.3em;
+                height: 1.3em;
+                flex: none;
+            }
+
+            /* Narrow screens: the name/description columns get too cramped
+               side by side, so each entry collapses into a single paragraph
+               — bold name (with icon) leading straight into the description
+               text, shortcut key hidden since it doesn't apply on touch. */
+            @media (max-width: 600px) {
+                .tool {
+                    display: block;
+                }
+
+                .tool .name {
+                    display: inline-flex;
+                    margin-right: var(--space-sm, 8px);
+                }
+
+                .tool .name kbd {
+                    display: none;
+                }
+
+                .tool .desc {
+                    display: inline;
+                }
             }
 
             kbd {
@@ -140,6 +173,7 @@ export default class HelpDialog extends Overlay {
                     return html`
                         <li class="tool">
                             <div class="name">
+                                <img src="${tool.icon}" alt="" aria-hidden="true">
                                 ${tool.name}${key ? html`<kbd>${key.toUpperCase()}</kbd>` : ""}
                             </div>
                             <div class="desc">${tool.description}</div>
@@ -172,6 +206,18 @@ export default class HelpDialog extends Overlay {
             <p>
                 Save a PNG for a raster image, or save an SVG for editable vector
                 paths generated from the current marbling operations.
+            </p>
+
+            <h2>Rendering backend</h2>
+            <p>
+                Marblizer can draw the simulation two ways. The vector renderer
+                works in every browser and shows a live preview of a tool's
+                effect while you drag. The GPU (WebGPU) renderer, available on
+                supported browsers and devices, skips that live preview but
+                stays fast and sharp even with very long, complex compositions.
+                Both produce the same final image; if a GPU/Vec switch appears
+                in the options pane, use it to swap backends at any time
+                without losing your work.
             </p>
 
             <h2>Install as an app</h2>

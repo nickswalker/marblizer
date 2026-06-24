@@ -69,8 +69,10 @@ export default class CursorOverlay {
     }
 
     setSize(width: number, height: number) {
-        this.overlayCanvas.width = width;
-        this.overlayCanvas.height = height;
+        const dpr = window.devicePixelRatio || 1;
+        this.overlayCanvas.width = Math.round(width * dpr);
+        this.overlayCanvas.height = Math.round(height * dpr);
+        this.overlayContext.setTransform(dpr, 0, 0, dpr, 0, 0);
         this.scheduleDraw();
     }
 

@@ -6,12 +6,28 @@ import {MainToWorkerMessage, WorkerToMainMessage} from "./curve_worker_messages.
 const field = new CurveField();
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
+// Logical (CSS-pixel) size; the backing OffscreenCanvas is sized to this
+// times devicePixelRatio, with the context scaled to match, so drawing stays
+// in the same coordinate space the operations were authored in.
+let cssWidth = 0;
+let cssHeight = 0;
 
 function render() {
     if (ctx == null || canvas == null) {
         return;
     }
-    field.renderTo(ctx as unknown as CanvasRenderingContext2D, canvas.width, canvas.height);
+    field.renderTo(ctx as unknown as CanvasRenderingContext2D, cssWidth, cssHeight);
+}
+
+function resize(width: number, height: number, dpr: number) {
+    if (canvas == null || ctx == null) {
+        return;
+    }
+    cssWidth = width;
+    cssHeight = height;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 function post(message: WorkerToMainMessage, transfer: Transferable[] = []) {
@@ -23,17 +39,13 @@ self.onmessage = (event: MessageEvent<MainToWorkerMessage>) => {
     switch (message.type) {
         case "init":
             canvas = message.canvas;
-            canvas.width = message.width;
-            canvas.height = message.height;
             ctx = canvas.getContext("2d");
+            resize(message.width, message.height, message.dpr);
             render();
             break;
         case "setSize":
-            if (canvas != null) {
-                canvas.width = message.width;
-                canvas.height = message.height;
-                render();
-            }
+            resize(message.width, message.height, message.dpr);
+            render();
             break;
         case "applyOperations":
             field.applyOperations(decodeOperations(message.data, message.count));

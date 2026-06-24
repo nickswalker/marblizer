@@ -1,14 +1,8 @@
 import {Tool, ToolParameterMap} from "./tools.js";
 import Vec2 from "../models/vector.js";
 import Operation from "../operations/color_operations.js";
-import InkDropOperation from "../operations/inkdrop.js";
-import LineTine from "../operations/linetine.js";
-import WavyLineTine from "../operations/wavylinetine.js";
-import CircularLineTine from "../operations/circularlinetine.js";
-import Vortex from "../operations/vortex.js";
-import {counterclockwiseForDrag} from "../operations/rotation_direction.js";
 import VectorField from "../models/vectorfield.js";
-import {black} from "../models/color.js";
+import {buildPreviewOperation} from "./preview_operation.js";
 
 export default class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
@@ -89,72 +83,7 @@ export default class VectorFieldOverlay {
     }
 
     private generatePreviewOperation() {
-        switch (this.currentTool) {
-            case Tool.Drop: {
-                if (this.lastMouseCoord != null) {
-                    const radius = this.currentToolParameter['radius'];
-                    this.previewOperation = new InkDropOperation(this.lastMouseCoord, radius, black);
-                } else {
-                    this.previewOperation = null;
-                }
-                break;
-            }
-            case Tool.TineLine: {
-                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const spacing = this.currentToolParameter['spacing'];
-                    const numTines = this.currentToolParameter['numTines'];
-                    const dir = this.lastMouseCoord.sub(this.mouseDownCoord);
-                    if (dir.length() > 0.03) {
-                        this.previewOperation = new LineTine(this.mouseDownCoord, dir, numTines, spacing);
-                    }
-                } else {
-                    this.previewOperation = null;
-                }
-                break;
-            }
-            case Tool.WavyLine: {
-                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const spacing = this.currentToolParameter['spacing'];
-                    const numTines = this.currentToolParameter['numTines'];
-                    const dir = this.lastMouseCoord.sub(this.mouseDownCoord);
-                    if (dir.length() > 0.03) {
-                        this.previewOperation = new WavyLineTine(this.mouseDownCoord, dir, numTines, spacing);
-                    }
-                    break;
-                } else {
-                    this.previewOperation = null;
-                }
-                break;
-            }
-            case Tool.CircularTine: {
-                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const spacing = this.currentToolParameter['spacing'];
-                    const numTines = this.currentToolParameter['numTines'];
-                    const direction = this.lastMouseCoord.sub(this.mouseDownCoord);
-                    const radius = direction.length();
-                    if (radius > 0.03) {
-                        this.previewOperation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing, counterclockwiseForDrag(direction));
-                    }
-                    break;
-                } else {
-                    this.previewOperation = null;
-                }
-                break;
-            }
-            case Tool.Vortex: {
-                if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const direction = this.lastMouseCoord.sub(this.mouseDownCoord);
-                    const radius = direction.length();
-                    if (radius > 0.03) {
-                        this.previewOperation = new Vortex(this.mouseDownCoord, radius, counterclockwiseForDrag(direction));
-                    }
-                    break;
-                } else {
-                    this.previewOperation = null;
-                }
-                break;
-            }
-        }
+        this.previewOperation = buildPreviewOperation(this.currentTool, this.currentToolParameter, this.mouseDownCoord, this.lastMouseCoord);
     }
 }
 
@@ -166,6 +95,8 @@ class VectorFieldRenderer {
     private arrowWidth = 20;
     private arrowHeight = 12;
     private arrow = this.generateArrowPath();
+    private cssWidth: number = 0;
+    private cssHeight: number = 0;
 
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
@@ -207,8 +138,12 @@ class VectorFieldRenderer {
     }
 
     setSize(width: number, height: number) {
-        this.overlayCanvas.width = width;
-        this.overlayCanvas.height = height;
+        const dpr = window.devicePixelRatio || 1;
+        this.cssWidth = width;
+        this.cssHeight = height;
+        this.overlayCanvas.width = Math.round(width * dpr);
+        this.overlayCanvas.height = Math.round(height * dpr);
+        this.overlayContext.setTransform(dpr, 0, 0, dpr, 0, 0);
         this.scheduleDraw();
     }
 
@@ -242,7 +177,7 @@ class VectorFieldRenderer {
         const ctx = this.overlayContext;
         const width = this.arrowWidth;
         const height = this.arrowHeight;
-        ctx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
+        ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
         if (this._vectorField == null) {
             return;
         }
@@ -253,8 +188,8 @@ class VectorFieldRenderer {
 
         ctx.fillStyle = "rgba(0,0,0, 0.8)";
         ctx.strokeStyle = "rgba(255,255,255,0.6)";
-        for (let x = 0; x < this.overlayCanvas.width; x += this._spacing) {
-            for (let y = 0; y < this.overlayCanvas.height; y += this._spacing) {
+        for (let x = 0; x < this.cssWidth; x += this._spacing) {
+            for (let y = 0; y < this.cssHeight; y += this._spacing) {
                 const dir = this._vectorField.atPoint(new Vec2(x, y));
                 const angle = dir.angle();
                 const size = dir.length() / this.arrowHeight;

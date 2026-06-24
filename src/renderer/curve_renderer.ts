@@ -31,6 +31,11 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     private readonly field: CurveField = new CurveField();
     private dirty: boolean = true;
     private history: Operation[] = [];
+    // Logical (CSS-pixel) size, as passed to setSize. The backing stores are
+    // sized to this times devicePixelRatio so rendering stays sharp on
+    // high-DPI displays; operations themselves stay authored in CSS pixels.
+    private cssWidth: number = 0;
+    private cssHeight: number = 0;
 
     get baseColor(): Color {
         return this.field.baseColor;
@@ -54,16 +59,21 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     }
 
     setSize(width: number, height: number) {
-        this.displayCanvas.width = width;
-        this.displayCanvas.height = height;
-        this.renderCanvas.width = width;
-        this.renderCanvas.height = height;
+        const dpr = window.devicePixelRatio || 1;
+        this.cssWidth = width;
+        this.cssHeight = height;
+        this.displayCanvas.width = Math.round(width * dpr);
+        this.displayCanvas.height = Math.round(height * dpr);
+        this.renderCanvas.width = Math.round(width * dpr);
+        this.renderCanvas.height = Math.round(height * dpr);
         this.dirty = true;
     }
 
     render() {
         const ctx = this.renderCanvas.getContext("2d")!;
-        this.field.renderTo(ctx, this.renderCanvas.width, this.renderCanvas.height);
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.field.renderTo(ctx, this.cssWidth, this.cssHeight);
     }
 
     draw() {
@@ -92,11 +102,12 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
             this.dirty = false;
         }
         const ctx = this.renderCanvas.getContext("2d")!;
+        const dpr = window.devicePixelRatio || 1;
         const colors = points.map((point) => {
-            if (point.x < 0 || point.y < 0 || point.x >= this.renderCanvas.width || point.y >= this.renderCanvas.height) {
+            if (point.x < 0 || point.y < 0 || point.x >= this.cssWidth || point.y >= this.cssHeight) {
                 return null;
             }
-            const [r, g, b, a] = ctx.getImageData(point.x, point.y, 1, 1).data;
+            const [r, g, b, a] = ctx.getImageData(Math.round(point.x * dpr), Math.round(point.y * dpr), 1, 1).data;
             return new Color(r, g, b, a / 255);
         });
         return Promise.resolve(colors);
