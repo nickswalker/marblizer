@@ -1,5 +1,7 @@
 import MarblingRenderer from "../curve_renderer.js";
 import Operation from "../../operations/color_operations.js";
+import Color from "../../models/color.js";
+import Vec2 from "../../models/vector.js";
 import {encodeOperations} from "../gpu/op_buffer.js";
 import {MainToWorkerMessage, WorkerToMainMessage} from "./curve_worker_messages.js";
 
@@ -23,6 +25,7 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
     private history: Operation[] = [];
     private nextRequestId = 0;
     private readonly pendingSaves = new Map<number, (blob: Blob) => void>();
+    private readonly pendingColorQueries = new Map<number, (colors: (Color | null)[]) => void>();
 
     constructor(container: HTMLElement, workerUrl: string) {
         this.displayCanvas = document.createElement("canvas");
@@ -48,6 +51,10 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
         if (message.type === "saved") {
             this.pendingSaves.get(message.requestId)?.(message.blob);
             this.pendingSaves.delete(message.requestId);
+        } else if (message.type === "colorsAt") {
+            const colors = message.colors.map((c) => c == null ? null : new Color(c.r, c.g, c.b, c.a ?? 1));
+            this.pendingColorQueries.get(message.requestId)?.(colors);
+            this.pendingColorQueries.delete(message.requestId);
         }
     }
 
@@ -76,6 +83,13 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
         const baseColor = baseColorOp?.newBaseColor ?? null;
         const {data, count} = encodeOperations(operations);
         this.post({type: "applyOperations", data, count, baseColor}, [data.buffer]);
+    }
+
+    getColorsAt(points: Vec2[]): Promise<(Color | null)[]> {
+        const requestId = this.nextRequestId++;
+        const done = new Promise<(Color | null)[]>((resolve) => this.pendingColorQueries.set(requestId, resolve));
+        this.post({type: "getColorsAt", requestId, points: points.map((p) => ({x: p.x, y: p.y}))});
+        return done;
     }
 
     save() {

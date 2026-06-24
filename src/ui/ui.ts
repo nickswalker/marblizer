@@ -219,7 +219,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         }
     }
 
-    private didEnterInput(input: string | null) {
+    private async didEnterInput(input: string | null) {
         this.keyboardManager.acceptingNewKeys = true;
         if (input == null) {
             return;
@@ -227,7 +227,12 @@ export default class MarblingUI implements MarblingUIDelegate {
         let result: Operation[] | null = null;
         try {
             const userProgram = new UserProgram(input);
-            result = userProgram.execute(this._size);
+            result = await userProgram.execute(this._size, {
+                history: this._delegate.getHistory(),
+                foregroundColor: this.colorPane.currentColor,
+                backgroundColor: this.colorPane.backgroundColor,
+                getColorsAt: (points) => this._delegate.getColorsAt(points),
+            });
         } catch (e) {
             alert(e);
         }

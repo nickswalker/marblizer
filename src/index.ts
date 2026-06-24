@@ -99,7 +99,13 @@ addEventListener('DOMContentLoaded', async function () {
         const decompressed = LZString.decompressFromEncodedURIComponent(parameter);
         if (decompressed != null) {
             const program = new UserProgram(decompressed);
-            composition.applyOperations(program.execute(new Vec2(window.innerWidth, window.innerHeight)));
+            const result = await program.execute(new Vec2(window.innerWidth, window.innerHeight), {
+                history: composition.getHistory(),
+                foregroundColor: ui.colorPane.currentColor,
+                backgroundColor: ui.colorPane.backgroundColor,
+                getColorsAt: (points) => composition.getColorsAt(points),
+            });
+            composition.applyOperations(result);
         }
         const gc = (window as any).goatcounter;
         if (gc?.count) gc.count({ path: "marblizer.shared-script-load", event: true });

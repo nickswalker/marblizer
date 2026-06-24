@@ -1,6 +1,7 @@
 import MarblingRenderer from "../curve_renderer.js";
 import Operation from "../../operations/color_operations.js";
 import Color from "../../models/color.js";
+import Vec2 from "../../models/vector.js";
 import {encodeOperations, FLOATS_PER_OP, resolveBaseColor} from "./op_buffer.js";
 import {MARBLING_WGSL} from "./marbling_shader.js";
 
@@ -108,6 +109,22 @@ export default class WebGPURenderer implements MarblingRenderer {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    async getColorsAt(points: Vec2[]): Promise<(Color | null)[]> {
+        this.render();
+        const dataURL = this.displayCanvas.toDataURL("image/png");
+        const bitmap = await createImageBitmap(await (await fetch(dataURL)).blob());
+        const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const ctx = offscreen.getContext("2d")!;
+        ctx.drawImage(bitmap, 0, 0);
+        return points.map((point) => {
+            if (point.x < 0 || point.y < 0 || point.x >= offscreen.width || point.y >= offscreen.height) {
+                return null;
+            }
+            const [r, g, b, a] = ctx.getImageData(point.x, point.y, 1, 1).data;
+            return new Color(r, g, b, a / 255);
+        });
     }
 
     private ensureOpCapacity(ops: number) {
