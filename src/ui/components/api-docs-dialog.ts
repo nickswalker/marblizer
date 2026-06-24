@@ -1,5 +1,6 @@
 import {css, html, TemplateResult} from "lit";
 import Overlay from "./overlay.js";
+import {colorSets} from "../../models/color.js";
 
 interface ApiEntry {
     signature: string;
@@ -116,6 +117,39 @@ export default class ApiDocsDialog extends Overlay {
             .desc {
                 opacity: 0.9;
             }
+
+            .palette-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-xs, 4px);
+            }
+
+            .palette-row {
+                display: flex;
+                align-items: center;
+                gap: var(--space-sm, 8px);
+            }
+
+            .palette-index {
+                font-family: monospace;
+                font-size: 0.85em;
+                opacity: 0.7;
+                width: 6.5em;
+                flex: none;
+            }
+
+            .palette-swatches {
+                display: flex;
+                gap: 2px;
+            }
+
+            .swatch {
+                width: 18px;
+                height: 18px;
+                border-radius: 2px;
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                display: inline-block;
+            }
         `,
     ];
 
@@ -137,6 +171,23 @@ export default class ApiDocsDialog extends Overlay {
         `;
     }
 
+    private renderColorSets(): TemplateResult {
+        return html`
+            <div class="palette-list">
+                ${colorSets.map((palette, i) => html`
+                    <div class="palette-row">
+                        <span class="palette-index">colorSets[${i}]</span>
+                        <div class="palette-swatches">
+                            ${palette.map((c) => html`
+                                <span class="swatch" style="background-color: ${c.toRGBString()}"></span>
+                            `)}
+                        </div>
+                    </div>
+                `)}
+            </div>
+        `;
+    }
+
     protected content(): TemplateResult {
         return html`
             <p>
@@ -145,7 +196,10 @@ export default class ApiDocsDialog extends Overlay {
                 and context members are available to it.
             </p>
             ${this.renderSection(context)}
-            ${globals.map((section) => this.renderSection(section))}
+            ${globals.map((section) => html`
+                ${this.renderSection(section)}
+                ${section.title === "colorSets" ? this.renderColorSets() : ""}
+            `)}
         `;
     }
 }

@@ -64,6 +64,13 @@ export default class HelpDialog extends Overlay {
                 flex: none;
             }
 
+            h2 ion-icon {
+                width: 1em;
+                height: 1em;
+                vertical-align: -0.15em;
+                margin-right: var(--space-sm, 8px);
+            }
+
             /* Narrow screens: the name/description columns get too cramped
                side by side, so each entry collapses into a single paragraph
                — bold name (with icon) leading straight into the description
@@ -135,9 +142,6 @@ export default class HelpDialog extends Overlay {
             }
 
             .about {
-                margin-top: var(--space-lg, 24px);
-                padding-top: var(--space-md, 12px);
-                border-top: 1px solid rgba(255, 255, 255, 0.12);
                 font-size: 0.92em;
                 opacity: 0.82;
             }
@@ -184,9 +188,11 @@ export default class HelpDialog extends Overlay {
 
             <h2>Tuning a tool</h2>
             <p>
-                Scroll the mouse wheel to change the active tool's primary
-                parameter (such as drop size or comb spacing), and Shift + scroll
-                for its secondary parameter. The arrow keys do the same thing.
+                Picking a tool with adjustable parameters opens a popover with
+                +/- buttons for its primary and secondary values (such as drop
+                size or comb spacing). Scrolling the mouse wheel is a shortcut
+                for the primary parameter, and Shift + scroll for the
+                secondary; the arrow keys do the same thing.
             </p>
 
             <h2>Color</h2>
@@ -195,7 +201,7 @@ export default class HelpDialog extends Overlay {
                 background ink. Recently used colors collect just beneath them.
             </p>
 
-            <h2>Scripting</h2>
+            <h2><ion-icon name="code-slash-outline" aria-hidden="true"></ion-icon> Scripting</h2>
             <p>
                 Open the script editor to drive operations with a small
                 JavaScript API, then share a composition as a URL straight from
