@@ -158,7 +158,7 @@ class VectorFieldRenderer {
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
     private visible: boolean = false;
-    private dirty: boolean = true;
+    private frameRequested: boolean = false;
     private arrowWidth = 20;
     private arrowHeight = 12;
     private arrow = this.generateArrowPath();
@@ -168,8 +168,6 @@ class VectorFieldRenderer {
         this.overlayCanvas.className = "marbling-vector-field-overlay";
         this.overlayContext = this.overlayCanvas.getContext("2d")!;
         container.appendChild(this.overlayCanvas);
-        this.drawOverlay();
-
     }
 
     private _spacing: number = 40;
@@ -180,15 +178,14 @@ class VectorFieldRenderer {
 
     set spacing(value: number) {
         this._spacing = value;
-        this.dirty = true;
+        this.scheduleDraw();
     }
 
     private _vectorField: VectorField | null = null;
 
     set vectorField(value: VectorField | null) {
         this._vectorField = value;
-        this.dirty = true;
-        //  if the vectorfield is already rendering, it'll switch out automatically
+        this.scheduleDraw();
     }
 
     generateArrowPath() {
@@ -208,7 +205,7 @@ class VectorFieldRenderer {
     setSize(width: number, height: number) {
         this.overlayCanvas.width = width;
         this.overlayCanvas.height = height;
-        this.dirty = true;
+        this.scheduleDraw();
     }
 
     toggleVisibility() {
@@ -218,17 +215,23 @@ class VectorFieldRenderer {
         } else {
             this.visible = true;
             this.overlayCanvas.style.visibility = "visible";
-            this.drawOverlay();
+            this.scheduleDraw();
         }
+    }
+
+    private scheduleDraw() {
+        if (!this.visible || this.frameRequested) {
+            return;
+        }
+        this.frameRequested = true;
+        requestAnimationFrame(() => {
+            this.frameRequested = false;
+            this.drawOverlay();
+        });
     }
 
     private drawOverlay() {
         if (!this.visible) {
-            return;
-        }
-
-        if (!this.dirty) {
-            requestAnimationFrame(this.drawOverlay.bind(this));
             return;
         }
 
@@ -237,7 +240,6 @@ class VectorFieldRenderer {
         const height = this.arrowHeight;
         ctx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
         if (this._vectorField == null) {
-            requestAnimationFrame(this.drawOverlay.bind(this));
             return;
         }
 
@@ -266,8 +268,5 @@ class VectorFieldRenderer {
                 }
             }
         }
-        this.dirty = false;
-        requestAnimationFrame(this.drawOverlay.bind(this));
-
     }
 }

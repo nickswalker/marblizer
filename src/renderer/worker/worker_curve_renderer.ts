@@ -1,0 +1,96 @@
+import MarblingRenderer from "../curve_renderer.js";
+import Operation from "../../operations/color_operations.js";
+import {encodeOperations} from "../gpu/op_buffer.js";
+import {MainToWorkerMessage, WorkerToMainMessage} from "./curve_worker_messages.js";
+
+// Returns true if the browser can transfer a canvas's rendering control to a
+// worker, which is what lets the vector renderer's displacement math and
+// Path2D tessellation run off the main thread.
+export function supportsOffscreenCanvas(): boolean {
+    return typeof OffscreenCanvas !== "undefined"
+        && typeof HTMLCanvasElement.prototype.transferControlToOffscreen === "function";
+}
+
+// Main-thread proxy for the vector renderer: owns the visible canvas and a
+// dedicated worker that does the actual simulation and drawing (see
+// curve_worker.ts and curve_field.ts, which hold the DOM-free simulation
+// logic shared by this and the synchronous InteractiveCurveRenderer
+// fallback). Operations cross the worker boundary pre-encoded as in
+// op_buffer.ts, since live Operation instances can't survive postMessage.
+export default class WorkerCurveRenderer implements MarblingRenderer {
+    readonly displayCanvas: HTMLCanvasElement;
+    private readonly worker: Worker;
+    private history: Operation[] = [];
+    private nextRequestId = 0;
+    private readonly pendingSaves = new Map<number, (blob: Blob) => void>();
+
+    constructor(container: HTMLElement, workerUrl: string) {
+        this.displayCanvas = document.createElement("canvas");
+        this.displayCanvas.className = "marbling-render-layer";
+        container.insertBefore(this.displayCanvas, container.firstChild);
+
+        // Built as a classic (non-module) script by esbuild, matching how
+        // dist/index.js itself is loaded — see package.json's build/watch
+        // scripts and index.html.
+        this.worker = new Worker(workerUrl);
+        this.worker.onmessage = this.onMessage.bind(this);
+
+        const offscreen = this.displayCanvas.transferControlToOffscreen();
+        this.post({type: "init", canvas: offscreen, width: this.displayCanvas.width, height: this.displayCanvas.height}, [offscreen]);
+    }
+
+    private post(message: MainToWorkerMessage, transfer: Transferable[] = []) {
+        this.worker.postMessage(message, transfer);
+    }
+
+    private onMessage(event: MessageEvent<WorkerToMainMessage>) {
+        const message = event.data;
+        if (message.type === "saved") {
+            this.pendingSaves.get(message.requestId)?.(message.blob);
+            this.pendingSaves.delete(message.requestId);
+        }
+    }
+
+    setSize(width: number, height: number) {
+        // displayCanvas's width/height attributes can't be touched once
+        // transferred to the worker (it throws); the worker resizes the
+        // OffscreenCanvas it actually owns, and CSS (`canvas { width/height:
+        // 100% }`) keeps the placeholder's layout size matching its container.
+        this.post({type: "setSize", width, height});
+    }
+
+    reset() {
+        this.history = [];
+        this.post({type: "reset"});
+    }
+
+    getHistory(): Operation[] {
+        return this.history;
+    }
+
+    applyOperations(operations: Operation[]) {
+        for (let i = 0; i < operations.length; i++) {
+            this.history.push(operations[i]);
+        }
+        const baseColorOp = operations.filter(op => op.newBaseColor != null).pop();
+        const baseColor = baseColorOp?.newBaseColor ?? null;
+        const {data, count} = encodeOperations(operations);
+        this.post({type: "applyOperations", data, count, baseColor}, [data.buffer]);
+    }
+
+    save() {
+        const requestId = this.nextRequestId++;
+        const done = new Promise<Blob>((resolve) => this.pendingSaves.set(requestId, resolve));
+        this.post({type: "save", requestId});
+        done.then((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "ink-marbling-image.png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+    }
+}

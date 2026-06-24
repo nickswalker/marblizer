@@ -1,52 +1,8 @@
-import Vec2 from "../models/vector.js";
 import Color from "../models/color.js";
 import Operation from "../operations/color_operations.js";
+import {CurveField} from "./curve_field.js";
 
-export class Drop {
-    points: Array<Vec2>;
-    readonly color: Color;
-    _cached_path: Path2D | null = null;
-    private dirty: boolean = true;
-
-    constructor(color: Color, radius: number, centerX: number, centerY: number) {
-        this.color = color;
-        this.points = Drop.initialCirclePoints(radius, centerX, centerY);
-
-    }
-
-    private static initialCirclePoints(radius: number, centerX: number, centerY: number) {
-        let points: Array<Vec2> = [];
-        const desiredArcLength = 0.05;
-        const stepSize = desiredArcLength / radius;
-        for (let i = 0.0; i < 2 * Math.PI; i += stepSize) {
-            const newPoint = new Vec2(centerX + radius * Math.cos(i), centerY + radius * Math.sin(i));
-            points.push(newPoint)
-        }
-        return points;
-    }
-
-    getPath(): Path2D {
-        if (!this.dirty) {
-            return this._cached_path!;
-        }
-        let newPath = new Path2D();
-        const firstPoint = this.points[0];
-        newPath.moveTo(firstPoint.x, firstPoint.y);
-        for (let i = 1; i < this.points.length; i++) {
-            const nextPoint = this.points[i];
-            newPath.lineTo(nextPoint.x, nextPoint.y);
-        }
-        newPath.closePath();
-        this._cached_path = newPath;
-        this.dirty = false;
-        return newPath;
-    }
-
-    makeDirty() {
-        this.dirty = true;
-    }
-}
-
+export {Drop} from "./curve_field.js";
 
 export default interface MarblingRenderer {
     applyOperations(operations: Operation[]): void;
@@ -66,11 +22,17 @@ export default interface MarblingRenderer {
 export class InteractiveCurveRenderer implements MarblingRenderer {
     renderCanvas: HTMLCanvasElement;
     displayCanvas: HTMLCanvasElement;
-    drops: Drop[] = [];
-    baseColor: Color = new Color(220, 210, 210);
-    private readonly defaultBaseColor: Color = new Color(220, 210, 210);
+    private readonly field: CurveField = new CurveField();
     private dirty: boolean = true;
     private history: Operation[] = [];
+
+    get baseColor(): Color {
+        return this.field.baseColor;
+    }
+
+    get drops() {
+        return this.field.drops;
+    }
 
     constructor(container: HTMLElement, drawContinuously: boolean = true) {
         this.displayCanvas = document.createElement("canvas");
@@ -95,13 +57,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
 
     render() {
         const ctx = this.renderCanvas.getContext("2d")!;
-        ctx.fillStyle = this.baseColor.toRGBString();
-        ctx.fillRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
-        for (let i = 0; i < this.drops.length; i++) {
-            const drop = this.drops[i];
-            ctx.fillStyle = drop.color.toRGBString();
-            ctx.fill(drop.getPath());
-        }
+        this.field.renderTo(ctx, this.renderCanvas.width, this.renderCanvas.height);
     }
 
     draw() {
@@ -115,8 +71,7 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     }
 
     reset() {
-        this.drops = [];
-        this.baseColor = this.defaultBaseColor;
+        this.field.reset();
         this.history = [];
         this.dirty = true;
     }
@@ -126,43 +81,11 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
     }
 
     applyOperations(operations: Operation[]) {
+        this.field.applyOperations(operations);
         for (let i = 0; i < operations.length; i++) {
-            const operation = operations[i];
-            this.applyOperation(operation);
-            this.history.push(operation);
-        }
-        for (let i = 0; i < this.drops.length; i++) {
-            const drop = this.drops[i];
-            drop.getPath();
+            this.history.push(operations[i]);
         }
         this.dirty = true;
-    }
-
-    // Realizes a single operation against the polyline field: spread existing
-    // ink by the operation's forward displacement, then deposit any new ink on
-    // top, then apply any base-colour change. This is the one place that knows
-    // how operations affect the vector representation.
-    private applyOperation(operation: Operation) {
-        const displacement = operation.displacement;
-        if (displacement != null) {
-            for (let d = 0; d < this.drops.length; d++) {
-                const drop = this.drops[d];
-                for (let p = 0; p < drop.points.length; p++) {
-                    const oldPoint = drop.points[p];
-                    drop.points[p] = oldPoint.add(displacement.atPoint(oldPoint));
-                }
-                drop.makeDirty();
-            }
-        }
-
-        const deposit = operation.deposit;
-        if (deposit != null) {
-            this.drops.push(new Drop(deposit.color, deposit.radius, deposit.center.x, deposit.center.y));
-        }
-
-        if (operation.newBaseColor != null) {
-            this.baseColor = operation.newBaseColor;
-        }
     }
 
     save() {
