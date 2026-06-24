@@ -26,6 +26,10 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
     private nextRequestId = 0;
     private readonly pendingSaves = new Map<number, (blob: Blob) => void>();
     private readonly pendingColorQueries = new Map<number, (colors: (Color | null)[]) => void>();
+    // Logical (CSS-pixel) size, used to scale getColorsAt queries to the
+    // device-pixel backing store the worker actually owns.
+    private cssWidth: number = 0;
+    private cssHeight: number = 0;
 
     constructor(container: HTMLElement, workerUrl: string) {
         this.displayCanvas = document.createElement("canvas");
@@ -39,7 +43,7 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
         this.worker.onmessage = this.onMessage.bind(this);
 
         const offscreen = this.displayCanvas.transferControlToOffscreen();
-        this.post({type: "init", canvas: offscreen, width: this.displayCanvas.width, height: this.displayCanvas.height}, [offscreen]);
+        this.post({type: "init", canvas: offscreen, width: this.displayCanvas.width, height: this.displayCanvas.height, dpr: window.devicePixelRatio || 1}, [offscreen]);
     }
 
     private post(message: MainToWorkerMessage, transfer: Transferable[] = []) {
@@ -63,7 +67,9 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
         // transferred to the worker (it throws); the worker resizes the
         // OffscreenCanvas it actually owns, and CSS (`canvas { width/height:
         // 100% }`) keeps the placeholder's layout size matching its container.
-        this.post({type: "setSize", width, height});
+        this.cssWidth = width;
+        this.cssHeight = height;
+        this.post({type: "setSize", width, height, dpr: window.devicePixelRatio || 1});
     }
 
     reset() {
@@ -88,7 +94,14 @@ export default class WorkerCurveRenderer implements MarblingRenderer {
     getColorsAt(points: Vec2[]): Promise<(Color | null)[]> {
         const requestId = this.nextRequestId++;
         const done = new Promise<(Color | null)[]>((resolve) => this.pendingColorQueries.set(requestId, resolve));
-        this.post({type: "getColorsAt", requestId, points: points.map((p) => ({x: p.x, y: p.y}))});
+        const dpr = window.devicePixelRatio || 1;
+        const scaled = points.map((p) => {
+            if (p.x < 0 || p.y < 0 || p.x >= this.cssWidth || p.y >= this.cssHeight) {
+                return {x: -1, y: -1};
+            }
+            return {x: Math.round(p.x * dpr), y: Math.round(p.y * dpr)};
+        });
+        this.post({type: "getColorsAt", requestId, points: scaled});
         return done;
     }
 

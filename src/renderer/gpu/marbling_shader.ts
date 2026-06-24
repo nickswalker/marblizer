@@ -21,7 +21,7 @@ struct Op {
 struct Uniforms {
   resolution: vec2<f32>,
   count:      u32,
-  _pad:       u32,
+  dpr:        f32,
   baseColor:  vec4<f32>,
 };
 
@@ -134,12 +134,19 @@ fn colorDelta(a: vec4<f32>, b: vec4<f32>) -> f32 {
   return max(max(abs(a.r - b.r), abs(a.g - b.g)), abs(a.b - b.b));
 }
 
-fn adaptiveSupersample(p: vec2<f32>) -> vec4<f32> {
+// physicalP is in physical (backing-store) pixels; operations are authored
+// in CSS pixels, so each sample is mapped back down by the device pixel
+// ratio before being handed to colorAt. The +/-0.5 offsets stay in physical
+// pixels (one backing-store pixel apart) so antialiasing is evaluated at the
+// actual output resolution rather than smearing over multiple device pixels
+// at high DPR.
+fn adaptiveSupersample(physicalP: vec2<f32>) -> vec4<f32> {
+  let p = physicalP / u.dpr;
   let center = colorAt(p);
-  let x0 = colorAt(p + vec2<f32>(-0.5, 0.0));
-  let x1 = colorAt(p + vec2<f32>( 0.5, 0.0));
-  let y0 = colorAt(p + vec2<f32>(0.0, -0.5));
-  let y1 = colorAt(p + vec2<f32>(0.0,  0.5));
+  let x0 = colorAt((physicalP + vec2<f32>(-0.5, 0.0)) / u.dpr);
+  let x1 = colorAt((physicalP + vec2<f32>( 0.5, 0.0)) / u.dpr);
+  let y0 = colorAt((physicalP + vec2<f32>(0.0, -0.5)) / u.dpr);
+  let y1 = colorAt((physicalP + vec2<f32>(0.0,  0.5)) / u.dpr);
   let edge = max(
     max(colorDelta(center, x0), colorDelta(center, x1)),
     max(colorDelta(center, y0), colorDelta(center, y1))
@@ -148,10 +155,10 @@ fn adaptiveSupersample(p: vec2<f32>) -> vec4<f32> {
     return center;
   }
 
-  let d0 = colorAt(p + vec2<f32>(-0.5, -0.5));
-  let d1 = colorAt(p + vec2<f32>( 0.5, -0.5));
-  let d2 = colorAt(p + vec2<f32>(-0.5,  0.5));
-  let d3 = colorAt(p + vec2<f32>( 0.5,  0.5));
+  let d0 = colorAt((physicalP + vec2<f32>(-0.5, -0.5)) / u.dpr);
+  let d1 = colorAt((physicalP + vec2<f32>( 0.5, -0.5)) / u.dpr);
+  let d2 = colorAt((physicalP + vec2<f32>(-0.5,  0.5)) / u.dpr);
+  let d3 = colorAt((physicalP + vec2<f32>( 0.5,  0.5)) / u.dpr);
   return (center + x0 + x1 + y0 + y1 + d0 + d1 + d2 + d3) / 9.0;
 }
 

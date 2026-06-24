@@ -8,10 +8,13 @@ export class Drop {
     _cached_path: Path2D | null = null;
     private dirty: boolean = true;
 
-    constructor(color: Color, radius: number, centerX: number, centerY: number) {
+    constructor(color: Color, points: Array<Vec2>) {
         this.color = color;
-        this.points = Drop.initialCirclePoints(radius, centerX, centerY);
+        this.points = points;
+    }
 
+    static circle(color: Color, radius: number, centerX: number, centerY: number): Drop {
+        return new Drop(color, Drop.initialCirclePoints(radius, centerX, centerY));
     }
 
     private static initialCirclePoints(radius: number, centerX: number, centerY: number) {
@@ -45,6 +48,10 @@ export class Drop {
     makeDirty() {
         this.dirty = true;
     }
+
+    clone(): Drop {
+        return new Drop(this.color, this.points.slice());
+    }
 }
 
 // The pure polyline simulation behind the vector renderer: tracks drops and
@@ -65,6 +72,15 @@ export class CurveField {
     reset() {
         this.drops = [];
         this.baseColor = this.defaultBaseColor;
+    }
+
+    // Cheap, history-independent copy used to render a candidate operation's
+    // effect without mutating the committed field: clone, apply the one
+    // candidate operation, render, then discard.
+    clone(): CurveField {
+        const copy = new CurveField(this.baseColor);
+        copy.drops = this.drops.map((drop) => drop.clone());
+        return copy;
     }
 
     applyOperations(operations: Operation[]) {
@@ -95,7 +111,7 @@ export class CurveField {
 
         const deposit = operation.deposit;
         if (deposit != null) {
-            this.drops.push(new Drop(deposit.color, deposit.radius, deposit.center.x, deposit.center.y));
+            this.drops.push(Drop.circle(deposit.color, deposit.radius, deposit.center.x, deposit.center.y));
         }
 
         if (operation.newBaseColor != null) {

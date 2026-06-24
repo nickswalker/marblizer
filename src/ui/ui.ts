@@ -7,6 +7,7 @@ import Vec2 from "../models/vector.js";
 import MarblingKeyboardUI, {KeyboardShortcut} from "./keyboard.js";
 import CursorOverlay from "./cursor/cursor_overlay.js";
 import VectorFieldOverlay from "./vector_field_overlay.js";
+import InkPreviewOverlay from "./ink_preview_overlay.js";
 import InkDropOperation from "../operations/inkdrop.js";
 import {Tool} from "./tools.js";
 import Vortex from "../operations/vortex.js";
@@ -57,6 +58,7 @@ export default class MarblingUI implements MarblingUIDelegate {
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
+    readonly inkPreviewOverlay: InkPreviewOverlay;
 
     constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement, parametersContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
@@ -75,6 +77,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         container.addEventListener("pointermove", this.mouseMove.bind(this));
         container.addEventListener("wheel", this.scroll.bind(this), {passive: false});
         document.addEventListener("pointerout", this.mouseOut.bind(this));
+        this.inkPreviewOverlay = new InkPreviewOverlay(container, () => this.colorPane.currentColor);
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
@@ -92,6 +95,7 @@ export default class MarblingUI implements MarblingUIDelegate {
     private _size!: Vec2;
 
     set size(size: Vec2) {
+        this.inkPreviewOverlay.setSize(size.x, size.y);
         this.cursorOverlay.setSize(size.x, size.y);
         this.vectorFieldOverlay.setSize(size.x, size.y);
         this._size = size;

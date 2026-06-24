@@ -17,8 +17,8 @@ export interface PlainPoint {
 }
 
 export type MainToWorkerMessage =
-    | { type: "init"; canvas: OffscreenCanvas; width: number; height: number }
-    | { type: "setSize"; width: number; height: number }
+    | { type: "init"; canvas: OffscreenCanvas; width: number; height: number; dpr: number }
+    | { type: "setSize"; width: number; height: number; dpr: number }
     | { type: "applyOperations"; data: Float32Array; count: number; baseColor: PlainColor | null }
     | { type: "reset" }
     | { type: "save"; requestId: number }
