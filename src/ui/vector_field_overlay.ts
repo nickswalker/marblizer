@@ -185,25 +185,27 @@ class VectorFieldRenderer {
 
         const halfWidth = width / 2;
         const halfHeight = height / 2;
+        const maxSize = 3;
 
-        ctx.fillStyle = "rgba(0,0,0, 0.8)";
         ctx.strokeStyle = "rgba(255,255,255,0.6)";
         for (let x = 0; x < this.cssWidth; x += this._spacing) {
             for (let y = 0; y < this.cssHeight; y += this._spacing) {
                 const dir = this._vectorField.atPoint(new Vec2(x, y));
                 const angle = dir.angle();
-                const size = dir.length() / this.arrowHeight;
+                const rawSize = dir.length() / this.arrowHeight;
+                const size = Math.min(rawSize, maxSize);
                 if (size > 0.1) {
+                    const intensity = Math.min(rawSize / maxSize, 1);
+                    ctx.fillStyle = `rgba(0,0,0,${(0.5 + 0.5 * intensity).toFixed(3)})`;
+
+                    ctx.save();
                     ctx.translate(x - halfWidth, y - halfHeight);
                     ctx.scale(size, size);
                     ctx.rotate(angle);
 
                     ctx.stroke(this.arrow);
                     ctx.fill(this.arrow);
-
-                    ctx.scale(1 / size, 1 / size);
-                    ctx.rotate(-angle);
-                    ctx.translate(-x + halfWidth, -y + halfHeight);
+                    ctx.restore();
                 }
             }
         }
