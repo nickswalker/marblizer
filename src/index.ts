@@ -5,11 +5,13 @@ import {getParameterByName} from "./parse_query_string.js";
 import UserProgram from "./scripting/user_program.js";
 import {InteractiveCurveRenderer} from "./renderer/curve_renderer.js";
 import WebGPURenderer from "./renderer/gpu/webgpu_renderer.js";
+import WorkerCurveRenderer, {supportsOffscreenCanvas} from "./renderer/worker/worker_curve_renderer.js";
 import MarblingUI from "./ui/ui.js";
 import {loadCompositionDraft} from "./composition_storage.js";
 import CompositionController from "./composition_controller.js";
 
-type Renderer = InteractiveCurveRenderer | WebGPURenderer;
+type VectorRenderer = InteractiveCurveRenderer | WorkerCurveRenderer;
+type Renderer = VectorRenderer | WebGPURenderer;
 
 addEventListener('DOMContentLoaded', async function () {
     let marblingWorkspace = document.getElementById("workspace")!;
@@ -19,10 +21,15 @@ addEventListener('DOMContentLoaded', async function () {
     let operationsInput = document.getElementById("operations-input")!;
     let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput);
 
-    // The vector renderer is always available and acts as the fallback. The
-    // WebGPU renderer is used when the browser supports it; both implement the
-    // same MarblingRenderer interface so the UI is agnostic to which is active.
-    const vector = new InteractiveCurveRenderer(marblingWorkspace);
+    // The vector renderer is always available and acts as the fallback. It
+    // runs in a Worker (off the main thread) when the browser supports
+    // transferring canvas control there, falling back to the main-thread
+    // implementation otherwise. The WebGPU renderer is used when the browser
+    // supports it; all backends implement the same MarblingRenderer interface
+    // so the UI is agnostic to which is active.
+    const vector: VectorRenderer = supportsOffscreenCanvas()
+        ? new WorkerCurveRenderer(marblingWorkspace, "/dist/renderer/worker/curve_worker.js")
+        : new InteractiveCurveRenderer(marblingWorkspace);
     let gpu: WebGPURenderer | null = null;
     try {
         gpu = await WebGPURenderer.create(marblingWorkspace);

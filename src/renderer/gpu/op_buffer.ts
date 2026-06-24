@@ -5,6 +5,7 @@ import CircularLineTine from "../../operations/circularlinetine.js";
 import LineTine from "../../operations/linetine.js";
 import WavyLineTine from "../../operations/wavylinetine.js";
 import Color from "../../models/color.js";
+import Vec2 from "../../models/vector.js";
 
 // Wire format shared by the WebGPU storage buffer and the CPU mirror in
 // backmap.ts. Each operation occupies FLOATS_PER_OP floats, laid out as four
@@ -112,5 +113,100 @@ function writeOp(d: Float32Array, o: number, op: Operation) {
         d[o + P1 + 1] = op.amplitude;
         d[o + P1 + 2] = op.wavelength;
         d[o + P1 + 3] = op.phase;
+    }
+}
+
+// Reconstructs operation instances from the wire format above. Used at the
+// boundary into a Worker, where postMessage's structured clone would
+// otherwise strip an Operation's prototype (and so its atPoint method).
+// Builds instances directly (bypassing each constructor's own derivation
+// logic) since the encoding above stores already-derived fields like `line`
+// or `normal` rather than raw constructor arguments.
+export function decodeOperations(data: Float32Array, count: number): Operation[] {
+    const operations: Operation[] = [];
+    for (let i = 0; i < count; i++) {
+        const o = i * FLOATS_PER_OP;
+        operations.push(readOp(data, o));
+    }
+    return operations;
+}
+
+function readOp(d: Float32Array, o: number): Operation {
+    switch (d[o + META]) {
+        case OpKind.InkDrop: {
+            const op = Object.create(InkDropOperation.prototype) as InkDropOperation;
+            return Object.assign(op, {
+                position: new Vec2(d[o + P0], d[o + P0 + 1]),
+                radius: d[o + P0 + 2],
+                color: new Color(
+                    Math.round(d[o + COL] * 255),
+                    Math.round(d[o + COL + 1] * 255),
+                    Math.round(d[o + COL + 2] * 255),
+                ),
+                displacing: d[o + META + 1] === 1,
+                newBaseColor: null,
+            });
+        }
+        case OpKind.Vortex: {
+            const op = Object.create(Vortex.prototype) as Vortex;
+            return Object.assign(op, {
+                center: new Vec2(d[o + P0], d[o + P0 + 1]),
+                radius: d[o + P0 + 2],
+                alpha: d[o + P0 + 3],
+                lambda: d[o + P1],
+                counterclockwise: d[o + META + 1] === 1,
+                deposit: null,
+                newBaseColor: null,
+            });
+        }
+        case OpKind.CircularTine: {
+            const op = Object.create(CircularLineTine.prototype) as CircularLineTine;
+            return Object.assign(op, {
+                center: new Vec2(d[o + P0], d[o + P0 + 1]),
+                radius: d[o + P0 + 2],
+                alpha: d[o + P0 + 3],
+                lambda: d[o + P1],
+                // Not encoded: atPoint (the only behaviour this op contributes
+                // to the vector field) doesn't depend on numTines/interval.
+                numTines: 0,
+                interval: 0,
+                counterClockwise: d[o + META + 1] === 1,
+                deposit: null,
+                newBaseColor: null,
+            });
+        }
+        case OpKind.LineTine: {
+            const op = Object.create(LineTine.prototype) as LineTine;
+            const line = new Vec2(d[o + P0 + 2], d[o + P0 + 3]);
+            return Object.assign(op, {
+                origin: new Vec2(d[o + P0], d[o + P0 + 1]),
+                line,
+                normal: line.perp().norm(),
+                numTines: d[o + P1],
+                spacing: d[o + P1 + 1],
+                alpha: d[o + P1 + 2],
+                lambda: d[o + P1 + 3],
+                deposit: null,
+                newBaseColor: null,
+            });
+        }
+        case OpKind.WavyLine: {
+            const op = Object.create(WavyLineTine.prototype) as WavyLineTine;
+            return Object.assign(op, {
+                angle: d[o + P1],
+                amplitude: d[o + P1 + 1],
+                wavelength: d[o + P1 + 2],
+                phase: d[o + P1 + 3],
+                // Not encoded: atPoint depends only on the four fields above.
+                line: Vec2.zero(),
+                origin: Vec2.zero(),
+                numTines: 0,
+                spacing: 0,
+                deposit: null,
+                newBaseColor: null,
+            });
+        }
+        default:
+            throw new Error(`Unknown OpKind ${d[o + META]}`);
     }
 }
