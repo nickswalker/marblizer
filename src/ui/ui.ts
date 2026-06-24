@@ -16,6 +16,7 @@ import LineTine from "../operations/linetine.js";
 import HelpDialog from "./components/help-dialog.js";
 import UserProgram from "../scripting/user_program.js";
 import MarblingRenderer from "../renderer/curve_renderer.js";
+import ParameterStepperPane from "./panes/parameter_stepper_pane.js";
 
 
 function trackEvent(path: string) {
@@ -56,21 +57,23 @@ export default class MarblingUI implements MarblingUIDelegate {
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
 
-    constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement) {
+    constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement, parametersContainer: HTMLElement) {
         this.toolsPane = new ToolsPane(toolsContainer);
         this.colorPane = new ColorPane(colorContainer);
         this.scriptingPane = new ScriptingPane(textContainer);
         this.controlsPane = new ControlsPane(optionsContainer);
         this.controlsPane.uiDelegate = this;
+        new ParameterStepperPane(parametersContainer, this.toolsPane.toolParameters);
         this.helpDialog = new HelpDialog();
         document.body.appendChild(this.helpDialog);
         this.keyboardManager = new MarblingKeyboardUI();
         this.keyboardManager.keyboardDelegate = this;
-        container.addEventListener("mousedown", this.mouseDown.bind(this));
-        container.addEventListener("mouseup", this.mouseUp.bind(this));
-        container.addEventListener("mousemove", this.mouseMove.bind(this));
+        container.addEventListener("pointerdown", this.mouseDown.bind(this));
+        container.addEventListener("pointerup", this.mouseUp.bind(this));
+        container.addEventListener("pointercancel", this.mouseUp.bind(this));
+        container.addEventListener("pointermove", this.mouseMove.bind(this));
         container.addEventListener("wheel", this.scroll.bind(this), {passive: false});
-        document.addEventListener("mouseout", this.mouseOut.bind(this));
+        document.addEventListener("pointerout", this.mouseOut.bind(this));
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
     }
@@ -236,14 +239,15 @@ export default class MarblingUI implements MarblingUIDelegate {
 
     }
 
-    private mouseDown(e: MouseEvent) {
+    private mouseDown(e: PointerEvent) {
+        (e.target as Element).setPointerCapture?.(e.pointerId);
         const x = e.offsetX;
         const y = e.offsetY;
         this.mouseDownCoord = new Vec2(x, y);
         this.mouseInterval = setInterval(this.mouseHeldHandler.bind(this), 50)
     }
 
-    private mouseUp(e: MouseEvent) {
+    private mouseUp(e: PointerEvent) {
         if (this.mouseDownCoord == null) {
             return;
         }
@@ -308,14 +312,14 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.mouseInterval = 0;
     }
 
-    private mouseMove(e: MouseEvent) {
+    private mouseMove(e: PointerEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
         this.lastMouseCoord = new Vec2(x, y);
 
     }
 
-    private mouseOut(e: MouseEvent) {
+    private mouseOut(e: PointerEvent) {
         this.mouseDownCoord = null;
         this.lastMouseCoord = null;
     }

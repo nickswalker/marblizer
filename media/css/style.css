@@ -30,6 +30,11 @@
 html {
     width: 100%;
     height: 100%;
+    /* iOS Safari's bottom toolbar isn't accounted for by 100%/100vh (those
+       resolve against the "large" viewport, as if the toolbar were hidden),
+       which lets absolutely-positioned content run behind it. dvh tracks the
+       actual visible viewport as the toolbar shows/hides. */
+    height: 100dvh;
 }
 
 body {
@@ -37,6 +42,7 @@ body {
     display: flex;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     overflow: hidden; /*Prevent scrolling*/
     font-family: var(--font-ui);
     user-select: none;
@@ -47,6 +53,7 @@ body {
     flex-grow: 1;
     order: 0;
     cursor: none;
+    touch-action: none;
     position: relative;
 }
 
@@ -71,6 +78,7 @@ TOOL PANE
 
 #marbling-tools {
     padding: var(--space-md);
+    padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
     order: 1;
     display: flex;
     flex-direction: column;
@@ -79,6 +87,7 @@ TOOL PANE
     bottom: 0;
     right: 0;
     max-width: 55px;
+    overflow-y: auto;
 }
 
 #marbling-tools .button-section {
@@ -116,8 +125,8 @@ ul.button-section {
     list-style: none;
     flex: auto;
     flex-shrink: 1;
-    max-height: 40px;
-    width: 40px;
+    max-height: 44px;
+    width: 44px;
     vertical-align: middle;
     border: 2px solid transparent;
     padding: 3px;
@@ -150,16 +159,16 @@ ul.button-section {
 .button-section li img {
     width: 100%;
     height: 100%;
-    min-width: 30px;
-    min-height: 30px;
+    min-width: 32px;
+    min-height: 32px;
     object-fit: contain;
 }
 
 .button-section li ion-icon {
     width: 100%;
     height: 100%;
-    min-width: 30px;
-    min-height: 30px;
+    min-width: 32px;
+    min-height: 32px;
     color: currentColor;
     --ionicon-stroke-width: 32px;
 }
@@ -271,4 +280,140 @@ MODAL
 
 #operations-input .CodeMirror {
     height: 100%;
+}
+
+/*
+TOOL PARAMETER STEPPER
+ */
+
+#tool-parameters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#tool-parameters .stepper-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+#tool-parameters .stepper-row .label {
+    flex: 1;
+    font-size: 0.7em;
+    text-transform: capitalize;
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tool-parameters .stepper-row button {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--color-pane-text);
+    font-size: 1.1em;
+    line-height: 1;
+    cursor: pointer;
+}
+
+#tool-parameters .stepper-row button:hover {
+    border-color: var(--color-button-hover-border);
+    background-color: var(--color-button-hover-bg);
+}
+
+#tool-parameters .stepper-row button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/*
+NARROW / PORTRAIT LAYOUT
+ */
+
+@media (max-width: 700px) {
+    #marbling-tools {
+        flex-direction: row;
+        align-items: center;
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-width: none;
+        max-height: calc(72px + env(safe-area-inset-bottom));
+        padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    #marbling-tools .button-section {
+        flex-direction: row;
+    }
+
+    #marbling-tools hr.tools-divider {
+        width: 1px;
+        height: 80%;
+        margin: 0 var(--space-sm);
+    }
+
+    #tool-parameters {
+        flex-direction: row;
+    }
+
+    #tool-parameters .stepper-row .label {
+        display: none;
+    }
+
+    #colors {
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 0;
+        gap: var(--space-sm);
+    }
+
+    #color-inputs {
+        width: 64px;
+        height: 32px;
+        margin-bottom: 0;
+    }
+
+    #color-inputs input {
+        width: 32px;
+        height: 32px;
+        margin: 0;
+    }
+
+    input.foreground {
+        top: 0;
+        left: 0;
+        bottom: auto;
+        right: auto;
+    }
+
+    input.background {
+        top: 0;
+        left: 32px;
+        bottom: auto;
+        right: auto;
+    }
+
+    ul#recent-colors {
+        flex-wrap: nowrap;
+        height: 32px;
+    }
+
+    li[class^="swatch"] {
+        flex: none;
+        width: 20px;
+    }
+
+    #logo {
+        display: none;
+    }
 }
