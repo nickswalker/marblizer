@@ -19,7 +19,8 @@ addEventListener('DOMContentLoaded', async function () {
     let optionsPane = document.getElementById("options")!;
     let colorsPane = document.getElementById("colors")!;
     let operationsInput = document.getElementById("operations-input")!;
-    let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput);
+    let parametersPane = document.getElementById("tool-parameters")!;
+    let ui = new MarblingUI(marblingWorkspace, toolsPane, optionsPane, colorsPane, operationsInput, parametersPane);
 
     // The vector renderer is always available and acts as the fallback. It
     // runs in a Worker (off the main thread) when the browser supports

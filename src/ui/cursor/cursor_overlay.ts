@@ -31,10 +31,11 @@ export default class CursorOverlay {
         container.appendChild(this.overlayCanvas);
 
 
-        container.addEventListener("mousemove", this.mouseMove.bind(this));
-        container.addEventListener("mousedown", this.mouseDown.bind(this));
-        container.addEventListener("mouseup", this.mouseUp.bind(this));
-        document.addEventListener("mouseout", this.mouseOut.bind(this));
+        container.addEventListener("pointermove", this.mouseMove.bind(this));
+        container.addEventListener("pointerdown", this.mouseDown.bind(this));
+        container.addEventListener("pointerup", this.mouseUp.bind(this));
+        container.addEventListener("pointercancel", this.mouseUp.bind(this));
+        document.addEventListener("pointerout", this.mouseOut.bind(this));
         document.addEventListener("toolchange", this.toolChange.bind(this) as EventListener);
 
         const circle = new CircleRenderer();
@@ -97,22 +98,25 @@ export default class CursorOverlay {
 
     }
 
-    private mouseDown(e: MouseEvent) {
+    private mouseDown(e: PointerEvent) {
         this.mouseDownCoord = new Vec2(e.offsetX, e.offsetY);
+        // No hover precedes a touch tap, so lastMoveCoord would otherwise
+        // still be null here and drawOverlay() would skip the preview.
+        this.lastMoveCoord = this.mouseDownCoord;
         this.scheduleDraw();
     }
 
-    private mouseMove(e: MouseEvent) {
+    private mouseMove(e: PointerEvent) {
         this.lastMoveCoord = new Vec2(e.offsetX, e.offsetY);
         this.scheduleDraw();
     }
 
-    private mouseUp(e: MouseEvent) {
+    private mouseUp(e: PointerEvent) {
         this.mouseDownCoord = null;
         this.scheduleDraw();
     }
 
-    private mouseOut(e: MouseEvent) {
+    private mouseOut(e: PointerEvent) {
         this.lastMoveCoord = null;
         this.mouseDownCoord = null;
         this.scheduleDraw();

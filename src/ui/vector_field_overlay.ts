@@ -18,10 +18,11 @@ export default class VectorFieldOverlay {
 
     constructor(container: HTMLElement) {
         this.renderer = new VectorFieldRenderer(container);
-        container.addEventListener("mousedown", this.mouseDown.bind(this));
-        container.addEventListener("mouseup", this.mouseUp.bind(this));
-        container.addEventListener("mouseout", this.mouseOut.bind(this));
-        container.addEventListener("mousemove", this.mouseMove.bind(this));
+        container.addEventListener("pointerdown", this.mouseDown.bind(this));
+        container.addEventListener("pointerup", this.mouseUp.bind(this));
+        container.addEventListener("pointercancel", this.mouseUp.bind(this));
+        container.addEventListener("pointerout", this.mouseOut.bind(this));
+        container.addEventListener("pointermove", this.mouseMove.bind(this));
         document.addEventListener("toolchange", this.toolChange.bind(this) as EventListener);
     }
 
@@ -54,7 +55,7 @@ export default class VectorFieldOverlay {
         this.generatePreviewOperation();
     }
 
-    private mouseDown(e: MouseEvent) {
+    private mouseDown(e: PointerEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
         this.mouseDownCoord = new Vec2(x, y);
@@ -66,20 +67,20 @@ export default class VectorFieldOverlay {
         }
     }
 
-    private mouseUp(e: MouseEvent) {
+    private mouseUp(e: PointerEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
         this.lastMouseCoord = null;
         this.mouseDownCoord = null;
     }
 
-    private mouseOut(e: MouseEvent) {
+    private mouseOut(e: PointerEvent) {
         this.lastMouseCoord = null;
         this.mouseDownCoord = null;
         this.previewOperation = null;
     }
 
-    private mouseMove(e: MouseEvent) {
+    private mouseMove(e: PointerEvent) {
         const x = e.offsetX;
         const y = e.offsetY;
         this.lastMouseCoord = new Vec2(x, y);

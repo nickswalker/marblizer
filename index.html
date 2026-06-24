@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Marblizer</title>
     <meta name="description" content="Interactive paper marbling simulation. Create awesome patterns.">
     <meta name="author" content="Nick Walker"/>
@@ -64,7 +65,9 @@
         <li class="circular-tine-tool tool" title="Circular tine-line"><img src="media/images/circular-tine.svg"></li>
         <li class="vortex-tool tool" title="Vortex"><img src="media/images/vortex.svg"/></li>
     </ul>
-    <hr class="tools-divider">
+    <hr class="tools-divider divider-params">
+    <div id="tool-parameters"></div>
+    <hr class="tools-divider divider-options">
     <ul class="button-section options" id="options">
         <li class="undo tool" title="Undo"><ion-icon name="arrow-undo-outline" aria-hidden="true"></ion-icon></li>
         <li class="redo tool" title="Redo"><ion-icon name="arrow-redo-outline" aria-hidden="true"></ion-icon></li>
@@ -77,7 +80,7 @@
         <li class="show-script-editor tool" title="Script editor"><ion-icon name="code-slash-outline" aria-hidden="true"></ion-icon></li>
         <li class="help tool" title="Help"><ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon></li>
     </ul>
-    <hr class="tools-divider">
+    <hr class="tools-divider divider-colors">
     <div id="colors">
         <div id="color-inputs">
             <input type="color" class="color-picker foreground" value="#891920" title="Foreground color">

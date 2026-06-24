@@ -32,6 +32,14 @@ secondaryKeys[Tool.Spatter] = "dropRadius";
 secondaryKeys[Tool.TineLine] = "numTines";
 secondaryKeys[Tool.CircularTine] = "numTines";
 
+export function primaryKeyFor(tool: Tool): string | undefined {
+    return primaryKeys[tool];
+}
+
+export function secondaryKeyFor(tool: Tool): string | undefined {
+    return secondaryKeys[tool];
+}
+
 const guides: { [key: number]: { [key: string]: Guide } } = toolInitializedObject();
 guides[Tool.Drop]["radius"] = [5, 300, 5];
 guides[Tool.Spatter]["scatterRadius"] = [20, 300, 5];
