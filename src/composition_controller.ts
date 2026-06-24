@@ -1,4 +1,5 @@
 import Vec2 from "./models/vector.js";
+import Color from "./models/color.js";
 import Operation from "./operations/color_operations.js";
 import MarblingRenderer from "./renderer/curve_renderer.js";
 import {downloadSVG} from "./renderer/svg_exporter.js";
@@ -49,6 +50,10 @@ export default class CompositionController implements MarblingRenderer {
 
     getHistory(): Operation[] {
         return this.history;
+    }
+
+    getColorsAt(points: Vec2[]): Promise<(Color | null)[]> {
+        return this.renderer.getColorsAt(points);
     }
 
     save() {

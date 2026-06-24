@@ -8,6 +8,12 @@ export interface PlainColor {
     r: number;
     g: number;
     b: number;
+    a?: number;
+}
+
+export interface PlainPoint {
+    x: number;
+    y: number;
 }
 
 export type MainToWorkerMessage =
@@ -15,7 +21,9 @@ export type MainToWorkerMessage =
     | { type: "setSize"; width: number; height: number }
     | { type: "applyOperations"; data: Float32Array; count: number; baseColor: PlainColor | null }
     | { type: "reset" }
-    | { type: "save"; requestId: number };
+    | { type: "save"; requestId: number }
+    | { type: "getColorsAt"; requestId: number; points: PlainPoint[] };
 
 export type WorkerToMainMessage =
-    | { type: "saved"; requestId: number; blob: Blob };
+    | { type: "saved"; requestId: number; blob: Blob }
+    | { type: "colorsAt"; requestId: number; colors: (PlainColor | null)[] };

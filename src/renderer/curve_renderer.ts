@@ -1,4 +1,5 @@
 import Color from "../models/color.js";
+import Vec2 from "../models/vector.js";
 import Operation from "../operations/color_operations.js";
 import {CurveField} from "./curve_field.js";
 
@@ -15,6 +16,11 @@ export default interface MarblingRenderer {
     // can be swapped at runtime by constructing the other renderer and
     // replaying this history to reproduce the same image.
     getHistory(): Operation[];
+
+    // Reads back the rendered color at each point, or null for points outside
+    // the canvas. Batched so callers sampling many points (e.g. scripts) pay
+    // one round trip regardless of backend.
+    getColorsAt(points: Vec2[]): Promise<(Color | null)[]>;
 
     save(): void;
 }
@@ -78,6 +84,22 @@ export class InteractiveCurveRenderer implements MarblingRenderer {
 
     getHistory(): Operation[] {
         return this.history;
+    }
+
+    getColorsAt(points: Vec2[]): Promise<(Color | null)[]> {
+        if (this.dirty) {
+            this.render();
+            this.dirty = false;
+        }
+        const ctx = this.renderCanvas.getContext("2d")!;
+        const colors = points.map((point) => {
+            if (point.x < 0 || point.y < 0 || point.x >= this.renderCanvas.width || point.y >= this.renderCanvas.height) {
+                return null;
+            }
+            const [r, g, b, a] = ctx.getImageData(point.x, point.y, 1, 1).data;
+            return new Color(r, g, b, a / 255);
+        });
+        return Promise.resolve(colors);
     }
 
     applyOperations(operations: Operation[]) {

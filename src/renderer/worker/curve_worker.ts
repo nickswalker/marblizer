@@ -51,5 +51,16 @@ self.onmessage = (event: MessageEvent<MainToWorkerMessage>) => {
                 post({type: "saved", requestId: message.requestId, blob});
             });
             break;
+        case "getColorsAt": {
+            const colors = message.points.map((point) => {
+                if (ctx == null || canvas == null || point.x < 0 || point.y < 0 || point.x >= canvas.width || point.y >= canvas.height) {
+                    return null;
+                }
+                const [r, g, b, a] = ctx.getImageData(point.x, point.y, 1, 1).data;
+                return {r, g, b, a: a / 255};
+            });
+            post({type: "colorsAt", requestId: message.requestId, colors});
+            break;
+        }
     }
 };

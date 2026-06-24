@@ -274,8 +274,14 @@ MODAL
 
 /* Operations input*/
 
+#operations-input {
+    display: flex;
+    flex-direction: column;
+}
+
 #operations-input .input-container {
-    height: calc(100% - 45px);
+    flex: 1;
+    min-height: 0;
 }
 
 #operations-input .CodeMirror {

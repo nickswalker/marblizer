@@ -34,6 +34,10 @@ export default class ColorPane {
         return Color.withHex(this.foregroundPicker.value)!;
     }
 
+    get backgroundColor(): Color {
+        return Color.withHex(this.backgroundPicker.value)!;
+    }
+
     private foregroundChanged(event: Event) {
         const picker = <HTMLInputElement>event.target;
         this.pushRecentColor(picker.value);

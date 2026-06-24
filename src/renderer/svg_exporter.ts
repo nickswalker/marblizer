@@ -1,6 +1,7 @@
 import Vec2 from "../models/vector.js";
 import Operation from "../operations/color_operations.js";
 import {Drop, InteractiveCurveRenderer} from "./curve_renderer.js";
+import {downloadText} from "../util/download.js";
 
 function escapeAttribute(value: string): string {
     return value
@@ -19,18 +20,6 @@ function pathForDrop(drop: Drop): string {
     }
     commands.push("Z");
     return commands.join(" ");
-}
-
-function downloadText(filename: string, text: string, mimeType: string) {
-    const blob = new Blob([text], {type: mimeType});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
 }
 
 export function exportSVG(operations: Operation[], size: Vec2): string {
