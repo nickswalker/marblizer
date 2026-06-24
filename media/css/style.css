@@ -97,6 +97,11 @@ TOOL PANE
     align-items: center;
 }
 
+#marbling-tools.drag-cancel-target {
+    box-shadow: inset 0 0 0 3px var(--color-accent);
+    background-color: var(--color-accent-translucent);
+}
+
 #marbling-colors {
     position: absolute;
     left: 0;

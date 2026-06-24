@@ -3,6 +3,7 @@ import CursorRenderer, {CircleRenderer, CrossRenderer} from "./cursor_renderer.j
 import {Tool, ToolParameterMap} from "../tools.js";
 import TineRenderer from "./tine_renderer.js";
 import SpinRenderer from "./spin_renderer.js";
+import SpatterRenderer from "./spatter_renderer.js";
 
 export default class CursorOverlay {
 
@@ -39,6 +40,7 @@ export default class CursorOverlay {
         document.addEventListener("toolchange", this.toolChange.bind(this) as EventListener);
 
         const circle = new CircleRenderer();
+        const spatter = new SpatterRenderer();
         const tine = new TineRenderer();
         const wavy = new TineRenderer(function (t: number) {
             return 100 * Math.sin(.013 * t)
@@ -48,7 +50,7 @@ export default class CursorOverlay {
 
         this.rendererForTool = {};
         this.rendererForTool[Tool.Drop] = circle;
-        this.rendererForTool[Tool.Spatter] = circle;
+        this.rendererForTool[Tool.Spatter] = spatter;
         this.rendererForTool[Tool.TineLine] = tine;
         this.rendererForTool[Tool.WavyLine] = wavy;
         this.rendererForTool[Tool.CircularTine] = spin;
@@ -89,6 +91,7 @@ export default class CursorOverlay {
                 break;
             case Tool.Spatter:
                 this.currentCursorRenderer.radius = this.currentToolParameters["scatterRadius"];
+                this.currentCursorRenderer.dropRadius = this.currentToolParameters["dropRadius"];
                 break;
             case Tool.TineLine:
             case Tool.WavyLine:
