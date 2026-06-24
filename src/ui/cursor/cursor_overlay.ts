@@ -2,7 +2,7 @@ import Vec2 from "../../models/vector.js";
 import CursorRenderer, {CircleRenderer, CrossRenderer} from "./cursor_renderer.js";
 import {Tool, ToolParameterMap} from "../tools.js";
 import TineRenderer from "./tine_renderer.js";
-import DynamicRadiusRenderer from "./dynamic_radius_renderer.js";
+import SpinRenderer from "./spin_renderer.js";
 
 export default class CursorOverlay {
 
@@ -43,7 +43,7 @@ export default class CursorOverlay {
         const wavy = new TineRenderer(function (t: number) {
             return 100 * Math.sin(.013 * t)
         });
-        const dynamicRadius = new DynamicRadiusRenderer();
+        const spin = new SpinRenderer();
         this.defaultRenderer = new CrossRenderer();
 
         this.rendererForTool = {};
@@ -51,8 +51,8 @@ export default class CursorOverlay {
         this.rendererForTool[Tool.Spatter] = circle;
         this.rendererForTool[Tool.TineLine] = tine;
         this.rendererForTool[Tool.WavyLine] = wavy;
-        this.rendererForTool[Tool.CircularTine] = dynamicRadius;
-        this.rendererForTool[Tool.Vortex] = dynamicRadius;
+        this.rendererForTool[Tool.CircularTine] = spin;
+        this.rendererForTool[Tool.Vortex] = spin;
         this.currentCursorRenderer = this.rendererForTool[this.currentTool];
 
     }

@@ -10,6 +10,7 @@ import VectorFieldOverlay from "./vector_field_overlay.js";
 import InkDropOperation from "../operations/inkdrop.js";
 import {Tool} from "./tools.js";
 import Vortex from "../operations/vortex.js";
+import {counterclockwiseForDrag} from "../operations/rotation_direction.js";
 import CircularLineTine from "../operations/circularlinetine.js";
 import WavyLineTine from "../operations/wavylinetine.js";
 import LineTine from "../operations/linetine.js";
@@ -290,20 +291,22 @@ export default class MarblingUI implements MarblingUIDelegate {
                 break;
             }
             case Tool.CircularTine: {
-                const radius = currentCoord.sub(this.mouseDownCoord).length();
+                const direction = currentCoord.sub(this.mouseDownCoord);
+                const radius = direction.length();
                 const numTines = this.toolsPane.toolParameters.forTool(Tool.CircularTine)['numTines'];
                 const spacing = this.toolsPane.toolParameters.forTool(Tool.CircularTine)['spacing'];
                 if (radius > 0.03) {
-                    operation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
+                    operation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing, counterclockwiseForDrag(direction));
                     this._delegate.applyOperations([operation]);
                     this.syncHistoryControls();
                 }
                 break;
             }
             case Tool.Vortex: {
-                const radius = currentCoord.sub(this.mouseDownCoord).length();
+                const direction = currentCoord.sub(this.mouseDownCoord);
+                const radius = direction.length();
                 if (radius > 0.03) {
-                    operation = new Vortex(this.mouseDownCoord, radius);
+                    operation = new Vortex(this.mouseDownCoord, radius, counterclockwiseForDrag(direction));
                     this._delegate.applyOperations([operation]);
                     this.syncHistoryControls();
                 }

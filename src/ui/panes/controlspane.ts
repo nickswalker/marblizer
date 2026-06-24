@@ -66,12 +66,14 @@ export default class ControlsPane {
     }
 
     setHistoryState(canUndo: boolean, canRedo: boolean) {
-        const undoButton = this.optionToButtonMapping[UICommand.Undo];
-        const redoButton = this.optionToButtonMapping[UICommand.Redo];
+        const undoButton = this.optionToButtonMapping[UICommand.Undo] as HTMLButtonElement;
+        const redoButton = this.optionToButtonMapping[UICommand.Redo] as HTMLButtonElement;
         undoButton.classList.toggle("disabled", !canUndo);
         redoButton.classList.toggle("disabled", !canRedo);
         undoButton.setAttribute("aria-disabled", String(!canUndo));
         redoButton.setAttribute("aria-disabled", String(!canRedo));
+        undoButton.disabled = !canUndo;
+        redoButton.disabled = !canRedo;
     }
 
     private shiftChange(e: KeyboardEvent) {

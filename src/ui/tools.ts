@@ -51,6 +51,10 @@ guides[Tool.WavyLine]["numTines"] = [0, 20, 1];
 guides[Tool.CircularTine]["spacing"] = [5, 300, 5];
 guides[Tool.CircularTine]["numTines"] = [0, 20, 1];
 
+export function guideFor(tool: Tool, key: string): Guide {
+    return guides[tool][key];
+}
+
 
 export default class ToolParameters {
     parameters: { [key: number]: ToolParameterMap };
