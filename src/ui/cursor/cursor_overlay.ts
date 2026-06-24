@@ -22,6 +22,8 @@ export default class CursorOverlay {
     private rendererForTool: { [key: number]: CursorRenderer };
     private defaultRenderer: CrossRenderer;
 
+    private frameRequested: boolean = false;
+
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
         this.overlayContext = this.overlayCanvas.getContext("2d")!;
@@ -51,13 +53,24 @@ export default class CursorOverlay {
         this.rendererForTool[Tool.CircularTine] = dynamicRadius;
         this.rendererForTool[Tool.Vortex] = dynamicRadius;
         this.currentCursorRenderer = this.rendererForTool[this.currentTool];
-        this.drawOverlay();
 
+    }
+
+    private scheduleDraw() {
+        if (this.frameRequested) {
+            return;
+        }
+        this.frameRequested = true;
+        requestAnimationFrame(() => {
+            this.frameRequested = false;
+            this.drawOverlay();
+        });
     }
 
     setSize(width: number, height: number) {
         this.overlayCanvas.width = width;
         this.overlayCanvas.height = height;
+        this.scheduleDraw();
     }
 
     private toolChange(e: CustomEvent) {
@@ -80,24 +93,29 @@ export default class CursorOverlay {
                 this.currentCursorRenderer.spacing = this.currentToolParameters["spacing"];
                 break;
         }
+        this.scheduleDraw();
 
     }
 
     private mouseDown(e: MouseEvent) {
         this.mouseDownCoord = new Vec2(e.offsetX, e.offsetY);
+        this.scheduleDraw();
     }
 
     private mouseMove(e: MouseEvent) {
         this.lastMoveCoord = new Vec2(e.offsetX, e.offsetY);
+        this.scheduleDraw();
     }
 
     private mouseUp(e: MouseEvent) {
         this.mouseDownCoord = null;
+        this.scheduleDraw();
     }
 
     private mouseOut(e: MouseEvent) {
         this.lastMoveCoord = null;
         this.mouseDownCoord = null;
+        this.scheduleDraw();
     }
 
     private drawOverlay() {
@@ -105,7 +123,6 @@ export default class CursorOverlay {
         ctx.clearRect(this.prevDrawOrigin.x, this.prevDrawOrigin.y, this.prevDrawSize.x, this.prevDrawSize.y);
 
         if (this.lastMoveCoord == null) {
-            requestAnimationFrame(this.drawOverlay.bind(this));
             return;
         }
 
@@ -122,8 +139,6 @@ export default class CursorOverlay {
         this.prevDrawOrigin = minExtent;
         //  highlight region that was drawn over
         //ctx.fillRect(this.prevDrawOrigin.x, this.prevDrawOrigin.y, this.prevDrawSize.x, this.prevDrawSize.y);
-
-        requestAnimationFrame(this.drawOverlay.bind(this));
     }
 
 

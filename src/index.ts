@@ -70,10 +70,10 @@ addEventListener('DOMContentLoaded', async function () {
             return;
         }
         const onGpu = active === gpu;
-        backendButton.textContent = onGpu ? "GPU" : "Vec";
+        backendButton.classList.toggle("active", onGpu);
         backendButton.title = onGpu
-            ? "Rendering on the GPU (WebGPU) — click to use the vector renderer"
-            : "Rendering with vectors — click to use the GPU (WebGPU)";
+            ? "Rendering backend: GPU (WebGPU) — click to switch to the vector renderer"
+            : "Rendering backend: vector — click to switch to the GPU (WebGPU) renderer";
     }
 
     function switchTo(target: Renderer) {
