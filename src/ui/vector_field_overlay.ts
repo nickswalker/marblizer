@@ -6,6 +6,7 @@ import LineTine from "../operations/linetine.js";
 import WavyLineTine from "../operations/wavylinetine.js";
 import CircularLineTine from "../operations/circularlinetine.js";
 import Vortex from "../operations/vortex.js";
+import {counterclockwiseForDrag} from "../operations/rotation_direction.js";
 import VectorField from "../models/vectorfield.js";
 import {black} from "../models/color.js";
 
@@ -129,9 +130,10 @@ export default class VectorFieldOverlay {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
                     const spacing = this.currentToolParameter['spacing'];
                     const numTines = this.currentToolParameter['numTines'];
-                    const radius = this.lastMouseCoord.sub(this.mouseDownCoord).length();
+                    const direction = this.lastMouseCoord.sub(this.mouseDownCoord);
+                    const radius = direction.length();
                     if (radius > 0.03) {
-                        this.previewOperation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing);
+                        this.previewOperation = new CircularLineTine(this.mouseDownCoord, radius, numTines, spacing, counterclockwiseForDrag(direction));
                     }
                     break;
                 } else {
@@ -141,9 +143,10 @@ export default class VectorFieldOverlay {
             }
             case Tool.Vortex: {
                 if (this.lastMouseCoord != null && this.mouseDownCoord != null) {
-                    const radius = this.lastMouseCoord.sub(this.mouseDownCoord).length();
+                    const direction = this.lastMouseCoord.sub(this.mouseDownCoord);
+                    const radius = direction.length();
                     if (radius > 0.03) {
-                        this.previewOperation = new Vortex(this.mouseDownCoord, radius);
+                        this.previewOperation = new Vortex(this.mouseDownCoord, radius, counterclockwiseForDrag(direction));
                     }
                     break;
                 } else {

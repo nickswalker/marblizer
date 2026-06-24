@@ -1,4 +1,4 @@
-import ToolParameters, {primaryKeyFor, secondaryKeyFor, Tool} from "../tools.js";
+import ToolParameters, {guideFor, primaryKeyFor, secondaryKeyFor, Tool} from "../tools.js";
 
 // Touch/non-keyboard affordance for the parameters that are otherwise only
 // reachable via mouse-wheel or arrow keys (drop radius, comb spacing, etc).
@@ -10,23 +10,33 @@ export default class ParameterStepperPane {
 
     private primaryRow: HTMLElement;
     private primaryLabel: HTMLElement;
+    private primaryMinus: HTMLButtonElement;
+    private primaryPlus: HTMLButtonElement;
     private secondaryRow: HTMLElement;
     private secondaryLabel: HTMLElement;
+    private secondaryMinus: HTMLButtonElement;
+    private secondaryPlus: HTMLButtonElement;
 
     constructor(container: HTMLElement, toolParameters: ToolParameters) {
         this.toolParameters = toolParameters;
 
-        this.primaryRow = this.buildRow(
+        const primary = this.buildRow(
             () => this.toolParameters.decreasePrimary(this.currentTool),
             () => this.toolParameters.increasePrimary(this.currentTool),
         );
-        this.primaryLabel = this.primaryRow.querySelector(".label")!;
+        this.primaryRow = primary.row;
+        this.primaryLabel = primary.label;
+        this.primaryMinus = primary.minus;
+        this.primaryPlus = primary.plus;
 
-        this.secondaryRow = this.buildRow(
+        const secondary = this.buildRow(
             () => this.toolParameters.decreaseSecondary(this.currentTool),
             () => this.toolParameters.increaseSecondary(this.currentTool),
         );
-        this.secondaryLabel = this.secondaryRow.querySelector(".label")!;
+        this.secondaryRow = secondary.row;
+        this.secondaryLabel = secondary.label;
+        this.secondaryMinus = secondary.minus;
+        this.secondaryPlus = secondary.plus;
 
         container.appendChild(this.primaryRow);
         container.appendChild(this.secondaryRow);
@@ -35,7 +45,7 @@ export default class ParameterStepperPane {
         this.toolChange({detail: {currentTool: this.currentTool}} as CustomEvent);
     }
 
-    private buildRow(onDecrease: () => void, onIncrease: () => void): HTMLElement {
+    private buildRow(onDecrease: () => void, onIncrease: () => void): { row: HTMLElement, label: HTMLElement, minus: HTMLButtonElement, plus: HTMLButtonElement } {
         const row = document.createElement("div");
         row.className = "stepper-row";
 
@@ -55,7 +65,7 @@ export default class ParameterStepperPane {
         row.appendChild(minus);
         row.appendChild(label);
         row.appendChild(plus);
-        return row;
+        return {row, label, minus, plus};
     }
 
     private toolChange(e: CustomEvent) {
@@ -65,12 +75,24 @@ export default class ParameterStepperPane {
         this.primaryRow.style.display = primaryKey == null ? "none" : "";
         if (primaryKey != null) {
             this.primaryLabel.textContent = primaryKey;
+            this.updateStepperButtons(primaryKey, this.primaryMinus, this.primaryPlus);
         }
 
         const secondaryKey = secondaryKeyFor(this.currentTool);
         this.secondaryRow.style.display = secondaryKey == null ? "none" : "";
         if (secondaryKey != null) {
             this.secondaryLabel.textContent = secondaryKey;
+            this.updateStepperButtons(secondaryKey, this.secondaryMinus, this.secondaryPlus);
         }
+    }
+
+    private updateStepperButtons(key: string, minus: HTMLButtonElement, plus: HTMLButtonElement) {
+        minus.title = `Decrease ${key}`;
+        plus.title = `Increase ${key}`;
+
+        const value = this.toolParameters.forTool(this.currentTool)[key];
+        const [min, max] = guideFor(this.currentTool, key);
+        minus.disabled = value <= min;
+        plus.disabled = value >= max;
     }
 }

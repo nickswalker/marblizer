@@ -87,7 +87,10 @@ export default class ToolsPane {
     }
 
     private fireEvent() {
-        const dict = {"currentTool": this.currentTool, "parameters": this.toolParameters.forTool(this.currentTool)};
+        const dict = {
+            "currentTool": this.currentTool,
+            "parameters": this.toolParameters.forTool(this.currentTool),
+        };
         const event = new CustomEvent("toolchange", {detail: dict});
         document.dispatchEvent(event);
     }

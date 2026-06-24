@@ -15,8 +15,8 @@ const tools: ToolHelp[] = [
     {tool: Tool.Spatter, name: "Spatter", description: "Press and drag to fling a scatter of small droplets across the surface."},
     {tool: Tool.TineLine, name: "Line tine", description: "Drag to rake a straight comb through the ink, dragging the pattern along with it."},
     {tool: Tool.WavyLine, name: "Wavy tine", description: "Like the line tine, but the rake follows a wave for a rippled comb."},
-    {tool: Tool.CircularTine, name: "Circular tine", description: "Drag out from a center point to rake the ink around a circle."},
-    {tool: Tool.Vortex, name: "Vortex", description: "Drag to swirl the ink around a point into a spiral."},
+    {tool: Tool.CircularTine, name: "Circular tine", description: "Drag out from a center point to rake the ink around a circle. Drag above center to spin one way, below for the other — arrows on the cursor show which."},
+    {tool: Tool.Vortex, name: "Vortex", description: "Drag to swirl the ink around a point into a spiral. Drag above center to spin one way, below for the other — arrows on the cursor show which."},
 ];
 
 function keyFor(tool: Tool): string | undefined {
@@ -76,6 +76,12 @@ export default class HelpDialog extends Overlay {
             .shortcut-grid {
                 columns: 2;
                 column-gap: var(--space-lg, 24px);
+            }
+
+            @media (max-width: 600px) {
+                .shortcut-grid {
+                    columns: 1;
+                }
             }
 
             section {
