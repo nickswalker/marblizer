@@ -168,6 +168,23 @@ export default class HelpDialog extends Overlay {
                 paths generated from the current marbling operations.
             </p>
 
+            <h2>Install as an app</h2>
+            <p>Marblizer can be installed for a faster, full-screen experience with its own icon.</p>
+            <ul>
+                <li class="tool">
+                    <div class="name">iOS</div>
+                    <div class="desc">In Safari, tap the Share icon, then "Add to Home Screen".</div>
+                </li>
+                <li class="tool">
+                    <div class="name">Android</div>
+                    <div class="desc">In Chrome, tap the ⋮ menu, then "Install app" (or "Add to Home screen").</div>
+                </li>
+                <li class="tool">
+                    <div class="name">macOS / Windows</div>
+                    <div class="desc">In Chrome or Edge, click the install icon in the address bar, or open the menu and choose "Install Marblizer…".</div>
+                </li>
+            </ul>
+
             <h2>Keyboard shortcuts</h2>
             <div class="shortcut-grid">
                 ${shortcutSections.map((section) => html`
@@ -190,6 +207,8 @@ export default class HelpDialog extends Overlay {
                 Marblizer was made by
                 <a href="https://nickwalker.us/" target="_blank" rel="noopener">Nick Walker</a>.
                 It is used thousands of times each year by visitors from across the world.
+                The source code is on
+                <a href="https://github.com/nickswalker/marblizer" target="_blank" rel="noopener">GitHub</a>.
             </p>
         `;
     }
