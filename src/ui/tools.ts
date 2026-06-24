@@ -55,6 +55,18 @@ export function guideFor(tool: Tool, key: string): Guide {
     return guides[tool][key];
 }
 
+const descriptions: { [key: string]: string } = {
+    radius: "Size of the ink drop.",
+    scatterRadius: "Radius of the area the spatter droplets scatter across.",
+    dropRadius: "Size of each individual spatter droplet.",
+    spacing: "Distance between each tine of the comb.",
+    numTines: "Number of tines in the comb.",
+};
+
+export function descriptionFor(key: string): string | undefined {
+    return descriptions[key];
+}
+
 
 export default class ToolParameters {
     parameters: { [key: number]: ToolParameterMap };

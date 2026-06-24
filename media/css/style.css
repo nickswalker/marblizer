@@ -35,6 +35,10 @@ html {
        which lets absolutely-positioned content run behind it. dvh tracks the
        actual visible viewport as the toolbar shows/hides. */
     height: 100dvh;
+    /* Shows through behind iOS Safari's translucent bottom toolbar (which
+       sits outside the dvh viewport); dark to match the tool panes instead
+       of the browser's default white. */
+    background-color: #1e1e1e;
 }
 
 body {
@@ -270,7 +274,7 @@ MODAL
     background-color: var(--color-overlay-scrim);
     backdrop-filter: var(--overlay-backdrop-filter);
     -webkit-backdrop-filter: var(--overlay-backdrop-filter);
-    z-index: 2;
+    z-index: 5;
     display: flex;
     flex-flow: row;
     align-items: center;
@@ -306,27 +310,72 @@ TOOL PARAMETER STEPPER
  */
 
 #tool-parameters {
+    position: fixed;
+    z-index: 3;
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
-    width: 100%;
+    width: max-content;
+    min-width: 160px;
     box-sizing: border-box;
+    padding: var(--space-sm);
+    border-radius: var(--radius);
+    background-color: var(--color-pane-bg);
+    color: var(--color-pane-text);
+    backdrop-filter: var(--pane-backdrop-filter);
+    -webkit-backdrop-filter: var(--pane-backdrop-filter);
+    /* Rapid +/- taps otherwise register as a double-tap on iOS Safari,
+       which zooms the page even with user-scalable=no in the viewport meta
+       (recent iOS ignores that for accessibility). touch-action overrides
+       the double-tap-to-zoom gesture specifically. */
+    touch-action: manipulation;
+    box-shadow: rgba(30, 30, 30, 0.3) 0 2px 10px;
+    opacity: 0;
+    transform: scale(0.92);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+#tool-parameters.open {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
 #tool-parameters .stepper-row {
     display: flex;
     align-items: center;
+    gap: var(--space-sm);
+}
+
+#tool-parameters .stepper-row .param-info {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
     gap: var(--space-xs);
+    min-width: 0;
 }
 
 #tool-parameters .stepper-row .label {
-    flex: 1;
     font-size: 0.7em;
     text-transform: capitalize;
     opacity: 0.85;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: help;
+}
+
+#tool-parameters .stepper-row .value {
+    font-size: 0.75em;
+    opacity: 0.7;
+    flex: none;
+}
+
+#tool-parameters .stepper-row .param-controls {
+    flex: none;
+    display: flex;
+    gap: var(--space-xs);
 }
 
 #tool-parameters .stepper-row button {
@@ -357,6 +406,12 @@ NARROW / PORTRAIT LAYOUT
  */
 
 @media (max-width: 700px) {
+    .center-pane {
+        width: calc(100% - 24px);
+        height: calc(100% - 24px);
+        max-width: none;
+    }
+
     #marbling-tools {
         flex-direction: row;
         align-items: center;
@@ -379,14 +434,6 @@ NARROW / PORTRAIT LAYOUT
         width: 1px;
         height: 80%;
         margin: 0 var(--space-sm);
-    }
-
-    #tool-parameters {
-        flex-direction: row;
-    }
-
-    #tool-parameters .stepper-row .label {
-        display: none;
     }
 
     #colors {

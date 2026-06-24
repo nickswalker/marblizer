@@ -84,6 +84,18 @@ export default abstract class Overlay extends LitElement {
             margin: 0 0 var(--space-md, 12px);
             font-size: 1.6em;
         }
+
+        /* iPhone-size viewports: the 80%-width/20vh-margin sizing above
+           wastes too much screen on a small phone. Match the toolbar's
+           narrow-layout breakpoint and shrink the margin around the pane
+           to a fixed ~12px instead of a viewport-relative fraction. */
+        @media (max-width: 700px) {
+            .pane {
+                width: calc(100% - 24px);
+                max-width: none;
+                max-height: calc(100% - 24px);
+            }
+        }
     `;
 
     connectedCallback() {
