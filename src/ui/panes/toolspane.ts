@@ -50,15 +50,18 @@ export default class ToolsPane {
     }
 
     // Select a tool and update which button is highlighted. Shared by mouse
-    // clicks and keyboard shortcuts so the two stay in sync.
-    selectTool(tool: Tool) {
+    // clicks and keyboard shortcuts so the two stay in sync. reselected marks
+    // a click/shortcut for the tool that's already active, which listeners
+    // (the parameter popover) use to toggle visibility instead of forcing it
+    // open.
+    selectTool(tool: Tool, reselected: boolean = false) {
         for (const key in this.toolToButtonMapping) {
             const newClasses = this.toolToButtonMapping[key].className.replace(/(\s|^)active(\s|$)/, ' ');
             this.toolToButtonMapping[key].className = newClasses;
         }
         this._currentTool = tool;
         this.toolToButtonMapping[tool.valueOf()].className += " active";
-        this.fireEvent();
+        this.fireEvent(reselected);
     }
 
     private _currentTool: Tool;
@@ -80,16 +83,18 @@ export default class ToolsPane {
         const target = event.currentTarget;
         for (let key in this.toolToButtonMapping) {
             if (this.toolToButtonMapping[key] == target) {
-                this.selectTool(<Tool>parseInt(key));
+                const tool = <Tool>parseInt(key);
+                this.selectTool(tool, tool === this._currentTool);
                 return;
             }
         }
     }
 
-    private fireEvent() {
+    private fireEvent(reselected: boolean = false) {
         const dict = {
             "currentTool": this.currentTool,
             "parameters": this.toolParameters.forTool(this.currentTool),
+            "reselected": reselected,
         };
         const event = new CustomEvent("toolchange", {detail: dict});
         document.dispatchEvent(event);

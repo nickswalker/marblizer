@@ -69,7 +69,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.scriptingPane = new ScriptingPane(textContainer);
         this.controlsPane = new ControlsPane(optionsContainer);
         this.controlsPane.uiDelegate = this;
-        new ParameterStepperPane(parametersContainer, this.toolsPane.toolParameters);
+        new ParameterStepperPane(parametersContainer, this.toolsPane.toolParameters, this.toolsPane);
         this.helpDialog = new HelpDialog();
         document.body.appendChild(this.helpDialog);
         this.keyboardManager = new MarblingKeyboardUI();
