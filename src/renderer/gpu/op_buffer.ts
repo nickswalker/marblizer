@@ -12,12 +12,13 @@ import Vec2 from "../../models/vector.js";
 // vec4<f32> slots so it maps directly onto a WGSL struct of four vec4s:
 //
 //   meta  = [kind, flag, _, _]
-//   p0    = [aX,   aY,   radius/lineX, alpha/lineY]
-//   p1    = [lambda/numTines, spacing/amplitude, alpha/wavelength, phase]
+//   p0    = [aX,   aY,   radius/lineX/normalX, alpha/lineY/normalY]
+//   p1    = [lambda/numTines/angle, spacing/amplitude, alpha/wavelength, phase]
 //   color = [r, g, b, a]            (0..1, deposits only)
+//           or [reach, dragLength, _, _] for LineTine/WavyLine, which have no deposit
 //
-// The per-kind meaning of p0/p1 is documented on each writer below and must
-// stay in lock-step with the decoders in backmap.ts and marbling_shader.ts.
+// The per-kind meaning of p0/p1/color is documented on each writer below and
+// must stay in lock-step with the decoders in backmap.ts and marbling_shader.ts.
 export const FLOATS_PER_OP = 16;
 
 export enum OpKind {
@@ -96,7 +97,8 @@ function writeOp(d: Float32Array, o: number, op: Operation) {
         d[o + P0 + 3] = op.alpha;
         d[o + P1] = op.lambda;
     } else if (op instanceof LineTine) {
-        // p0 = [originX, originY, lineX, lineY]; p1 = [numTines, spacing, alpha, lambda].
+        // p0 = [originX, originY, lineX, lineY]; p1 = [numTines, spacing, alpha, lambda];
+        // color.x/.y = [reach, dragLength] (no deposit colour to store here).
         d[o + META] = OpKind.LineTine;
         d[o + P0] = op.origin.x;
         d[o + P0 + 1] = op.origin.y;
@@ -106,13 +108,22 @@ function writeOp(d: Float32Array, o: number, op: Operation) {
         d[o + P1 + 1] = op.spacing;
         d[o + P1 + 2] = op.alpha;
         d[o + P1 + 3] = op.lambda;
+        d[o + COL] = op.reach;
+        d[o + COL + 1] = op.dragLength;
     } else if (op instanceof WavyLineTine) {
-        // p1 = [angle, amplitude, wavelength, phase]; atPoint needs nothing else.
+        // p0 = [originX, originY, normalX, normalY]; p1 = [angle, amplitude, wavelength, phase];
+        // color.x/.y = [reach, dragLength] (no deposit colour to store here).
         d[o + META] = OpKind.WavyLine;
+        d[o + P0] = op.origin.x;
+        d[o + P0 + 1] = op.origin.y;
+        d[o + P0 + 2] = op.normal.x;
+        d[o + P0 + 3] = op.normal.y;
         d[o + P1] = op.angle;
         d[o + P1 + 1] = op.amplitude;
         d[o + P1 + 2] = op.wavelength;
         d[o + P1 + 3] = op.phase;
+        d[o + COL] = op.reach;
+        d[o + COL + 1] = op.dragLength;
     }
 }
 
@@ -186,6 +197,8 @@ function readOp(d: Float32Array, o: number): Operation {
                 spacing: d[o + P1 + 1],
                 alpha: d[o + P1 + 2],
                 lambda: d[o + P1 + 3],
+                reach: d[o + COL],
+                dragLength: d[o + COL + 1],
                 deposit: null,
                 newBaseColor: null,
             });
@@ -193,13 +206,17 @@ function readOp(d: Float32Array, o: number): Operation {
         case OpKind.WavyLine: {
             const op = Object.create(WavyLineTine.prototype) as WavyLineTine;
             return Object.assign(op, {
+                origin: new Vec2(d[o + P0], d[o + P0 + 1]),
+                normal: new Vec2(d[o + P0 + 2], d[o + P0 + 3]),
                 angle: d[o + P1],
                 amplitude: d[o + P1 + 1],
                 wavelength: d[o + P1 + 2],
                 phase: d[o + P1 + 3],
-                // Not encoded: atPoint depends only on the four fields above.
+                reach: d[o + COL],
+                dragLength: d[o + COL + 1],
+                // Not encoded: atPoint's wave term depends only on angle/amplitude/
+                // wavelength/phase; only the localization term needs origin/normal.
                 line: Vec2.zero(),
-                origin: Vec2.zero(),
                 numTines: 0,
                 spacing: 0,
                 deposit: null,

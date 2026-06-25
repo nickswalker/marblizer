@@ -1,5 +1,8 @@
-import ToolParameters, {descriptionFor, guideFor, primaryKeyFor, secondaryKeyFor, Tool} from "../tools.js";
+import ToolParameters, {descriptionFor, guideFor, parameterKeysFor, Tool} from "../tools.js";
 import ToolsPane from "./toolspane.js";
+
+// Most parameters a tool can have at once; bump this if a tool ever needs more.
+const MAX_PARAMETER_ROWS = 3;
 
 // Must match the "narrow/portrait" breakpoint in style.css, which is what
 // flips the toolbar from a right-edge column to a bottom-edge row.
@@ -23,16 +26,7 @@ export default class ParameterStepperPane {
     private currentTool: Tool = Tool.Drop;
     private isOpen: boolean = false;
 
-    private primaryRow: HTMLElement;
-    private primaryLabel: HTMLElement;
-    private primaryValue: HTMLElement;
-    private primaryMinus: HTMLButtonElement;
-    private primaryPlus: HTMLButtonElement;
-    private secondaryRow: HTMLElement;
-    private secondaryLabel: HTMLElement;
-    private secondaryValue: HTMLElement;
-    private secondaryMinus: HTMLButtonElement;
-    private secondaryPlus: HTMLButtonElement;
+    private rows: { row: HTMLElement, label: HTMLElement, value: HTMLElement, minus: HTMLButtonElement, plus: HTMLButtonElement, key: string | null }[] = [];
 
     constructor(panel: HTMLElement, toolParameters: ToolParameters, toolsPane: ToolsPane) {
         this.panel = panel;
@@ -43,35 +37,21 @@ export default class ParameterStepperPane {
         // canvas instead of pushing toolbar content around.
         document.body.appendChild(this.panel);
 
-        const primary = this.buildRow(
-            () => this.toolParameters.decreasePrimary(this.currentTool),
-            () => this.toolParameters.increasePrimary(this.currentTool),
-        );
-        this.primaryRow = primary.row;
-        this.primaryLabel = primary.label;
-        this.primaryValue = primary.value;
-        this.primaryMinus = primary.minus;
-        this.primaryPlus = primary.plus;
-
-        const secondary = this.buildRow(
-            () => this.toolParameters.decreaseSecondary(this.currentTool),
-            () => this.toolParameters.increaseSecondary(this.currentTool),
-        );
-        this.secondaryRow = secondary.row;
-        this.secondaryLabel = secondary.label;
-        this.secondaryValue = secondary.value;
-        this.secondaryMinus = secondary.minus;
-        this.secondaryPlus = secondary.plus;
-
-        this.panel.appendChild(this.primaryRow);
-        this.panel.appendChild(this.secondaryRow);
+        for (let i = 0; i < MAX_PARAMETER_ROWS; i++) {
+            const built = this.buildRow();
+            this.rows.push(built);
+            this.panel.appendChild(built.row);
+        }
 
         document.addEventListener("toolchange", this.toolChange.bind(this) as EventListener);
         window.addEventListener("resize", this.reposition.bind(this));
         this.toolChange({detail: {currentTool: this.currentTool}} as CustomEvent);
     }
 
-    private buildRow(onDecrease: () => void, onIncrease: () => void): { row: HTMLElement, label: HTMLElement, value: HTMLElement, minus: HTMLButtonElement, plus: HTMLButtonElement } {
+    // Each row is built once and reused across tools; which parameter `key`
+    // it currently drives is set in `toolChange`, with +/- reading it at
+    // click-time rather than being bound to a key up front.
+    private buildRow(): { row: HTMLElement, label: HTMLElement, value: HTMLElement, minus: HTMLButtonElement, plus: HTMLButtonElement, key: string | null } {
         const row = document.createElement("div");
         row.className = "stepper-row";
 
@@ -90,45 +70,54 @@ export default class ParameterStepperPane {
         const controls = document.createElement("div");
         controls.className = "param-controls";
 
+        const built = {row, label, value, minus: null as unknown as HTMLButtonElement, plus: null as unknown as HTMLButtonElement, key: null as string | null};
+
         const minus = document.createElement("button");
         minus.type = "button";
         minus.textContent = "−";
-        minus.onclick = onDecrease;
+        minus.onclick = () => {
+            if (built.key != null) {
+                this.toolParameters.decrease(this.currentTool, built.key);
+            }
+        };
 
         const plus = document.createElement("button");
         plus.type = "button";
         plus.textContent = "+";
-        plus.onclick = onIncrease;
+        plus.onclick = () => {
+            if (built.key != null) {
+                this.toolParameters.increase(this.currentTool, built.key);
+            }
+        };
 
         controls.appendChild(minus);
         controls.appendChild(plus);
 
         row.appendChild(info);
         row.appendChild(controls);
-        return {row, label, value, minus, plus};
+        built.minus = minus;
+        built.plus = plus;
+        return built;
     }
 
     private toolChange(e: CustomEvent) {
         this.currentTool = e.detail.currentTool;
         const reselected = e.detail.reselected === true;
 
-        const primaryKey = primaryKeyFor(this.currentTool);
-        this.primaryRow.style.display = primaryKey == null ? "none" : "";
-        if (primaryKey != null) {
-            this.primaryLabel.textContent = primaryKey;
-            this.primaryLabel.title = descriptionFor(primaryKey) ?? "";
-            this.updateStepperButtons(primaryKey, this.primaryValue, this.primaryMinus, this.primaryPlus);
+        const keys = parameterKeysFor(this.currentTool);
+        for (let i = 0; i < this.rows.length; i++) {
+            const row = this.rows[i];
+            const key = keys[i] ?? null;
+            row.key = key;
+            row.row.style.display = key == null ? "none" : "";
+            if (key != null) {
+                row.label.textContent = key;
+                row.label.title = descriptionFor(key) ?? "";
+                this.updateStepperButtons(key, row.value, row.minus, row.plus);
+            }
         }
 
-        const secondaryKey = secondaryKeyFor(this.currentTool);
-        this.secondaryRow.style.display = secondaryKey == null ? "none" : "";
-        if (secondaryKey != null) {
-            this.secondaryLabel.textContent = secondaryKey;
-            this.secondaryLabel.title = descriptionFor(secondaryKey) ?? "";
-            this.updateStepperButtons(secondaryKey, this.secondaryValue, this.secondaryMinus, this.secondaryPlus);
-        }
-
-        if (primaryKey == null && secondaryKey == null) {
+        if (keys.length === 0) {
             this.close();
         } else if (reselected) {
             // Tapping the already-active tool again toggles the popover,

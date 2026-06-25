@@ -7,9 +7,9 @@
 // Keep this in lock-step with backmap.ts (validated against the vector renderer)
 // and the buffer layout in op_buffer.ts. An Op is four vec4<f32> = 64 bytes:
 //   info  = [kind, flag, _, _]
-//   p0    = [aX, aY, radius/lineX, alpha/lineY]
-//   p1    = [lambda/numTines, spacing/amplitude, alpha/wavelength, phase]
-//   color = [r, g, b, a]
+//   p0    = [aX, aY, radius/lineX/normalX, alpha/lineY/normalY]
+//   p1    = [lambda/numTines/angle, spacing/amplitude, alpha/wavelength, phase]
+//   color = [r, g, b, a], or [reach, dragLength, _, _] for LineTine/WavyLine
 export const MARBLING_WGSL = /* wgsl */ `
 struct Op {
   info:  vec4<f32>,
@@ -61,8 +61,11 @@ fn lineTineOffset(p: vec2<f32>, op: Op) -> vec2<f32> {
   let spacing = op.p1.y;
   let alpha = op.p1.z;
   let lambda = op.p1.w;
+  let reach = op.color.x;
+  let dragLength = op.color.y;
+  let d = p - o;
   let nrm = vec2<f32>(-line.y, line.x);
-  var dPerp = abs(dot(p - o, nrm));
+  var dPerp = abs(dot(d, nrm));
   let halfSpace = spacing / 2.0;
   if (dPerp / spacing < numTines) {
     let t = dPerp - floor(dPerp / spacing) * spacing;
@@ -70,21 +73,31 @@ fn lineTineOffset(p: vec2<f32>, op: Op) -> vec2<f32> {
   } else {
     dPerp = dPerp - spacing * numTines;
   }
-  let factor = alpha * lambda / (dPerp + lambda);
+  let dLine = dot(d, line);
+  let overshoot = max(0.0, max(-dLine, dLine - dragLength));
+  let longitudinal = reach / (overshoot + reach);
+  let factor = alpha * lambda / (dPerp + lambda) * longitudinal;
   return line * factor;
 }
 
 // Forward displacement of WavyLineTine; its inverse is the negation of this.
 fn wavyOffset(p: vec2<f32>, op: Op) -> vec2<f32> {
+  let o = op.p0.xy;
+  let normal = op.p0.zw;
   let angle = op.p1.x;
   let amplitude = op.p1.y;
   let wavelength = op.p1.z;
   let phase = op.p1.w;
+  let reach = op.color.x;
+  let dragLength = op.color.y;
   let sinT = sin(angle);
   let cosT = cos(angle);
   let v = p.x * sinT - p.y * cosT;
   let factor = amplitude * sin(2.0 * PI / wavelength * v + phase);
-  return vec2<f32>(cosT, sinT) * factor;
+  let dLine = dot(p - o, normal);
+  let overshoot = max(0.0, max(-dLine, dLine - dragLength));
+  let longitudinal = reach / (overshoot + reach);
+  return vec2<f32>(cosT, sinT) * factor * longitudinal;
 }
 
 @vertex

@@ -14,8 +14,8 @@ type Point = [number, number];
 
 type SavedOperation =
     | { t: "drop"; p: Point; r: number; c: string; d: boolean }
-    | { t: "line"; o: Point; v: Point; n: number; s: number }
-    | { t: "wavy"; o: Point; v: Point; n: number; s: number }
+    | { t: "line"; o: Point; v: Point; n: number; s: number; rc: number }
+    | { t: "wavy"; o: Point; v: Point; n: number; s: number; rc: number }
     | { t: "circle"; o: Point; r: number; n: number; s: number; cc: boolean }
     | { t: "vortex"; o: Point; r: number; cc: boolean }
     | { t: "base"; c: string };
@@ -52,6 +52,7 @@ function serializeOperation(operation: Operation): SavedOperation | null {
             v: point(operation.line.scale((operation.alpha - 30.0) * 10.0)),
             n: operation.numTines,
             s: operation.spacing,
+            rc: operation.reach,
         };
     }
 
@@ -62,6 +63,7 @@ function serializeOperation(operation: Operation): SavedOperation | null {
             v: point(operation.line.perp().scale(-1 * (operation.amplitude - 10.0) * 10.0)),
             n: operation.numTines,
             s: operation.spacing,
+            rc: operation.reach,
         };
     }
 
@@ -99,9 +101,9 @@ function reviveOperation(operation: SavedOperation): Operation | null {
             return color == null ? null : new InkDropOperation(vec(operation.p), operation.r, color, operation.d);
         }
         case "line":
-            return new LineTine(vec(operation.o), vec(operation.v), operation.n, operation.s);
+            return new LineTine(vec(operation.o), vec(operation.v), operation.n, operation.s, operation.rc);
         case "wavy":
-            return new WavyLineTine(vec(operation.o), vec(operation.v), operation.n, operation.s);
+            return new WavyLineTine(vec(operation.o), vec(operation.v), operation.n, operation.s, operation.rc);
         case "circle":
             return new CircularLineTine(vec(operation.o), operation.r, operation.n, operation.s, operation.cc);
         case "vortex":

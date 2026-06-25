@@ -17,16 +17,24 @@ export default class LineTine implements Operation, Displacement {
     readonly spacing: number;
     readonly alpha = 30.0;
     readonly lambda = 32;
+    // How far the effect reaches past the dragged segment's ends before
+    // fading out. Large values (the default) make the comb run the length
+    // of the canvas, matching the original unbounded behavior; small values
+    // localize it to roughly the drag itself.
+    readonly reach: number;
+    readonly dragLength: number;
     readonly deposit: InkDeposit | null = null;
     readonly newBaseColor: Color | null = null;
 
-    constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number) {
+    constructor(origin: Vec2, direction: Vec2, numTines: number, spacing: number, reach: number = 4000) {
         const strength = direction.length();
         this.line = direction.norm();
         this.normal = this.line.perp().norm();
         this.origin = origin;
         this.numTines = numTines;
         this.spacing = spacing;
+        this.reach = reach;
+        this.dragLength = strength;
 
         this.alpha += strength / 10.0;
     }
@@ -36,7 +44,8 @@ export default class LineTine implements Operation, Displacement {
     }
 
     atPoint(point: Vec2): Vec2 {
-        let d = Math.abs(point.sub(this.origin).dot(this.normal));
+        const relative = point.sub(this.origin);
+        let d = Math.abs(relative.dot(this.normal));
         const halfSpace = this.spacing / 2.0;
 
         if (d / this.spacing < this.numTines) {
@@ -46,7 +55,11 @@ export default class LineTine implements Operation, Displacement {
             d = d - this.spacing * this.numTines;
         }
 
-        const factor = this.alpha * this.lambda / (d + this.lambda);
+        const dLine = relative.dot(this.line);
+        const overshoot = Math.max(0, -dLine, dLine - this.dragLength);
+        const longitudinal = this.reach / (overshoot + this.reach);
+
+        const factor = this.alpha * this.lambda / (d + this.lambda) * longitudinal;
         return this.line.copy().scale(factor);
     }
 

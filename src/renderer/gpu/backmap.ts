@@ -112,11 +112,16 @@ function lineTineOffset(x: number, y: number, data: Float32Array, o: number): [n
     const spacing = data[o + P1 + 1];
     const alpha = data[o + P1 + 2];
     const lambda = data[o + P1 + 3];
+    const reach = data[o + COL];
+    const dragLength = data[o + COL + 1];
+
+    const dx = x - ox;
+    const dy = y - oy;
 
     // normal = perp(line), with line already unit length.
     const nx = -lineY;
     const ny = lineX;
-    let dPerp = Math.abs((x - ox) * nx + (y - oy) * ny);
+    let dPerp = Math.abs(dx * nx + dy * ny);
     const halfSpace = spacing / 2;
     if (dPerp / spacing < numTines) {
         const test = dPerp - Math.floor(dPerp / spacing) * spacing;
@@ -124,20 +129,36 @@ function lineTineOffset(x: number, y: number, data: Float32Array, o: number): [n
     } else {
         dPerp = dPerp - spacing * numTines;
     }
-    const factor = alpha * lambda / (dPerp + lambda);
+
+    const dLine = dx * lineX + dy * lineY;
+    const overshoot = Math.max(0, -dLine, dLine - dragLength);
+    const longitudinal = reach / (overshoot + reach);
+
+    const factor = alpha * lambda / (dPerp + lambda) * longitudinal;
     return [lineX * factor, lineY * factor];
 }
 
 // Forward displacement of WavyLineTine; its inverse is the negation of this.
 function wavyOffset(x: number, y: number, data: Float32Array, o: number): [number, number] {
+    const ox = data[o + P0];
+    const oy = data[o + P0 + 1];
+    const normalX = data[o + P0 + 2];
+    const normalY = data[o + P0 + 3];
     const angle = data[o + P1];
     const amplitude = data[o + P1 + 1];
     const wavelength = data[o + P1 + 2];
     const phase = data[o + P1 + 3];
+    const reach = data[o + COL];
+    const dragLength = data[o + COL + 1];
 
     const sinT = Math.sin(angle);
     const cosT = Math.cos(angle);
     const v = x * sinT - y * cosT;
     const factor = amplitude * Math.sin(2 * Math.PI / wavelength * v + phase);
-    return [cosT * factor, sinT * factor];
+
+    const dLine = (x - ox) * normalX + (y - oy) * normalY;
+    const overshoot = Math.max(0, -dLine, dLine - dragLength);
+    const longitudinal = reach / (overshoot + reach);
+
+    return [cosT * factor * longitudinal, sinT * factor * longitudinal];
 }
