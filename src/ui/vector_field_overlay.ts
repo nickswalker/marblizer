@@ -97,6 +97,7 @@ class VectorFieldRenderer {
     private arrow = this.generateArrowPath();
     private cssWidth: number = 0;
     private cssHeight: number = 0;
+    private dpr: number = 1;
 
     constructor(container: HTMLElement) {
         this.overlayCanvas = document.createElement('canvas');
@@ -138,12 +139,12 @@ class VectorFieldRenderer {
     }
 
     setSize(width: number, height: number) {
-        const dpr = window.devicePixelRatio || 1;
+        this.dpr = window.devicePixelRatio || 1;
         this.cssWidth = width;
         this.cssHeight = height;
-        this.overlayCanvas.width = Math.round(width * dpr);
-        this.overlayCanvas.height = Math.round(height * dpr);
-        this.overlayContext.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.overlayCanvas.width = Math.round(width * this.dpr);
+        this.overlayCanvas.height = Math.round(height * this.dpr);
+        this.overlayContext.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
         this.scheduleDraw();
     }
 
@@ -187,7 +188,12 @@ class VectorFieldRenderer {
         const halfHeight = height / 2;
         const maxSize = 3;
 
-        ctx.strokeStyle = "rgba(255,255,255,0.6)";
+        // Constant colors set once outside the loop; per-arrow opacity is
+        // applied via globalAlpha (a numeric assignment) rather than by
+        // building and parsing a new rgba() string every arrow.
+        ctx.fillStyle = "black";
+        ctx.strokeStyle = "white";
+        const strokeAlpha = 0.6;
         for (let x = 0; x < this.cssWidth; x += this._spacing) {
             for (let y = 0; y < this.cssHeight; y += this._spacing) {
                 const dir = this._vectorField.atPoint(new Vec2(x, y));
@@ -195,19 +201,26 @@ class VectorFieldRenderer {
                 const rawSize = dir.length() / this.arrowHeight;
                 const size = Math.min(rawSize, maxSize);
                 if (size > 0.1) {
-                    const intensity = Math.min(rawSize / maxSize, 1);
-                    ctx.fillStyle = `rgba(0,0,0,${(0.5 + 0.5 * intensity).toFixed(3)})`;
+                    // Asymptotic rather than clipped, so arrows stay
+                    // distinguishable even when displacement is many times
+                    // larger than the visual size cap above (e.g. near the
+                    // centre of a large-radius drop).
+                    const intensity = rawSize / (rawSize + maxSize);
 
-                    ctx.save();
-                    ctx.translate(x - halfWidth, y - halfHeight);
-                    ctx.scale(size, size);
-                    ctx.rotate(angle);
+                    // Equivalent to save() + translate + scale + rotate +
+                    // restore, but computed directly as one matrix so a
+                    // single setTransform call replaces all five.
+                    const cos = Math.cos(angle) * size * this.dpr;
+                    const sin = Math.sin(angle) * size * this.dpr;
+                    ctx.setTransform(cos, sin, -sin, cos, (x - halfWidth) * this.dpr, (y - halfHeight) * this.dpr);
 
+                    ctx.globalAlpha = strokeAlpha;
                     ctx.stroke(this.arrow);
+                    ctx.globalAlpha = 0.5 + 0.5 * intensity;
                     ctx.fill(this.arrow);
-                    ctx.restore();
                 }
             }
         }
+        ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     }
 }
