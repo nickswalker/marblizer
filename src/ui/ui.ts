@@ -61,6 +61,16 @@ export default class MarblingUI implements MarblingUIDelegate {
     readonly inkPreviewOverlay: InkPreviewOverlay;
     private toolbarPanel: Element | null;
     private cancelZoneActive: boolean = false;
+    // Tracks which pointer is drawing (captured on mouseDown) so a second,
+    // simultaneous touch can be told apart from it and used for the
+    // swipe-to-adjust-parameter gesture below.
+    private primaryPointerId: number | null = null;
+    private secondaryPointerId: number | null = null;
+    private secondarySwipeStartY: number = 0;
+    private secondarySwipeSteps: number = 0;
+    // Vertical pixels of second-finger movement per parameter step; mirrors
+    // the wheel-delta threshold built into adjustToolParameter's callers.
+    private static readonly SWIPE_STEP_PX = 24;
 
     constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement, parametersContainer: HTMLElement) {
         this.toolbarPanel = toolsContainer.closest(".marbling-pane");
@@ -253,15 +263,24 @@ export default class MarblingUI implements MarblingUIDelegate {
     }
 
     private mouseDown(e: PointerEvent) {
-        (e.target as Element).setPointerCapture?.(e.pointerId);
-        const x = e.offsetX;
-        const y = e.offsetY;
-        this.mouseDownCoord = new Vec2(x, y);
-        this.setCancelZoneActive(false);
-        if (this.toolsPane.currentTool === Tool.Spatter) {
-            this.mouseHeldHandler(true);
+        if (this.mouseDownCoord == null) {
+            (e.target as Element).setPointerCapture?.(e.pointerId);
+            this.primaryPointerId = e.pointerId;
+            const x = e.offsetX;
+            const y = e.offsetY;
+            this.mouseDownCoord = new Vec2(x, y);
+            this.setCancelZoneActive(false);
+            if (this.toolsPane.currentTool === Tool.Spatter) {
+                this.mouseHeldHandler(true);
+            }
+            this.mouseInterval = setInterval(this.mouseHeldHandler.bind(this), 50)
+        } else if (this.secondaryPointerId == null && e.pointerId !== this.primaryPointerId) {
+            // A second finger touching down while the first is drawing
+            // starts the swipe gesture instead of a second drawing pointer.
+            this.secondaryPointerId = e.pointerId;
+            this.secondarySwipeStartY = e.clientY;
+            this.secondarySwipeSteps = 0;
         }
-        this.mouseInterval = setInterval(this.mouseHeldHandler.bind(this), 50)
     }
 
     // Dragging into the toolbar panel cancels the in-progress operation
@@ -286,7 +305,11 @@ export default class MarblingUI implements MarblingUIDelegate {
     }
 
     private mouseUp(e: PointerEvent) {
-        if (this.mouseDownCoord == null) {
+        if (e.pointerId === this.secondaryPointerId) {
+            this.secondaryPointerId = null;
+            return;
+        }
+        if (this.mouseDownCoord == null || e.pointerId !== this.primaryPointerId) {
             return;
         }
         const wasCancelled = this.cancelZoneActive;
@@ -359,11 +382,16 @@ export default class MarblingUI implements MarblingUIDelegate {
         }
         this.lastMouseCoord = null;
         this.mouseDownCoord = null;
+        this.primaryPointerId = null;
         clearInterval(this.mouseInterval);
         this.mouseInterval = 0;
     }
 
     private mouseMove(e: PointerEvent) {
+        if (e.pointerId === this.secondaryPointerId) {
+            this.handleSecondarySwipe(e);
+            return;
+        }
         const x = e.offsetX;
         const y = e.offsetY;
         this.lastMouseCoord = new Vec2(x, y);
@@ -375,7 +403,23 @@ export default class MarblingUI implements MarblingUIDelegate {
     private mouseOut(e: PointerEvent) {
         this.mouseDownCoord = null;
         this.lastMouseCoord = null;
+        this.primaryPointerId = null;
+        this.secondaryPointerId = null;
         this.setCancelZoneActive(false);
+    }
+
+    // A second finger touching down while the first draws adjusts the
+    // active tool's primary parameter as it moves vertically, the touch
+    // equivalent of the scroll wheel (down = increase, up = decrease,
+    // see `scroll` below).
+    private handleSecondarySwipe(e: PointerEvent) {
+        const totalDelta = e.clientY - this.secondarySwipeStartY;
+        const steps = Math.trunc(totalDelta / MarblingUI.SWIPE_STEP_PX);
+        const diff = steps - this.secondarySwipeSteps;
+        for (let i = 0; i < Math.abs(diff); i++) {
+            this.adjustToolParameter(0, diff > 0 ? 1 : -1);
+        }
+        this.secondarySwipeSteps = steps;
     }
 
     // force bypasses the per-tick coin flip, used to deposit a guaranteed
