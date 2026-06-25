@@ -195,7 +195,11 @@ class VectorFieldRenderer {
                 const rawSize = dir.length() / this.arrowHeight;
                 const size = Math.min(rawSize, maxSize);
                 if (size > 0.1) {
-                    const intensity = Math.min(rawSize / maxSize, 1);
+                    // Asymptotic rather than clipped, so arrows stay
+                    // distinguishable even when displacement is many times
+                    // larger than the visual size cap above (e.g. near the
+                    // centre of a large-radius drop).
+                    const intensity = rawSize / (rawSize + maxSize);
                     ctx.fillStyle = `rgba(0,0,0,${(0.5 + 0.5 * intensity).toFixed(3)})`;
 
                     ctx.save();
