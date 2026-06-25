@@ -1,4 +1,10 @@
-export const tutorialProgram = `\
+export interface ExampleScript {
+    title: string;
+    description: string;
+    code: string;
+}
+
+const tutorialCode = `\
 let operations = [];
 const colorSet = colorSets[0];
 const center = new Vec2(this.canvasWidth, this.canvasHeight).scale(0.5);
@@ -27,7 +33,7 @@ for (let i = 0; i <= 3; i +=1) {
 return operations;\
 `;
 
-export const concentricCircles = `\
+const concentricCirclesCode = `\
 let operations = [];
 const colorSet = colorSets[0];
 const center = new Vec2(this.canvasWidth, this.canvasHeight).scale(0.5);
@@ -38,3 +44,22 @@ for (let i = 0; i < 100; i++) {
 }
 return operations;\
 `;
+
+// Library of starter scripts surfaced by the script editor's "Load example"
+// button (see ExamplesDialog). The first entry doubles as the editor's
+// default seed doc, kept under its own name below so that role stays
+// explicit at the call site.
+export const examples: ExampleScript[] = [
+    {
+        title: "Tutorial",
+        description: "Layered ink drops with arcs raked through them from both sides.",
+        code: tutorialCode,
+    },
+    {
+        title: "Concentric circles",
+        description: "A single point of color, deepened by a hundred overlapping drops.",
+        code: concentricCirclesCode,
+    },
+];
+
+export const tutorialProgram = tutorialCode;

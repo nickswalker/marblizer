@@ -7,6 +7,8 @@ import {javascript} from "@codemirror/lang-javascript";
 import { solarizedDark } from 'cm6-theme-solarized-dark'
 import {downloadText} from "../../util/download.js";
 import ApiDocsDialog from "../components/api-docs-dialog.js";
+import ExamplesDialog from "../components/examples-dialog.js";
+import DiscardChangesDialog from "../components/discard-changes-dialog.js";
 
 export default class ScriptingPane {
     container: HTMLElement;
@@ -20,9 +22,16 @@ export default class ScriptingPane {
     private uploadButton: HTMLElement;
     private downloadButton: HTMLElement;
     private apiDocsButton: HTMLElement;
+    private examplesButton: HTMLElement;
     private fileInput: HTMLInputElement;
     private apiDocsDialog: ApiDocsDialog;
+    private examplesDialog: ExamplesDialog;
+    private discardChangesDialog: DiscardChangesDialog;
     private downOnContainer: boolean = false;
+    // Tracks the doc as of the last time it was set programmatically (initial
+    // seed, file upload, or example load), so loading another example can
+    // tell whether the user has typed anything worth offering to save.
+    private baselineDoc: string = tutorialProgram;
 
     constructor(element: HTMLElement) {
         this.container = element.parentElement!;
@@ -33,6 +42,7 @@ export default class ScriptingPane {
         this.uploadButton = <HTMLElement>element.querySelector(".upload-button")!;
         this.downloadButton = <HTMLElement>element.querySelector(".download-button")!;
         this.apiDocsButton = <HTMLElement>element.querySelector(".api-docs-button")!;
+        this.examplesButton = <HTMLElement>element.querySelector(".examples-button")!;
         this.codeMirror = new EditorView({
             parent: <HTMLElement>element.querySelector(".input-container")!,
             state: EditorState.create({ doc: tutorialProgram,             extensions: [basicSetup, solarizedDark, javascript()]}),
@@ -49,12 +59,19 @@ export default class ScriptingPane {
         this.apiDocsDialog = new ApiDocsDialog();
         document.body.appendChild(this.apiDocsDialog);
 
+        this.examplesDialog = new ExamplesDialog();
+        document.body.appendChild(this.examplesDialog);
+
+        this.discardChangesDialog = new DiscardChangesDialog();
+        document.body.appendChild(this.discardChangesDialog);
+
         this.runButton.onclick = this.didClickConfirm.bind(this);
         this.dismissButton.onclick = this.didClickDismiss.bind(this);
         this.getURL.onclick = this.didClickGetURL.bind(this);
         this.uploadButton.onclick = this.didClickUpload.bind(this);
         this.downloadButton.onclick = this.didClickDownload.bind(this);
         this.apiDocsButton.onclick = this.didClickApiDocs.bind(this);
+        this.examplesButton.onclick = this.didClickExamples.bind(this);
         this.container.onmouseup = this.upContainer.bind(this);
         this.container.onmousedown = this.downContainer.bind(this);
     }
@@ -123,10 +140,34 @@ export default class ScriptingPane {
             return;
         }
         const text = await file.text();
-        this.codeMirror.dispatch({changes: {from: 0, to: this.codeMirror.state.doc.length, insert: text}});
+        this.loadScript(text);
     }
 
     private didClickApiDocs() {
         this.apiDocsDialog.show();
+    }
+
+    private async didClickExamples() {
+        const example = await this.examplesDialog.ask();
+        if (example == null) {
+            return;
+        }
+
+        if (this.codeMirror.state.doc.toString() !== this.baselineDoc) {
+            const choice = await this.discardChangesDialog.ask();
+            if (choice === "cancel") {
+                return;
+            }
+            if (choice === "download") {
+                this.didClickDownload();
+            }
+        }
+
+        this.loadScript(example.code);
+    }
+
+    private loadScript(code: string) {
+        this.codeMirror.dispatch({changes: {from: 0, to: this.codeMirror.state.doc.length, insert: code}});
+        this.baselineDoc = code;
     }
 }
