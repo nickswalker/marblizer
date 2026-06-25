@@ -88,7 +88,8 @@ function writeOp(d: Float32Array, o: number, op: Operation) {
         d[o + P0 + 3] = op.alpha;
         d[o + P1] = op.lambda;
     } else if (op instanceof CircularLineTine) {
-        // meta.flag = counterclockwise; p0 = [cx, cy, radius, alpha]; p1.x = lambda.
+        // meta.flag = counterclockwise; p0 = [cx, cy, radius, alpha];
+        // p1 = [lambda, numTines, interval, _].
         d[o + META] = OpKind.CircularTine;
         d[o + META + 1] = op.counterClockwise ? 1 : 0;
         d[o + P0] = op.center.x;
@@ -96,6 +97,8 @@ function writeOp(d: Float32Array, o: number, op: Operation) {
         d[o + P0 + 2] = op.radius;
         d[o + P0 + 3] = op.alpha;
         d[o + P1] = op.lambda;
+        d[o + P1 + 1] = op.numTines;
+        d[o + P1 + 2] = op.interval;
     } else if (op instanceof LineTine) {
         // p0 = [originX, originY, lineX, lineY]; p1 = [numTines, spacing, alpha, lambda];
         // color.x/.y = [reach, dragLength] (no deposit colour to store here).
@@ -177,10 +180,8 @@ function readOp(d: Float32Array, o: number): Operation {
                 radius: d[o + P0 + 2],
                 alpha: d[o + P0 + 3],
                 lambda: d[o + P1],
-                // Not encoded: atPoint (the only behaviour this op contributes
-                // to the vector field) doesn't depend on numTines/interval.
-                numTines: 0,
-                interval: 0,
+                numTines: d[o + P1 + 1],
+                interval: d[o + P1 + 2],
                 counterClockwise: d[o + META + 1] === 1,
                 deposit: null,
                 newBaseColor: null,

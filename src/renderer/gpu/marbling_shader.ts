@@ -44,13 +44,28 @@ fn rotateInverse(p: vec2<f32>, op: Op, isCircular: bool) -> vec2<f32> {
   let radius = op.p0.z;
   let alpha = op.p0.w;
   let lambda = op.p1.x;
+  let numTines = op.p1.y;
+  let interval = op.p1.z;
   let cc = op.info.y > 0.5;
   let pl = p - c;
   let len = length(pl);
   // The centre is a fixed point; this also avoids the l/len singularity.
   if (len < 1e-6) { return p; }
   var d: f32;
-  if (isCircular) { d = abs(len - radius); } else { d = abs(100.0 / radius * len); }
+  if (isCircular) {
+    d = abs(len - radius);
+    // Fold the radial distance against interval so the falloff peaks at
+    // every concentric ring out to numTines (mirrors circularlinetine.ts).
+    let halfSpace = interval / 2.0;
+    if (d / interval < numTines) {
+      let test = d - floor(d / interval) * interval;
+      d = halfSpace - abs(test - halfSpace);
+    } else {
+      d = d - interval * numTines;
+    }
+  } else {
+    d = abs(100.0 / radius * len);
+  }
   let l = alpha * lambda / (d + lambda);
   var theta = select(l / len, -l / len, cc);
   theta = -theta;

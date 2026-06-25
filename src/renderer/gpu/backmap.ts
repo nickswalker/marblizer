@@ -79,6 +79,8 @@ function rotateInverse(
     const radius = data[o + P0 + 2];
     const alpha = data[o + P0 + 3];
     const lambda = data[o + P1];
+    const numTines = data[o + P1 + 1];
+    const interval = data[o + P1 + 2];
     const counterclockwise = data[o + META + 1] > 0.5;
 
     const px = x - cx;
@@ -89,7 +91,18 @@ function rotateInverse(
     if (len < 1e-6) {
         return [x, y];
     }
-    const d = isCircular ? Math.abs(len - radius) : Math.abs(100 / radius * len);
+    let d = isCircular ? Math.abs(len - radius) : Math.abs(100 / radius * len);
+    if (isCircular) {
+        // Fold the radial distance against `interval` so the falloff peaks at
+        // every concentric ring out to `numTines` (mirrors circularlinetine.ts).
+        const halfSpace = interval / 2.0;
+        if (d / interval < numTines) {
+            const test = d - Math.floor(d / interval) * interval;
+            d = halfSpace - Math.abs(test - halfSpace);
+        } else {
+            d = d - interval * numTines;
+        }
+    }
     const l = alpha * lambda / (d + lambda);
     let theta = counterclockwise ? -l / len : l / len;
     theta = -theta; // inverse

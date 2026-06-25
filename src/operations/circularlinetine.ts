@@ -2,6 +2,7 @@ import Vec2 from "../models/vector.js";
 import Operation, {Displacement, InkDeposit} from "./color_operations.js";
 import Color from "../models/color.js";
 import Mat2x2 from "../models/matrix.js";
+import {fmod} from "./linetine.js";
 
 export default class CircularLineTine implements Operation, Displacement {
     // C in the paper
@@ -40,7 +41,22 @@ export default class CircularLineTine implements Operation, Displacement {
     private rotate(point: Vec2, sign: number): Vec2 {
         const pLessC = point.sub(this.center);
         const pLessCLen = pLessC.length();
-        const d = Math.abs(pLessCLen - this.radius);
+        let d = Math.abs(pLessCLen - this.radius);
+        const halfSpace = this.interval / 2.0;
+
+        // Fold the radial distance against `interval` so the falloff peaks at
+        // every concentric ring out to `numTines`, the same modulo trick
+        // LineTine uses for its parallel tines (see linetine.ts). Rings that
+        // would land at a negative radius simply never occur (pLessCLen can't
+        // be negative), so inward tines self-limit at the centre with no
+        // extra bound needed.
+        if (d / this.interval < this.numTines) {
+            const test = fmod(d, this.interval);
+            d = halfSpace - Math.abs(test - halfSpace);
+        } else {
+            d = d - this.interval * this.numTines;
+        }
+
         const l = this.alpha * this.lambda / (d + this.lambda);
         const theta = sign * (this.counterClockwise ? -l / pLessCLen : l / pLessCLen);
         const sinT = Math.sin(theta);
