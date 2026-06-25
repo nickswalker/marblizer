@@ -31,7 +31,7 @@ export function buildPreviewOperation(tool: Tool, parameters: ToolParameterMap, 
             if (dir.length() <= 0.03) {
                 return null;
             }
-            return new LineTine(mouseDownCoord, dir, parameters['numTines'], parameters['spacing']);
+            return new LineTine(mouseDownCoord, dir, parameters['numTines'], parameters['spacing'], parameters['reach']);
         }
         case Tool.WavyLine: {
             if (cursorCoord == null || mouseDownCoord == null) {
@@ -41,7 +41,7 @@ export function buildPreviewOperation(tool: Tool, parameters: ToolParameterMap, 
             if (dir.length() <= 0.03) {
                 return null;
             }
-            return new WavyLineTine(mouseDownCoord, dir, parameters['numTines'], parameters['spacing']);
+            return new WavyLineTine(mouseDownCoord, dir, parameters['numTines'], parameters['spacing'], parameters['reach']);
         }
         case Tool.CircularTine: {
             if (cursorCoord == null || mouseDownCoord == null) {

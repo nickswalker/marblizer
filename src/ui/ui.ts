@@ -9,7 +9,7 @@ import CursorOverlay from "./cursor/cursor_overlay.js";
 import VectorFieldOverlay from "./vector_field_overlay.js";
 import InkPreviewOverlay from "./ink_preview_overlay.js";
 import InkDropOperation from "../operations/inkdrop.js";
-import {Tool} from "./tools.js";
+import {parameterKeysFor, Tool} from "./tools.js";
 import Vortex from "../operations/vortex.js";
 import {counterclockwiseForDrag} from "../operations/rotation_direction.js";
 import CircularLineTine from "../operations/circularlinetine.js";
@@ -126,16 +126,16 @@ export default class MarblingUI implements MarblingUIDelegate {
                 this.toggleFullscreen();
                 return;
             case KeyboardShortcut.Up:
-                this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
+                this.adjustToolParameter(0, 1);
                 return;
             case KeyboardShortcut.Down:
-                this.toolsPane.toolParameters.decreasePrimary(this.toolsPane.currentTool);
+                this.adjustToolParameter(0, -1);
                 return;
             case KeyboardShortcut.Right:
-                this.toolsPane.toolParameters.increaseSecondary(this.toolsPane.currentTool);
+                this.adjustToolParameter(1, 1);
                 return;
             case KeyboardShortcut.Left:
-                this.toolsPane.toolParameters.decreaseSecondary(this.toolsPane.currentTool);
+                this.adjustToolParameter(1, -1);
                 return;
             case KeyboardShortcut.R:
                 if (confirm("Clear the composition?")) {
@@ -314,7 +314,8 @@ export default class MarblingUI implements MarblingUIDelegate {
                 if (direction.length() > 0.03) {
                     const numTines = this.toolsPane.toolParameters.forTool(Tool.TineLine)['numTines'];
                     const spacing = this.toolsPane.toolParameters.forTool(Tool.TineLine)['spacing'];
-                    operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing);
+                    const reach = this.toolsPane.toolParameters.forTool(Tool.TineLine)['reach'];
+                    operation = new LineTine(this.mouseDownCoord, direction, numTines, spacing, reach);
                     this._delegate.applyOperations([operation]);
                     this.syncHistoryControls();
                 }
@@ -325,7 +326,8 @@ export default class MarblingUI implements MarblingUIDelegate {
                 if (direction.length() > 0.03) {
                     const numTines = this.toolsPane.toolParameters.forTool(Tool.WavyLine)['numTines'];
                     const spacing = this.toolsPane.toolParameters.forTool(Tool.WavyLine)['spacing'];
-                    operation = new WavyLineTine(this.mouseDownCoord, direction, numTines, spacing);
+                    const reach = this.toolsPane.toolParameters.forTool(Tool.WavyLine)['reach'];
+                    operation = new WavyLineTine(this.mouseDownCoord, direction, numTines, spacing, reach);
                     this._delegate.applyOperations([operation]);
                     this.syncHistoryControls();
                 }
@@ -403,18 +405,24 @@ export default class MarblingUI implements MarblingUIDelegate {
     private scroll(e: WheelEvent) {
         e.preventDefault();
         const delta = e.deltaY;
-        if (delta > 0) {
-            if (!this.keyboardManager.shiftDown) {
-                this.toolsPane.toolParameters.increasePrimary(this.toolsPane.currentTool);
-            } else {
-                this.toolsPane.toolParameters.increaseSecondary(this.toolsPane.currentTool);
-            }
+        const index = this.keyboardManager.shiftDown ? 1 : 0;
+        this.adjustToolParameter(index, delta > 0 ? 1 : -1);
+    }
+
+    // Arrow keys and the scroll wheel only reach the first two parameters of
+    // the active tool (index 0/1, i.e. what used to be called "primary" and
+    // "secondary"); any further parameters are reachable only via the
+    // on-screen stepper popover.
+    private adjustToolParameter(index: number, direction: 1 | -1) {
+        const tool = this.toolsPane.currentTool;
+        const key = parameterKeysFor(tool)[index];
+        if (key == null) {
+            return;
+        }
+        if (direction > 0) {
+            this.toolsPane.toolParameters.increase(tool, key);
         } else {
-            if (!this.keyboardManager.shiftDown) {
-                this.toolsPane.toolParameters.decreasePrimary(this.toolsPane.currentTool);
-            } else {
-                this.toolsPane.toolParameters.decreaseSecondary(this.toolsPane.currentTool);
-            }
+            this.toolsPane.toolParameters.decrease(tool, key);
         }
     }
 
