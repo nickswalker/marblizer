@@ -8,8 +8,8 @@
   },
   "scripts": {
     "type-check": "tsc --noEmit",
-    "build": "esbuild src/index.ts src/renderer/worker/curve_worker.ts --bundle --outdir=dist --minify --sourcemap",
-    "watch": "esbuild src/index.ts src/renderer/worker/curve_worker.ts --bundle --outdir=dist --minify --sourcemap --watch",
+    "build": "esbuild src/index.ts src/renderer/worker/curve_worker.ts src/ui/vector_field_worker.ts --bundle --outdir=dist --minify --sourcemap",
+    "watch": "esbuild src/index.ts src/renderer/worker/curve_worker.ts src/ui/vector_field_worker.ts --bundle --outdir=dist --minify --sourcemap --watch",
     "serve": "http-server ./",
     "dev": "concurrently \"npm run watch\" \"npm run serve\""
   },

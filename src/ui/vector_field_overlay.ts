@@ -3,16 +3,32 @@ import Vec2 from "../models/vector.js";
 import Operation from "../operations/color_operations.js";
 import VectorField from "../models/vectorfield.js";
 import {buildPreviewOperation} from "./preview_operation.js";
+import {encodeOperations} from "../renderer/gpu/op_buffer.js";
+import {supportsOffscreenCanvas} from "../renderer/worker/worker_curve_renderer.js";
+import {MainToFieldWorkerMessage} from "./vector_field_worker_messages.js";
+
+// Built as a classic (non-module) script by esbuild, matching how
+// dist/index.js itself is loaded — see package.json's build/watch scripts.
+const WORKER_URL = "/dist/ui/vector_field_worker.js";
+
+interface FieldRenderer {
+    setSize(width: number, height: number): void;
+    toggleVisibility(): void;
+    spacing: number;
+    setOperation(op: Operation | null): void;
+}
 
 export default class VectorFieldOverlay {
-    private renderer: VectorFieldRenderer;
+    private renderer: FieldRenderer;
     private currentTool: Tool = Tool.Drop;
     private currentToolParameter: ToolParameterMap = {"radius": 50};
     private mouseDownCoord: Vec2 | null = null;
     private lastMouseCoord: Vec2 | null = null;
 
     constructor(container: HTMLElement) {
-        this.renderer = new VectorFieldRenderer(container);
+        this.renderer = supportsOffscreenCanvas()
+            ? new WorkerFieldRenderer(container, WORKER_URL)
+            : new MainThreadFieldRenderer(container);
         container.addEventListener("pointerdown", this.mouseDown.bind(this));
         container.addEventListener("pointerup", this.mouseUp.bind(this));
         container.addEventListener("pointercancel", this.mouseUp.bind(this));
@@ -25,7 +41,7 @@ export default class VectorFieldOverlay {
 
     set previewOperation(value: Operation | null) {
         this._previewOperation = value;
-        this.renderer.vectorField = this._previewOperation?.displacement ?? null;
+        this.renderer.setOperation(this._previewOperation);
     }
 
     setSize(width: number, height: number) {
@@ -87,7 +103,7 @@ export default class VectorFieldOverlay {
     }
 }
 
-class VectorFieldRenderer {
+class MainThreadFieldRenderer implements FieldRenderer {
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
     private visible: boolean = false;
@@ -119,8 +135,8 @@ class VectorFieldRenderer {
 
     private _vectorField: VectorField | null = null;
 
-    set vectorField(value: VectorField | null) {
-        this._vectorField = value;
+    setOperation(op: Operation | null) {
+        this._vectorField = op?.displacement ?? null;
         this.scheduleDraw();
     }
 
@@ -222,5 +238,89 @@ class VectorFieldRenderer {
             }
         }
         ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    }
+}
+
+// Off-main-thread twin of MainThreadFieldRenderer: owns a placeholder canvas
+// whose rendering control is transferred to vector_field_worker.ts, so the
+// per-arrow canvas calls don't compete with pointer-input handling on the
+// main thread. RAF coalescing stays here (not duplicated in the worker) so
+// the worker only ever draws once per request rather than scheduling its
+// own frames.
+class WorkerFieldRenderer implements FieldRenderer {
+    private overlayCanvas: HTMLCanvasElement;
+    private worker: Worker;
+    private visible: boolean = false;
+    private frameRequested: boolean = false;
+    private cssWidth: number = 0;
+    private cssHeight: number = 0;
+    private _spacing: number = 40;
+
+    constructor(container: HTMLElement, workerUrl: string) {
+        this.overlayCanvas = document.createElement('canvas');
+        this.overlayCanvas.className = "marbling-vector-field-overlay";
+        container.appendChild(this.overlayCanvas);
+
+        this.worker = new Worker(workerUrl);
+        const offscreen = this.overlayCanvas.transferControlToOffscreen();
+        const dpr = window.devicePixelRatio || 1;
+        this.post({type: "init", canvas: offscreen, width: this.overlayCanvas.width, height: this.overlayCanvas.height, dpr}, [offscreen]);
+    }
+
+    private post(message: MainToFieldWorkerMessage, transfer: Transferable[] = []) {
+        this.worker.postMessage(message, transfer);
+    }
+
+    get spacing(): number {
+        return this._spacing;
+    }
+
+    set spacing(value: number) {
+        this._spacing = value;
+        this.post({type: "spacing", value});
+        this.scheduleDraw();
+    }
+
+    setOperation(op: Operation | null) {
+        if (op == null) {
+            this.post({type: "operation", data: null, count: 0});
+        } else {
+            const {data, count} = encodeOperations([op]);
+            this.post({type: "operation", data, count}, [data.buffer]);
+        }
+        this.scheduleDraw();
+    }
+
+    setSize(width: number, height: number) {
+        // overlayCanvas's width/height attributes can't be touched once
+        // transferred to the worker (it throws); the worker resizes the
+        // OffscreenCanvas it actually owns, and CSS keeps the placeholder's
+        // layout size matching its container.
+        this.cssWidth = width;
+        this.cssHeight = height;
+        this.post({type: "resize", width, height, dpr: window.devicePixelRatio || 1});
+        this.scheduleDraw();
+    }
+
+    toggleVisibility() {
+        if (this.visible) {
+            this.visible = false;
+            this.overlayCanvas.style.visibility = "hidden";
+        } else {
+            this.visible = true;
+            this.overlayCanvas.style.visibility = "visible";
+            this.scheduleDraw();
+        }
+    }
+
+    private scheduleDraw() {
+        if (!this.visible || this.frameRequested) {
+            return;
+        }
+        this.frameRequested = true;
+        requestAnimationFrame(() => {
+            this.frameRequested = false;
+            this.post({type: "draw"});
+        });
     }
 }
