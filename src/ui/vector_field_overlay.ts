@@ -187,7 +187,12 @@ class VectorFieldRenderer {
         const halfHeight = height / 2;
         const maxSize = 3;
 
-        ctx.strokeStyle = "rgba(255,255,255,0.6)";
+        // Constant colors set once outside the loop; per-arrow opacity is
+        // applied via globalAlpha (a numeric assignment) rather than by
+        // building and parsing a new rgba() string every arrow.
+        ctx.fillStyle = "black";
+        ctx.strokeStyle = "white";
+        const strokeAlpha = 0.6;
         for (let x = 0; x < this.cssWidth; x += this._spacing) {
             for (let y = 0; y < this.cssHeight; y += this._spacing) {
                 const dir = this._vectorField.atPoint(new Vec2(x, y));
@@ -200,14 +205,15 @@ class VectorFieldRenderer {
                     // larger than the visual size cap above (e.g. near the
                     // centre of a large-radius drop).
                     const intensity = rawSize / (rawSize + maxSize);
-                    ctx.fillStyle = `rgba(0,0,0,${(0.5 + 0.5 * intensity).toFixed(3)})`;
 
                     ctx.save();
                     ctx.translate(x - halfWidth, y - halfHeight);
                     ctx.scale(size, size);
                     ctx.rotate(angle);
 
+                    ctx.globalAlpha = strokeAlpha;
                     ctx.stroke(this.arrow);
+                    ctx.globalAlpha = 0.5 + 0.5 * intensity;
                     ctx.fill(this.arrow);
                     ctx.restore();
                 }
