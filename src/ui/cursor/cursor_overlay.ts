@@ -95,8 +95,14 @@ export default class CursorOverlay {
                 break;
             case Tool.TineLine:
             case Tool.WavyLine:
+            case Tool.CircularTine:
                 this.currentCursorRenderer.numTines = this.currentToolParameters["numTines"];
                 this.currentCursorRenderer.spacing = this.currentToolParameters["spacing"];
+                break;
+            case Tool.Vortex:
+                // Vortex has no comb; reset numTines since it shares its
+                // SpinRenderer instance with Circular tine.
+                this.currentCursorRenderer.numTines = 0;
                 break;
         }
         this.scheduleDraw();

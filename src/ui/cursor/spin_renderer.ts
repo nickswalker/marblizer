@@ -18,6 +18,20 @@ export default class SpinRenderer implements CursorRenderer {
     private crossRenderer = new CrossRenderer();
     private circleRenderer = new CircleRenderer();
 
+    // Only Circular tine sets these (Vortex has no comb, and explicitly
+    // resets numTines to 0 on tool-switch since this renderer instance is
+    // shared between the two tools); 0 tines means draw no rings at all.
+    private _numTines: number = 0;
+    private _interval: number = 200;
+
+    set numTines(value: number) {
+        this._numTines = value;
+    }
+
+    set spacing(value: number) {
+        this._interval = value;
+    }
+
     drawAtRest(ctx: CanvasRenderingContext2D, position: Vec2): [Vec2, Vec2] {
         return this.crossRenderer.drawAtRest(ctx, position);
     }
@@ -57,6 +71,12 @@ export default class SpinRenderer implements CursorRenderer {
         let min = vecMin(crossMin, circleMin);
         let max = vecMax(crossMin.add(crossSize), circleMin.add(circleSize));
 
+        if (this._numTines > 0) {
+            const [ringMin, ringMax] = this.drawTineRings(ctx, mouseDown, radius);
+            min = vecMin(min, ringMin);
+            max = vecMax(max, ringMax);
+        }
+
         if (radius > 12) {
             const [arrowMin, arrowMax] = this.drawSpinArrows(ctx, mouseDown, direction, radius);
             min = vecMin(min, arrowMin);
@@ -64,6 +84,39 @@ export default class SpinRenderer implements CursorRenderer {
         }
 
         return [min, max.sub(min)];
+    }
+
+    // Previews the concentric comb rings CircularLineTine will actually rake
+    // (see its radial fmod-fold), out to numTines on each side of the drag
+    // radius. Inward rings that would land past the centre are skipped,
+    // mirroring how the operation self-limits there.
+    private drawTineRings(ctx: CanvasRenderingContext2D, center: Vec2, radius: number): [Vec2, Vec2] {
+        let min = new Vec2(center.x - radius, center.y - radius);
+        let max = new Vec2(center.x + radius, center.y + radius);
+
+        ctx.lineWidth = 1;
+        for (let k = 1; k <= this._numTines; k++) {
+            const outer = radius + k * this._interval;
+            ctx.strokeStyle = "rgba(0,0,0,0.35)";
+            circle(ctx, center, outer);
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(255,255,255,0.35)";
+            circle(ctx, center, outer - 1);
+            ctx.stroke();
+            min = vecMin(min, new Vec2(center.x - outer, center.y - outer));
+            max = vecMax(max, new Vec2(center.x + outer, center.y + outer));
+
+            const inner = radius - k * this._interval;
+            if (inner > 0) {
+                ctx.strokeStyle = "rgba(0,0,0,0.35)";
+                circle(ctx, center, inner);
+                ctx.stroke();
+                ctx.strokeStyle = "rgba(255,255,255,0.35)";
+                circle(ctx, center, inner - 1);
+                ctx.stroke();
+            }
+        }
+        return [min, max];
     }
 
     private drawSpinArrows(ctx: CanvasRenderingContext2D, center: Vec2, direction: Vec2, radius: number): [Vec2, Vec2] {
