@@ -67,6 +67,20 @@ canvas {
     position: absolute;
 }
 
+.marbling-fps-overlay {
+    position: absolute;
+    left: var(--space-sm);
+    bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
+    padding: 2px 6px;
+    background-color: var(--color-pane-bg);
+    color: var(--color-pane-text);
+    font-family: monospace;
+    font-size: 12px;
+    border-radius: var(--radius);
+    pointer-events: none;
+    z-index: 1;
+}
+
 
 .marbling-pane {
     background-color: var(--color-pane-bg);

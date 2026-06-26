@@ -23,7 +23,8 @@ export enum KeyboardShortcut {
     Undo = 19,
     Redo = 20,
     X = 21,
-    ToggleFullscreen = 22
+    ToggleFullscreen = 22,
+    G = 23
 }
 
 export const keyMapping: { [key: string]: KeyboardShortcut } = {
@@ -38,6 +39,7 @@ export const keyMapping: { [key: string]: KeyboardShortcut } = {
     "x": KeyboardShortcut.X,
     "v": KeyboardShortcut.V,
     "f": KeyboardShortcut.F,
+    "g": KeyboardShortcut.G,
     "b": KeyboardShortcut.B,
     "?": KeyboardShortcut.QuestionMark,
     "[": KeyboardShortcut.BracketLeft,

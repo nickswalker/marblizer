@@ -42,6 +42,7 @@ export const shortcutSections: ShortcutSection[] = [
         title: "View",
         shortcuts: [
             {keys: ["F"], def: "Toggle force-field preview"},
+            {keys: ["G"], def: "Toggle FPS counter"},
             {keys: ["F11"], def: "Toggle fullscreen"},
             {keys: ["[", "]"], sep: " / ", def: "Force-field density"},
             {keys: ["Shift", "?"], def: "Show help"},

@@ -7,6 +7,7 @@ import Vec2 from "../models/vector.js";
 import MarblingKeyboardUI, {KeyboardShortcut} from "./keyboard.js";
 import CursorOverlay from "./cursor/cursor_overlay.js";
 import VectorFieldOverlay from "./vector_field_overlay.js";
+import FpsOverlay from "./fps_overlay.js";
 import InkPreviewOverlay from "./ink_preview_overlay.js";
 import InkDropOperation from "../operations/inkdrop.js";
 import {parameterKeysFor, Tool} from "./tools.js";
@@ -58,6 +59,7 @@ export default class MarblingUI implements MarblingUIDelegate {
     private keyboardManager: MarblingKeyboardUI;
     private cursorOverlay: CursorOverlay;
     private vectorFieldOverlay: VectorFieldOverlay;
+    private fpsOverlay: FpsOverlay;
     readonly inkPreviewOverlay: InkPreviewOverlay;
     private toolbarPanel: Element | null;
     private cancelZoneActive: boolean = false;
@@ -93,6 +95,7 @@ export default class MarblingUI implements MarblingUIDelegate {
         this.inkPreviewOverlay = new InkPreviewOverlay(container, () => this.colorPane.currentColor);
         this.cursorOverlay = new CursorOverlay(container);
         this.vectorFieldOverlay = new VectorFieldOverlay(container);
+        this.fpsOverlay = new FpsOverlay(container);
     }
 
     _delegate!: MarblingRendererDelegate;
@@ -155,6 +158,9 @@ export default class MarblingUI implements MarblingUIDelegate {
                 return;
             case KeyboardShortcut.F:
                 this.vectorFieldOverlay.toggleVisibility();
+                return;
+            case KeyboardShortcut.G:
+                this.fpsOverlay.toggleVisibility();
                 return;
             case KeyboardShortcut.BracketLeft:
                 this.vectorFieldOverlay.decreaseResolution();
