@@ -1,5 +1,6 @@
-import Operation from "../../operations/color_operations.js";
+import Operation, {InkDeposit} from "../../operations/color_operations.js";
 import InkDropOperation from "../../operations/inkdrop.js";
+import ScatterOperation from "../../operations/scatter.js";
 import Vortex from "../../operations/vortex.js";
 import CircularLineTine from "../../operations/circularlinetine.js";
 import LineTine from "../../operations/linetine.js";
@@ -44,13 +45,30 @@ export interface EncodedOps {
 // deposit ink) into a flat buffer. Pure base-colour operations carry no
 // geometry and are resolved separately by resolveBaseColor; dropping them here
 // does not change z-order, since base colour is always the bottom layer.
+// ScatterOperation expands into N non-displacing InkDrop entries inline.
 export function encodeOperations(operations: Operation[]): EncodedOps {
-    const geometry = operations.filter(op => op.displacement != null || op.deposit != null);
-    const data = new Float32Array(geometry.length * FLOATS_PER_OP);
-    for (let i = 0; i < geometry.length; i++) {
-        writeOp(data, i * FLOATS_PER_OP, geometry[i]);
+    // Count buffer slots needed (ScatterOperation expands to N slots).
+    let count = 0;
+    for (const op of operations) {
+        if (op instanceof ScatterOperation) {
+            count += op.drops.length;
+        } else if (op.displacement != null || op.deposit != null) {
+            count++;
+        }
     }
-    return {data, count: geometry.length};
+
+    const data = new Float32Array(count * FLOATS_PER_OP);
+    let slot = 0;
+    for (const op of operations) {
+        if (op instanceof ScatterOperation) {
+            for (const drop of op.drops) {
+                writeScatterDrop(data, slot++ * FLOATS_PER_OP, drop);
+            }
+        } else if (op.displacement != null || op.deposit != null) {
+            writeOp(data, slot++ * FLOATS_PER_OP, op);
+        }
+    }
+    return {data, count};
 }
 
 // The base colour the field sits on: the most recent change, or the fallback.
@@ -62,6 +80,18 @@ export function resolveBaseColor(operations: Operation[], fallback: Color): Colo
         }
     }
     return color;
+}
+
+function writeScatterDrop(d: Float32Array, o: number, drop: InkDeposit) {
+    d[o + META] = OpKind.InkDrop;
+    // META+1 (displacing flag) stays 0 — scatter drops never displace.
+    d[o + P0] = drop.center.x;
+    d[o + P0 + 1] = drop.center.y;
+    d[o + P0 + 2] = drop.radius;
+    d[o + COL] = drop.color.r / 255;
+    d[o + COL + 1] = drop.color.g / 255;
+    d[o + COL + 2] = drop.color.b / 255;
+    d[o + COL + 3] = 1;
 }
 
 function writeOp(d: Float32Array, o: number, op: Operation) {

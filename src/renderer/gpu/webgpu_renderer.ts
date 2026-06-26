@@ -187,9 +187,11 @@ export default class WebGPURenderer implements MarblingRenderer {
         if (this.opBuffer != null) {
             this.opBuffer.destroy();
         }
-        this.opCapacity = needed;
+        // Double the current capacity each time so scatter preview (which grows
+        // by one drop per tick) triggers O(log N) reallocations instead of O(N).
+        this.opCapacity = Math.max(needed, this.opCapacity * 2, CHECKPOINT_INTERVAL);
         this.opBuffer = this.device.createBuffer({
-            size: needed * BYTES_PER_OP,
+            size: this.opCapacity * BYTES_PER_OP,
             usage: USAGE_STORAGE | USAGE_COPY_DST,
         });
         this.rebuildBindGroup();

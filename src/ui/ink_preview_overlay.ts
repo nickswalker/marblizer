@@ -2,6 +2,7 @@ import {Tool, ToolParameterMap} from "./tools.js";
 import Vec2 from "../models/vector.js";
 import Color from "../models/color.js";
 import Operation from "../operations/color_operations.js";
+import ScatterOperation from "../operations/scatter.js";
 import {CurveField} from "../renderer/curve_field.js";
 import {buildPreviewOperation} from "./preview_operation.js";
 import WebGPURenderer from "../renderer/gpu/webgpu_renderer.js";
@@ -40,6 +41,9 @@ export default class InkPreviewOverlay {
     private frameRequested: boolean = false;
     private cssWidth: number = 0;
     private cssHeight: number = 0;
+    // In-progress scatter session, set by the UI while the scatter tool is held
+    // down and cleared on commit or cancel.
+    private scatterPreview: ScatterOperation | null = null;
 
     constructor(container: HTMLElement, private getDropColor: () => Color) {
         this.canvas = document.createElement("canvas");
@@ -67,6 +71,11 @@ export default class InkPreviewOverlay {
 
     setGpuRenderer(renderer: WebGPURenderer | null) {
         this.gpuRenderer = renderer;
+    }
+
+    setScatterPreview(op: ScatterOperation | null) {
+        this.scatterPreview = op;
+        this.scheduleDraw();
     }
 
     setEnabled(enabled: boolean) {
@@ -123,17 +132,28 @@ export default class InkPreviewOverlay {
 
     private draw() {
         this.ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
-        const operation = buildPreviewOperation(this.currentTool, this.currentToolParameters, this.mouseDownCoord, this.lastMoveCoord, this.getDropColor());
         if (!this.enabled) {
             if (this.gpuRenderer != null) {
-                if (operation == null) {
-                    this.gpuRenderer.clearPreview();
+                if (this.scatterPreview != null && this.scatterPreview.drops.length > 0) {
+                    this.gpuRenderer.previewOperations([this.scatterPreview]);
                 } else {
-                    this.gpuRenderer.previewOperations([operation]);
+                    const operation = buildPreviewOperation(this.currentTool, this.currentToolParameters, this.mouseDownCoord, this.lastMoveCoord, this.getDropColor());
+                    if (operation == null) {
+                        this.gpuRenderer.clearPreview();
+                    } else {
+                        this.gpuRenderer.previewOperations([operation]);
+                    }
                 }
             }
             return;
         }
+        if (this.scatterPreview != null && this.scatterPreview.drops.length > 0) {
+            const preview = this.mirrorField.clone();
+            preview.applyOperations([this.scatterPreview]);
+            preview.renderTo(this.ctx, this.cssWidth, this.cssHeight);
+            return;
+        }
+        const operation = buildPreviewOperation(this.currentTool, this.currentToolParameters, this.mouseDownCoord, this.lastMoveCoord, this.getDropColor());
         if (operation == null) {
             return;
         }

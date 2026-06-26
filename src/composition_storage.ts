@@ -2,6 +2,7 @@ import Vec2 from "./models/vector.js";
 import Color from "./models/color.js";
 import Operation, {ChangeBaseColorOperation} from "./operations/color_operations.js";
 import InkDropOperation from "./operations/inkdrop.js";
+import ScatterOperation from "./operations/scatter.js";
 import LineTine from "./operations/linetine.js";
 import CircularLineTine from "./operations/circularlinetine.js";
 import WavyLineTine from "./operations/wavylinetine.js";
@@ -14,6 +15,7 @@ type Point = [number, number];
 
 type SavedOperation =
     | { t: "drop"; p: Point; r: number; c: string; d: boolean }
+    | { t: "scatter"; drops: Array<{p: Point; r: number; c: string}> }
     | { t: "line"; o: Point; v: Point; n: number; s: number; rc: number }
     | { t: "wavy"; o: Point; v: Point; n: number; s: number; rc: number }
     | { t: "circle"; o: Point; r: number; n: number; s: number; cc: boolean }
@@ -35,6 +37,17 @@ function vec(point: Point): Vec2 {
 }
 
 function serializeOperation(operation: Operation): SavedOperation | null {
+    if (operation instanceof ScatterOperation) {
+        return {
+            t: "scatter",
+            drops: operation.drops.map(drop => ({
+                p: point(drop.center),
+                r: drop.radius,
+                c: drop.color.toHexString(),
+            })),
+        };
+    }
+
     if (operation instanceof InkDropOperation) {
         return {
             t: "drop",
@@ -96,6 +109,15 @@ function serializeOperation(operation: Operation): SavedOperation | null {
 
 function reviveOperation(operation: SavedOperation): Operation | null {
     switch (operation.t) {
+        case "scatter": {
+            const drops: Array<{center: Vec2; radius: number; color: Color}> = [];
+            for (const d of operation.drops) {
+                const color = Color.withHex(d.c);
+                if (color == null) return null;
+                drops.push({center: vec(d.p), radius: d.r, color});
+            }
+            return new ScatterOperation(drops);
+        }
         case "drop": {
             const color = Color.withHex(operation.c);
             return color == null ? null : new InkDropOperation(vec(operation.p), operation.r, color, operation.d);
