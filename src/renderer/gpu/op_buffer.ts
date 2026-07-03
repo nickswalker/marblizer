@@ -41,13 +41,11 @@ export interface EncodedOps {
     count: number;
 }
 
-// Encodes the geometric operations (those that displace the field and/or
-// deposit ink) into a flat buffer. Pure base-colour operations carry no
-// geometry and are resolved separately by resolveBaseColor; dropping them here
-// does not change z-order, since base colour is always the bottom layer.
-// ScatterOperation expands into N non-displacing InkDrop entries inline.
-export function encodeOperations(operations: Operation[]): EncodedOps {
-    // Count buffer slots needed (ScatterOperation expands to N slots).
+// Number of buffer slots encodeOperations would produce for these operations.
+// A single ScatterOperation is one history entry but expands to one slot per
+// drop, so slot count -- not history length -- is what bounds the shader's
+// per-pixel walk.
+export function countEncodedOps(operations: Operation[]): number {
     let count = 0;
     for (const op of operations) {
         if (op instanceof ScatterOperation) {
@@ -56,7 +54,16 @@ export function encodeOperations(operations: Operation[]): EncodedOps {
             count++;
         }
     }
+    return count;
+}
 
+// Encodes the geometric operations (those that displace the field and/or
+// deposit ink) into a flat buffer. Pure base-colour operations carry no
+// geometry and are resolved separately by resolveBaseColor; dropping them here
+// does not change z-order, since base colour is always the bottom layer.
+// ScatterOperation expands into N non-displacing InkDrop entries inline.
+export function encodeOperations(operations: Operation[]): EncodedOps {
+    const count = countEncodedOps(operations);
     const data = new Float32Array(count * FLOATS_PER_OP);
     let slot = 0;
     for (const op of operations) {

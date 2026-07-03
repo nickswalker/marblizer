@@ -2,7 +2,7 @@ import MarblingRenderer from "../curve_renderer.js";
 import Operation from "../../operations/color_operations.js";
 import Color from "../../models/color.js";
 import Vec2 from "../../models/vector.js";
-import {encodeOperations, FLOATS_PER_OP, resolveBaseColor} from "./op_buffer.js";
+import {countEncodedOps, encodeOperations, FLOATS_PER_OP, resolveBaseColor} from "./op_buffer.js";
 import {MARBLING_WGSL} from "./marbling_shader.js";
 
 // WebGPU backend. A single full-screen fragment shader back-maps every pixel
@@ -10,9 +10,11 @@ import {MARBLING_WGSL} from "./marbling_shader.js";
 // output is sharp at any resolution with no large intermediate buffers.
 //
 // To keep that walk from growing unbounded as a composition gets longer, the
-// history is periodically baked into a "checkpoint" texture: every
-// CHECKPOINT_INTERVAL committed ops, the current image is rendered into a
-// texture and the storage buffer is reset to hold only ops since that bake.
+// history is periodically baked into a "checkpoint" texture: whenever the
+// committed ops since the last bake encode to CHECKPOINT_INTERVAL or more
+// buffer slots (a ScatterOperation is one history entry but one slot per
+// drop), the current image is rendered into a texture and the storage buffer
+// is reset to hold only ops since that bake.
 // The shader's fallback (a pixel that fell through the active op window
 // without resolving) samples the checkpoint texture instead of a flat colour.
 // This bounds per-frame shader cost to the window size, which is also what
@@ -212,8 +214,9 @@ export default class WebGPURenderer implements MarblingRenderer {
     // Bakes everything up to (and including) uptoIndex into a fresh
     // checkpoint texture, sampling the *existing* checkpoint (still bound at
     // this point) as the fallback beneath the ops being baked. Cost is
-    // bounded by the window being baked (at most CHECKPOINT_INTERVAL ops),
-    // not by total history length.
+    // bounded by the window being baked -- normally under CHECKPOINT_INTERVAL
+    // slots, though a single large scatter can exceed that for this one
+    // pass -- not by total history length.
     private bakeCheckpoint(uptoIndex: number) {
         const windowOps = this.history.slice(this.checkpointOpIndex, uptoIndex);
         const hadCheckpoint = this.checkpointOpIndex > 0;
@@ -272,7 +275,11 @@ export default class WebGPURenderer implements MarblingRenderer {
     }
 
     private render() {
-        if (this.history.length - this.checkpointOpIndex >= CHECKPOINT_INTERVAL) {
+        // Measured in encoded slots, not history entries: a scatter commits as
+        // one entry but hundreds of slots, and would otherwise sit in the
+        // active window (walked per pixel, per preview frame) until 63 more
+        // ops arrived. Counting slots bakes it away on the very next render.
+        if (countEncodedOps(this.history.slice(this.checkpointOpIndex)) >= CHECKPOINT_INTERVAL) {
             this.bakeCheckpoint(this.history.length);
         }
         const windowOps = this.history.slice(this.checkpointOpIndex);
