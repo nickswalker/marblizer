@@ -1,6 +1,7 @@
 import Vec2 from "../models/vector.js";
 import Color from "../models/color.js";
 import Operation from "../operations/color_operations.js";
+import ScatterOperation from "../operations/scatter.js";
 
 export class Drop {
     points: Array<Vec2>;
@@ -109,9 +110,15 @@ export class CurveField {
             }
         }
 
-        const deposit = operation.deposit;
-        if (deposit != null) {
-            this.drops.push(Drop.circle(deposit.color, deposit.radius, deposit.center.x, deposit.center.y));
+        if (operation instanceof ScatterOperation) {
+            for (const drop of operation.drops) {
+                this.drops.push(Drop.circle(drop.color, drop.radius, drop.center.x, drop.center.y));
+            }
+        } else {
+            const deposit = operation.deposit;
+            if (deposit != null) {
+                this.drops.push(Drop.circle(deposit.color, deposit.radius, deposit.center.x, deposit.center.y));
+            }
         }
 
         if (operation.newBaseColor != null) {

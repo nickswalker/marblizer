@@ -1,5 +1,5 @@
 import {default as ControlsPane, UICommand} from "./panes/controlspane.js";
-import Operation from "../operations/color_operations.js";
+import Operation, {InkDeposit} from "../operations/color_operations.js";
 import ToolsPane from "./panes/toolspane.js";
 import ColorPane from "./panes/colorpane.js";
 import ScriptingPane from "./panes/scriptingpane.js";
@@ -10,6 +10,7 @@ import VectorFieldOverlay from "./vector_field_overlay.js";
 import FpsOverlay from "./fps_overlay.js";
 import InkPreviewOverlay from "./ink_preview_overlay.js";
 import InkDropOperation from "../operations/inkdrop.js";
+import ScatterOperation from "../operations/scatter.js";
 import {parameterKeysFor, Tool} from "./tools.js";
 import Vortex from "../operations/vortex.js";
 import {counterclockwiseForDrag} from "../operations/rotation_direction.js";
@@ -73,6 +74,7 @@ export default class MarblingUI implements MarblingUIDelegate {
     // Vertical pixels of second-finger movement per parameter step; mirrors
     // the wheel-delta threshold built into adjustToolParameter's callers.
     private static readonly SWIPE_STEP_PX = 24;
+    private scatterPendingDrops: InkDeposit[] = [];
 
     constructor(container: HTMLElement, toolsContainer: HTMLElement, optionsContainer: HTMLElement, colorContainer: HTMLElement, textContainer: HTMLElement, parametersContainer: HTMLElement) {
         this.toolbarPanel = toolsContainer.closest(".marbling-pane");
@@ -321,6 +323,8 @@ export default class MarblingUI implements MarblingUIDelegate {
         const wasCancelled = this.cancelZoneActive;
         this.setCancelZoneActive(false);
         if (wasCancelled) {
+            this.scatterPendingDrops = [];
+            this.inkPreviewOverlay.setScatterPreview(null);
             this.lastMouseCoord = null;
             this.mouseDownCoord = null;
             clearInterval(this.mouseInterval);
@@ -332,6 +336,14 @@ export default class MarblingUI implements MarblingUIDelegate {
         let operation: Operation;
         const currentCoord = new Vec2(x, y);
         switch (this.toolsPane.currentTool) {
+            case Tool.Spatter:
+                if (this.scatterPendingDrops.length > 0) {
+                    this._delegate.applyOperations([new ScatterOperation(this.scatterPendingDrops)]);
+                    this.syncHistoryControls();
+                }
+                this.scatterPendingDrops = [];
+                this.inkPreviewOverlay.setScatterPreview(null);
+                break;
             case Tool.Drop:
                 const dropRadius = this.toolsPane.toolParameters.forTool(Tool.Drop)['radius'];
                 operation = new InkDropOperation(new Vec2(x, y), dropRadius, this.colorPane.currentColor, !this.keyboardManager.shiftDown);
@@ -407,6 +419,8 @@ export default class MarblingUI implements MarblingUIDelegate {
     }
 
     private mouseOut(e: PointerEvent) {
+        this.scatterPendingDrops = [];
+        this.inkPreviewOverlay.setScatterPreview(null);
         this.mouseDownCoord = null;
         this.lastMouseCoord = null;
         this.primaryPointerId = null;
@@ -440,12 +454,11 @@ export default class MarblingUI implements MarblingUIDelegate {
                     if (force || Math.random() < 0.5) {
                         const origin = this.lastMouseCoord ?? this.mouseDownCoord;
                         const angle = Math.random() * 2 * Math.PI;
-                        const radius = Math.sqrt(Math.random()) * scatterRadius;
-                        const newOrigin = origin.add(new Vec2(Math.cos(angle) * radius, Math.sin(angle) * radius));
-                        const newRadius = Math.random() * 6 + dropRadius - 3;
-                        const operation = new InkDropOperation(newOrigin, newRadius, currentColor, false);
-                        this._delegate.applyOperations([operation]);
-                        this.syncHistoryControls();
+                        const r = Math.sqrt(Math.random()) * scatterRadius;
+                        const center = origin.add(new Vec2(Math.cos(angle) * r, Math.sin(angle) * r));
+                        const radius = Math.random() * 6 + dropRadius - 3;
+                        this.scatterPendingDrops.push({center, radius, color: currentColor});
+                        this.inkPreviewOverlay.setScatterPreview(new ScatterOperation(this.scatterPendingDrops));
                     }
                 }
         }

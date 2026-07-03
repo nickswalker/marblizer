@@ -1,7 +1,8 @@
 import {Tool, ToolParameterMap} from "./tools.js";
 import Vec2 from "../models/vector.js";
 import Color from "../models/color.js";
-import Operation from "../operations/color_operations.js";
+import Operation, {InkDeposit} from "../operations/color_operations.js";
+import ScatterOperation from "../operations/scatter.js";
 import {CurveField} from "../renderer/curve_field.js";
 import {buildPreviewOperation} from "./preview_operation.js";
 import WebGPURenderer from "../renderer/gpu/webgpu_renderer.js";
@@ -22,7 +23,15 @@ import WebGPURenderer from "../renderer/gpu/webgpu_renderer.js";
 // which keeps preview frames cheap via its own checkpoint mechanism (see
 // webgpu_renderer.ts) rather than this class's CurveField mirror -- the GPU
 // renderer has no equivalent lightweight committed-state mirror, so this
-// overlay's own canvas just stays empty in that mode (set via setEnabled()).
+// overlay's own canvas mostly stays empty in that mode (set via setEnabled()).
+//
+// The exception is an in-progress scatter: its drops never displace and are
+// always the newest ops, so compositing them in screen space over the GPU
+// canvas is pixel-for-pixel equivalent to including them in the shader's
+// backmap walk -- but O(new drops) per tick instead of O(all drops) per
+// pixel. They're drawn incrementally onto this overlay's canvas (drops are
+// append-only during a hold), and the GPU renderer isn't touched at all
+// until the scatter commits.
 export default class InkPreviewOverlay {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -40,6 +49,15 @@ export default class InkPreviewOverlay {
     private frameRequested: boolean = false;
     private cssWidth: number = 0;
     private cssHeight: number = 0;
+    // In-progress scatter session, set by the UI while the scatter tool is held
+    // down and cleared on commit or cancel.
+    private scatterPreview: ScatterOperation | null = null;
+    // Incremental-paint state for the GPU-mode scatter preview: which
+    // session's drops array is on the canvas (the UI keeps one append-only
+    // array per hold, so identity marks the session) and how many of its
+    // drops are already painted, letting each frame draw just the new ones.
+    private scatterDrawnDrops: readonly InkDeposit[] | null = null;
+    private scatterDrawnCount = 0;
 
     constructor(container: HTMLElement, private getDropColor: () => Color) {
         this.canvas = document.createElement("canvas");
@@ -62,6 +80,9 @@ export default class InkPreviewOverlay {
         this.canvas.width = Math.round(width * dpr);
         this.canvas.height = Math.round(height * dpr);
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // Resizing wiped the backing store, so any incrementally drawn
+        // scatter drops must be repainted from scratch.
+        this.scatterDrawnCount = 0;
         this.scheduleDraw();
     }
 
@@ -69,9 +90,15 @@ export default class InkPreviewOverlay {
         this.gpuRenderer = renderer;
     }
 
+    setScatterPreview(op: ScatterOperation | null) {
+        this.scatterPreview = op;
+        this.scheduleDraw();
+    }
+
+    // The canvas stays visible in both modes (GPU mode needs it for the
+    // scatter preview); draw() clears it whenever it has nothing to show.
     setEnabled(enabled: boolean) {
         this.enabled = enabled;
-        this.canvas.style.visibility = enabled ? "visible" : "hidden";
         this.scheduleDraw();
     }
 
@@ -122,23 +149,64 @@ export default class InkPreviewOverlay {
     }
 
     private draw() {
-        this.ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
-        const operation = buildPreviewOperation(this.currentTool, this.currentToolParameters, this.mouseDownCoord, this.lastMoveCoord, this.getDropColor());
         if (!this.enabled) {
-            if (this.gpuRenderer != null) {
-                if (operation == null) {
-                    this.gpuRenderer.clearPreview();
-                } else {
-                    this.gpuRenderer.previewOperations([operation]);
-                }
-            }
+            this.drawGpuPreview();
             return;
         }
+        this.scatterDrawnDrops = null;
+        this.scatterDrawnCount = 0;
+        this.ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
+        if (this.scatterPreview != null && this.scatterPreview.drops.length > 0) {
+            const preview = this.mirrorField.clone();
+            preview.applyOperations([this.scatterPreview]);
+            preview.renderTo(this.ctx, this.cssWidth, this.cssHeight);
+            return;
+        }
+        const operation = buildPreviewOperation(this.currentTool, this.currentToolParameters, this.mouseDownCoord, this.lastMoveCoord, this.getDropColor());
         if (operation == null) {
             return;
         }
         const preview = this.mirrorField.clone();
         preview.applyOperations([operation]);
         preview.renderTo(this.ctx, this.cssWidth, this.cssHeight);
+    }
+
+    // GPU-mode preview. Single-op hover/drag previews go through the GPU
+    // renderer's own bounded preview pass; an in-progress scatter is instead
+    // painted here in screen space (see the class comment for why that's
+    // equivalent), drawing only the drops added since the last frame so the
+    // per-tick cost stays constant no matter how long the hold lasts.
+    private drawGpuPreview() {
+        const scatter = this.scatterPreview;
+        if (scatter == null || scatter.drops.length === 0) {
+            this.scatterDrawnDrops = null;
+            this.scatterDrawnCount = 0;
+            this.ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
+            if (this.gpuRenderer == null) {
+                return;
+            }
+            const operation = buildPreviewOperation(this.currentTool, this.currentToolParameters, this.mouseDownCoord, this.lastMoveCoord, this.getDropColor());
+            if (operation == null) {
+                this.gpuRenderer.clearPreview();
+            } else {
+                this.gpuRenderer.previewOperations([operation]);
+            }
+            return;
+        }
+        if (scatter.drops !== this.scatterDrawnDrops) {
+            // A new session started before the previous one's clear was
+            // drawn; start over rather than leaving stale drops behind.
+            this.scatterDrawnDrops = scatter.drops;
+            this.scatterDrawnCount = 0;
+            this.ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
+        }
+        for (let i = this.scatterDrawnCount; i < scatter.drops.length; i++) {
+            const drop = scatter.drops[i];
+            this.ctx.fillStyle = drop.color.toRGBString();
+            this.ctx.beginPath();
+            this.ctx.arc(drop.center.x, drop.center.y, drop.radius, 0, 2 * Math.PI);
+            this.ctx.fill();
+        }
+        this.scatterDrawnCount = scatter.drops.length;
     }
 }
