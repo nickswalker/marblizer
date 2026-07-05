@@ -57,6 +57,10 @@ export default class ControlsPane {
         this.optionToButtonMapping[UICommand.Reset] = resetButton;
         this.buttonBehaviors[UICommand.Reset] = ButtonBehavior.Temporary;
 
+        const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+        undoButton.title += isMac ? " (⌘Z)" : " (Ctrl+Z)";
+        redoButton.title += isMac ? " (⇧⌘Z)" : " (Ctrl+Shift+Z)";
+
         for (const key in this.optionToButtonMapping) {
             this.optionToButtonMapping[key].onclick = this.optionClicked.bind(this);
         }
